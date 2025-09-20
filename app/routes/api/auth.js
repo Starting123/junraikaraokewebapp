@@ -6,6 +6,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
+const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
 
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
@@ -32,7 +33,7 @@ router.post('/register', [
     const { name, email, password } = req.body;
     const [existing] = await db.query('SELECT user_id FROM users WHERE email = ? LIMIT 1', [email]);
     if (existing.length > 0) return res.status(409).json({ error: 'email already in use' });
-    const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, hashed, 3]);
     res.status(201).json({ user_id: result.insertId, name, email });
   } catch (err) {
@@ -52,7 +53,7 @@ router.post('/login', [ body('email').isEmail().normalizeEmail(), body('password
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'invalid credentials' });
     const payload = { user_id: user.user_id, email: user.email, role_id: user.role_id };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || '2h' });
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || '2h' });
     res.json({ token, user: { user_id: user.user_id, name: user.name, email: user.email, role_id: user.role_id } });
   } catch (err) {
     next(err);

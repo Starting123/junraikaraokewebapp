@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
+const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
 const RESET_TOKEN_EXPIRY_HOURS = parseInt(process.env.RESET_TOKEN_EXPIRY_HOURS || '1', 10);
 
 async function sendResetEmail(toEmail, token) {
@@ -64,7 +65,7 @@ router.post('/',
       const [existing] = await db.query('SELECT user_id FROM users WHERE email = ? LIMIT 1', [email]);
       if (existing.length > 0) return res.status(409).json({ error: 'email already in use' });
 
-      const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
       const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, hashed, role_id]);
       res.status(201).json({ user_id: result.insertId, name, email });
     } catch (err) {
@@ -88,7 +89,7 @@ router.post('/login',
       if (!ok) return res.status(401).json({ error: 'invalid credentials' });
 
       const payload = { user_id: user.user_id, email: user.email, role_id: user.role_id };
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || '2h' });
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || '2h' });
       res.json({ token, user: { user_id: user.user_id, name: user.name, email: user.email, role_id: user.role_id } });
     } catch (err) {
       next(err);
@@ -128,7 +129,7 @@ router.post('/password-reset/confirm', [ body('token').notEmpty(), body('passwor
     if (reset.used) return res.status(400).json({ error: 'token already used' });
     const now = new Date();
     if (new Date(reset.expires_at) < now) return res.status(400).json({ error: 'token expired' });
-    const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
     await db.query('UPDATE users SET password = ? WHERE user_id = ?', [hashed, reset.user_id]);
     await db.query('UPDATE password_resets SET used = 1 WHERE reset_id = ?', [reset.reset_id]);
     res.json({ ok: true });
