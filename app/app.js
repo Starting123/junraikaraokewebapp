@@ -3,9 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var apiUsers = require('./routes/api/users');
+var apiRooms = require('./routes/api/rooms');
 
 var app = express();
 
@@ -21,6 +24,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+// API routes
+app.use('/api/users', apiUsers);
+app.use('/api/rooms', apiRooms);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
