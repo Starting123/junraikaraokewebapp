@@ -8,7 +8,11 @@ require('dotenv').config();
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var apiUsers = require('./routes/api/users');
-var roomsRouter = require('./routes/api/rooms');
+var apiRooms = require('./routes/api/rooms');
+var apiAuth = require('./routes/api/auth');
+var apiBookings = require('./routes/api/bookings');
+var apiAdmin = require('./routes/api/admin');
+var apiOrders = require('./routes/api/orders');
 
 var app = express();
 
@@ -26,7 +30,11 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 // API routes
 app.use('/api/users', apiUsers);
-app.use('/api/rooms', roomsRouter);
+app.use('/api/rooms', apiRooms);
+app.use('/api/auth', apiAuth);
+app.use('/api/bookings', apiBookings);
+app.use('/api/admin', apiAdmin);
+app.use('/api/orders', apiOrders);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

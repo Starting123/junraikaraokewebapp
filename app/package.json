@@ -15,13 +15,16 @@
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "express-rate-limit": "^8.1.0",
-    "express-validator": "^7.2.1",
+    "express-validator": "^6.14.3",
     "helmet": "^8.1.0",
     "http-errors": "~1.6.3",
+    "jsonwebtoken": "^9.0.0",
     "morgan": "~1.9.1",
-    "mysql2": "^3.2.0"
+    "mysql2": "^3.2.0",
+    "nodemailer": "^6.9.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
   }
 }
+
