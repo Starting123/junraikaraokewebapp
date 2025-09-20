@@ -1,0 +1,52 @@
+/* Add custom styles for the navigation bar and search bar */
+    .navbar {
+      background-color: #17a5ba67; /* Set the background color to the same blue color as the background above main content */
+      color: #070707;
+      padding: 20px;
+      margin: 0; /* Add margin 0 to remove default margin */
+    }
+    .navbar a {
+      color: #060606;
+    }
+    .navbar .navbar-right {
+      float: right;
+      padding-right: 20px;
+    }
+    .search-container {
+      float: right;
+      margin-right: 10px;
+    }
+    .search-container input[type="text"] {
+      padding: 6px;
+      border: none;
+      width: 200px;
+    }
+    .search-container button {
+      padding: 6px 10px;
+      background: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    /* Add custom styles for the main content */
+    .main-content {
+      padding: 15%;
+      text-align: center;
+      background-image: url("images/bg3.jpg"); /* Replace "/images/bg.png" with the URL of your desired background image */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 850px; /* Set the height of the background to ensure proper display */
+    }
+    .main-content h1 {
+      margin-top: 0; /* Remove the default margin from the h1 element */
+    }
+    /* Remove margins and padding from body */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  
+    .left-aligned-text {
+      text-align: left;
+    }
