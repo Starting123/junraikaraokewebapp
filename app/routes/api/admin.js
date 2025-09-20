@@ -73,6 +73,23 @@ router.get('/rooms', adminOnly, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Login logs viewer
+router.get('/login-logs', adminOnly, async (req, res, next) => {
+  try {
+    const q = 'SELECT l.log_id, l.user_id, u.email, l.login_time, l.ip_address, l.user_agent, l.success FROM login_logs l LEFT JOIN users u ON l.user_id = u.user_id ORDER BY l.login_time DESC LIMIT 1000';
+    const [rows] = await require('../../db').query(q);
+    res.json({ logs: rows });
+  } catch (err) { next(err); }
+});
+
+router.get('/login-logs/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query('SELECT l.*, u.email FROM login_logs l LEFT JOIN users u ON l.user_id = u.user_id WHERE l.log_id = ? LIMIT 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'log not found' });
+    res.json({ log: rows[0] });
+  } catch (err) { next(err); }
+});
+
 router.post('/rooms', adminOnly, [ body('name').notEmpty(), body('type_id').isInt({ gt: 0 }), body('capacity').optional().isInt({ gt: 0 }), body('status').optional().isIn(['available','occupied']) ], async (req, res, next) => {
   try {
     const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
