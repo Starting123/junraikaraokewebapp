@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แดชบอร์ดผู้ดูแล - Junrai Karaoke</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    <link rel="stylesheet" href="/stylesheets/admin.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-microphone-alt"></i>
+                <span>Junrai Karaoke</span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="nav-link">หน้าหลัก</a>
+                <a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a>
+                <a href="/admin" class="nav-link active">ผู้ดูแลระบบ</a>
+                <div class="nav-user" id="navUser">
+                    <span class="user-name" id="userName">กำลังโหลด...</span>
+                    <button class="btn-logout" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+            
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="admin-header">
+        <div class="container">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-cogs"></i>
+                    แดชบอร์ดผู้ดูแลระบบ
+                </h1>
+                <p id="welcomeMessage">ยินดีต้อนรับผู้ดูแลระบบ</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Content -->
+    <section class="admin-content">
+        <div class="container">
+            <!-- System Statistics -->
+            <div class="section-header">
+                <h2>สรุประบบ</h2>
+                <p>ภาพรวมการใช้งานระบบ</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card total-users">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalUsers">-</h3>
+                        <p>ผู้ใช้ทั้งหมด</p>
+                        <small class="stat-change" id="usersChange">+0 ใหม่วันนี้</small>
+                    </div>
+                </div>
+                
+                <div class="stat-card total-rooms">
+                    <div class="stat-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalRooms">-</h3>
+                        <p>ห้องทั้งหมด</p>
+                        <small class="stat-change" id="roomsAvailable">0 ห้องว่าง</small>
+                    </div>
+                </div>
+                
+                <div class="stat-card total-bookings">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalBookings">-</h3>
+                        <p>การจองวันนี้</p>
+                        <small class="stat-change" id="bookingsChange">+0 ใหม่วันนี้</small>
+                    </div>
+                </div>
+                
+                <div class="stat-card total-revenue">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalRevenue">-</h3>
+                        <p>รายได้วันนี้</p>
+                        <small class="stat-change" id="revenueChange">฿0 เพิ่มขึ้น</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="section-header">
+                <h2>เมนูจัดการ</h2>
+                <p>เลือกการดำเนินการที่ต้องการ</p>
+            </div>
+            
+            <div class="admin-actions">
+                <div class="action-card" onclick="showManageRooms()">
+                    <div class="action-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <h3>จัดการห้อง</h3>
+                    <p>เพิ่ม แก้ไข หรือลบห้องคาราโอเกะ</p>
+                </div>
+                
+                <div class="action-card" onclick="showManageBookings()">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>จัดการการจอง</h3>
+                    <p>ดูและจัดการการจองทั้งหมด</p>
+                </div>
+                
+                <div class="action-card" onclick="showManageUsers()">
+                    <div class="action-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h3>จัดการผู้ใช้</h3>
+                    <p>ดูและจัดการข้อมูลผู้ใช้</p>
+                </div>
+                
+                <div class="action-card" onclick="showReports()">
+                    <div class="action-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>รายงาน</h3>
+                    <p>ดูรายงานการใช้งานและรายได้</p>
+                </div>
+            </div>
+
+            <!-- Management Sections (Initially Hidden) -->
+            
+            <!-- Manage Rooms Section -->
+            <div class="management-section" id="manageRooms" style="display: none;">
+                <div class="section-header">
+                    <h2>จัดการห้อง</h2>
+                    <button class="btn btn-primary" onclick="showAddRoomForm()">
+                        <i class="fas fa-plus"></i>
+                        เพิ่มห้องใหม่
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table" id="roomsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ชื่อห้อง</th>
+                                <th>ความจุ</th>
+                                <th>ราคา/ชม.</th>
+                                <th>สถานะ</th>
+                                <th>การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roomsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p>กำลังโหลดข้อมูล...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Manage Bookings Section -->
+            <div class="management-section" id="manageBookings" style="display: none;">
+                <div class="section-header">
+                    <h2>จัดการการจอง</h2>
+                    <div class="filter-controls">
+                        <select id="bookingStatusFilter">
+                            <option value="">ทุกสถานะ</option>
+                            <option value="pending">รอยืนยัน</option>
+                            <option value="confirmed">ยืนยันแล้ว</option>
+                            <option value="cancelled">ยกเลิกแล้ว</option>
+                            <option value="completed">เสร็จสิ้น</option>
+                        </select>
+                        <input type="date" id="bookingDateFilter">
+                        <button class="btn btn-outline" onclick="filterBookings()">
+                            <i class="fas fa-filter"></i>
+                            กรอง
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table" id="bookingsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ลูกค้า</th>
+                                <th>ห้อง</th>
+                                <th>วันที่</th>
+                                <th>เวลา</th>
+                                <th>สถานะ</th>
+                                <th>การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p>กำลังโหลดข้อมูล...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Manage Users Section -->
+            <div class="management-section" id="manageUsers" style="display: none;">
+                <div class="section-header">
+                    <h2>จัดการผู้ใช้</h2>
+                    <div class="filter-controls">
+                        <select id="userRoleFilter">
+                            <option value="">ทุกประเภท</option>
+                            <option value="1">ผู้ดูแลระบบ</option>
+                            <option value="2">พนักงาน</option>
+                            <option value="3">ลูกค้า</option>
+                        </select>
+                        <input type="text" id="userSearchInput" placeholder="ค้นหาชื่อหรืออีเมล">
+                        <button class="btn btn-outline" onclick="filterUsers()">
+                            <i class="fas fa-search"></i>
+                            ค้นหา
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ชื่อ</th>
+                                <th>อีเมล</th>
+                                <th>ประเภท</th>
+                                <th>วันที่สมัคร</th>
+                                <th>การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p>กำลังโหลดข้อมูล...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="management-section" id="reports" style="display: none;">
+                <div class="section-header">
+                    <h2>รายงาน</h2>
+                    <p>ดูรายงานการใช้งานและรายได้</p>
+                </div>
+                
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h3>รายได้รายเดือน</h3>
+                        <div class="report-chart" id="monthlyRevenueChart">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-line"></i>
+                                <p>กราฟรายได้รายเดือน</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-card">
+                        <h3>การจองยอดนิยม</h3>
+                        <div class="report-chart" id="popularRoomsChart">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-pie"></i>
+                                <p>กราฟห้องยอดนิยม</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="/stylesheets/admin.js"></script>
+</body>
+</html>

@@ -5,10 +5,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var apiUsers = require('./routes/api/users');
-var apiRooms = require('./routes/api/rooms');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/api/users');
+const roomsRouter = require('./routes/api/rooms');
 var apiAuth = require('./routes/api/auth');
 var apiBookings = require('./routes/api/bookings');
 var apiAdmin = require('./routes/api/admin');
@@ -27,10 +26,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-// API routes
-app.use('/api/users', apiUsers);
-app.use('/api/rooms', apiRooms);
+app.use('/api/users', usersRouter);
+app.use('/api/rooms', roomsRouter);
 app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', apiAdmin);
@@ -51,5 +48,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+module.exports = app;
 
 module.exports = app;

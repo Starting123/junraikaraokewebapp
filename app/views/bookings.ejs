@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองห้อง - Junrai Karaoke</title>
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    <link rel="stylesheet" href="/stylesheets/bookings.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link active">การจอง</a></li>
+                    <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-calendar-alt"></i> ระบบจองห้องคาราโอเกะ</h1>
+            <p>จองห้องคาราโอเกะและดูรายการการจองของคุณ</p>
+        </div>
+
+        <!-- Booking Tabs -->
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="showTab('booking')">
+                    <i class="fas fa-plus-circle"></i>
+                    จองห้องใหม่
+                </button>
+                <button class="tab-btn" onclick="showTab('mybookings')" id="myBookingsTab" style="display: none;">
+                    <i class="fas fa-list"></i>
+                    การจองของฉัน
+                </button>
+                <button class="tab-btn" onclick="showTab('allbookings')" id="allBookingsTab" style="display: none;">
+                    <i class="fas fa-users"></i>
+                    การจองทั้งหมด
+                </button>
+            </div>
+
+            <!-- New Booking Tab -->
+            <div class="tab-content active" id="bookingTab">
+                <div class="booking-form-container">
+                    <div class="room-selection">
+                        <h3><i class="fas fa-door-open"></i> เลือกห้อง</h3>
+                        <div class="room-grid" id="availableRooms">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>กำลังโหลดห้องที่ว่าง...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-details" id="bookingForm" style="display: none;">
+                        <h3><i class="fas fa-calendar-check"></i> รายละเอียดการจอง</h3>
+                        
+                        <form id="newBookingForm">
+                            <input type="hidden" id="selectedRoomId">
+                            
+                            <div class="selected-room-info" id="selectedRoomInfo">
+                                <!-- Room info will be displayed here -->
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar"></i>
+                                        วันที่เริ่ม
+                                    </label>
+                                    <input type="date" class="form-control" id="startDate" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-clock"></i>
+                                        เวลาเริ่ม
+                                    </label>
+                                    <input type="time" class="form-control" id="startTime" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar"></i>
+                                        วันที่สิ้นสุด
+                                    </label>
+                                    <input type="date" class="form-control" id="endDate" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-clock"></i>
+                                        เวลาสิ้นสุด
+                                    </label>
+                                    <input type="time" class="form-control" id="endTime" required>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-summary" id="bookingSummary">
+                                <!-- Booking summary will be displayed here -->
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="resetBookingForm()">
+                                    <i class="fas fa-times"></i>
+                                    ยกเลิก
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check-circle"></i>
+                                    ยืนยันการจอง
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Bookings Tab -->
+            <div class="tab-content" id="mybookingsTab">
+                <div class="bookings-list" id="myBookingsList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>กำลังโหลดการจองของคุณ...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Bookings Tab (Admin) -->
+            <div class="tab-content" id="allbookingsTab">
+                <div class="admin-controls">
+                    <div class="filter-controls">
+                        <select id="statusFilter" onchange="filterAllBookings()" class="form-select">
+                            <option value="">สถานะทั้งหมด</option>
+                            <option value="active">กำลังใช้งาน</option>
+                            <option value="completed">เสร็จสิ้น</option>
+                            <option value="cancelled">ยกเลิก</option>
+                        </select>
+                        
+                        <select id="roomFilter" onchange="filterAllBookings()" class="form-select">
+                            <option value="">ห้องทั้งหมด</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="bookings-list" id="allBookingsList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>กำลังโหลดการจองทั้งหมด...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Detail Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">รายละเอียดการจอง</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let availableRooms = [];
+        let allRooms = [];
+        let myBookings = [];
+        let allBookings = [];
+        const API_BASE = '/api';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadAvailableRooms();
+            setDefaultDateTime();
+        });
+
+        // Authentication check
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                currentUser = JSON.parse(user);
+                document.getElementById('authLink').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('myBookingsTab').style.display = 'block';
+                
+                // Show admin tab
+                if (currentUser.role_id === 1) {
+                    document.getElementById('allBookingsTab').style.display = 'block';
+                }
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = '/auth';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth';
+        }
+
+        // Set default date and time
+        function setDefaultDateTime() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentHour = now.getHours();
+            const nextHour = (currentHour + 1).toString().padStart(2, '0') + ':00';
+            const endHour = (currentHour + 3).toString().padStart(2, '0') + ':00';
+            
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
+            document.getElementById('startTime').value = nextHour;
+            document.getElementById('endTime').value = endHour;
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data based on tab
+            switch(tabName) {
+                case 'mybookings':
+                    loadMyBookings();
+                    break;
+                case 'allbookings':
+                    loadAllBookings();
+                    loadRoomsForFilter();
+                    break;
+            }
+        }
+
+        // Load available rooms
+        async function loadAvailableRooms() {
+            try {
+                const response = await fetch(`${API_BASE}/rooms/roomForm`);
+                if (response.ok) {
+                    allRooms = await response.json();
+                    availableRooms = allRooms.filter(room => room.status === 'available');
+                    displayAvailableRooms();
+                } else {
+                    throw new Error('Failed to load rooms');
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+                document.getElementById('availableRooms').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>ไม่สามารถโหลดข้อมูลห้องได้</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display available rooms
+        function displayAvailableRooms() {
+            const container = document.getElementById('availableRooms');
+            
+            if (availableRooms.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-door-closed"></i>
+                        <h3>ไม่มีห้องว่าง</h3>
+                        <p>ขณะนี้ไม่มีห้องว่างให้บริการ</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = availableRooms.map(room => `
+                <div class="room-card" onclick="selectRoom(${room.room_id})">
+                    <div class="room-status available">
+                        <i class="fas fa-check-circle"></i>
+                        ว่าง
+                    </div>
+                    
+                    <div class="room-info">
+                        <h4><i class="fas fa-door-open"></i> ${room.name}</h4>
+                        <p><i class="fas fa-tags"></i> ${room.type_name || 'ไม่ระบุประเภท'}</p>
+                        <p><i class="fas fa-users"></i> ${room.capacity || 'ไม่ระบุ'} คน</p>
+                    </div>
+                    
+                    <button class="btn btn-primary">เลือกห้องนี้</button>
+                </div>
+            `).join('');
+        }
+
+        // Select room for booking
+        function selectRoom(roomId) {
+            const room = availableRooms.find(r => r.room_id === roomId);
+            if (!room) return;
+            
+            document.getElementById('selectedRoomId').value = roomId;
+            document.getElementById('selectedRoomInfo').innerHTML = `
+                <div class="selected-room">
+                    <h4><i class="fas fa-door-open"></i> ${room.name}</h4>
+                    <div class="room-details">
+                        <span><i class="fas fa-tags"></i> ${room.type_name || 'ไม่ระบุประเภท'}</span>
+                        <span><i class="fas fa-users"></i> ${room.capacity || 'ไม่ระบุ'} คน</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('bookingForm').style.display = 'block';
+            document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
+            
+            updateBookingSummary();
+        }
+
+        // Update booking summary
+        function updateBookingSummary() {
+            const startDate = document.getElementById('startDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endDate = document.getElementById('endDate').value;
+            const endTime = document.getElementById('endTime').value;
+            
+            if (startDate && startTime && endDate && endTime) {
+                const start = new Date(`${startDate}T${startTime}`);
+                const end = new Date(`${endDate}T${endTime}`);
+                const duration = (end - start) / (1000 * 60 * 60); // hours
+                
+                document.getElementById('bookingSummary').innerHTML = `
+                    <div class="summary-card">
+                        <h4><i class="fas fa-clock"></i> สรุปการจอง</h4>
+                        <div class="summary-details">
+                            <div class="summary-item">
+                                <span>เริ่ม:</span>
+                                <span>${formatDateTime(start)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>สิ้นสุด:</span>
+                                <span>${formatDateTime(end)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>ระยะเวลา:</span>
+                                <span>${duration.toFixed(1)} ชั่วโมง</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Format date time
+        function formatDateTime(date) {
+            return date.toLocaleString('th-TH', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Handle booking form submission
+        document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const roomId = document.getElementById('selectedRoomId').value;
+            const startDate = document.getElementById('startDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endDate = document.getElementById('endDate').value;
+            const endTime = document.getElementById('endTime').value;
+            
+            const startDateTime = `${startDate}T${startTime}:00`;
+            const endDateTime = `${endDate}T${endTime}:00`;
+            
+            // Validation
+            const start = new Date(startDateTime);
+            const end = new Date(endDateTime);
+            const now = new Date();
+            
+            if (start <= now) {
+                showToast('เวลาเริ่มต้องเป็นในอนาคต', 'error');
+                return;
+            }
+            
+            if (end <= start) {
+                showToast('เวลาสิ้นสุดต้องหลังจากเวลาเริ่ม', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        room_id: parseInt(roomId),
+                        start_time: startDateTime,
+                        end_time: endDateTime
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('จองห้องสำเร็จ!', 'success');
+                    resetBookingForm();
+                    loadAvailableRooms(); // Refresh available rooms
+                    
+                    // Switch to my bookings tab
+                    setTimeout(() => {
+                        showTab('mybookings');
+                        document.querySelector('[onclick="showTab(\'mybookings\')"]').click();
+                    }, 2000);
+                } else {
+                    showToast(data.error || 'เกิดข้อผิดพลาดในการจอง', 'error');
+                }
+            } catch (error) {
+                console.error('Booking error:', error);
+                showToast('เกิดข้อผิดพลาดในการจอง', 'error');
+            }
+        });
+
+        // Reset booking form
+        function resetBookingForm() {
+            document.getElementById('newBookingForm').reset();
+            document.getElementById('bookingForm').style.display = 'none';
+            document.getElementById('selectedRoomInfo').innerHTML = '';
+            document.getElementById('bookingSummary').innerHTML = '';
+            setDefaultDateTime();
+        }
+
+        // Load my bookings
+        async function loadMyBookings() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    myBookings = data.bookings;
+                    displayBookings(myBookings, 'myBookingsList');
+                } else {
+                    throw new Error('Failed to load bookings');
+                }
+            } catch (error) {
+                console.error('Error loading my bookings:', error);
+                document.getElementById('myBookingsList').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>ไม่สามารถโหลดการจองได้</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load all bookings (admin)
+        async function loadAllBookings() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allBookings = data.bookings;
+                    displayBookings(allBookings, 'allBookingsList');
+                } else {
+                    throw new Error('Failed to load all bookings');
+                }
+            } catch (error) {
+                console.error('Error loading all bookings:', error);
+                document.getElementById('allBookingsList').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>ไม่สามารถโหลดการจองได้</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display bookings
+        function displayBookings(bookings, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>ไม่มีการจอง</h3>
+                        <p>ยังไม่มีการจองในระบบ</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = bookings.map(booking => `
+                <div class="booking-card ${booking.status}" onclick="viewBooking(${booking.booking_id})">
+                    <div class="booking-header">
+                        <div class="booking-status ${booking.status}">
+                            <i class="fas ${getStatusIcon(booking.status)}"></i>
+                            ${getStatusText(booking.status)}
+                        </div>
+                        <div class="booking-id">#${booking.booking_id}</div>
+                    </div>
+                    
+                    <div class="booking-body">
+                        <h4><i class="fas fa-door-open"></i> ${booking.room_name}</h4>
+                        <div class="booking-info">
+                            <div class="info-item">
+                                <i class="fas fa-user"></i>
+                                <span>${booking.user_name}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-calendar"></i>
+                                <span>${formatDateTime(new Date(booking.start_time))}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-clock"></i>
+                                <span>${formatDateTime(new Date(booking.end_time))}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="booking-footer">
+                        ${booking.status === 'active' && (currentUser.user_id === booking.user_id || currentUser.role_id === 1) ? `
+                        <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); cancelBooking(${booking.booking_id})">
+                            <i class="fas fa-times"></i>
+                            ยกเลิก
+                        </button>
+                        ` : ''}
+                        
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-eye"></i>
+                            ดูรายละเอียด
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get status icon
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'active': return 'fa-clock';
+                case 'completed': return 'fa-check-circle';
+                case 'cancelled': return 'fa-times-circle';
+                default: return 'fa-question-circle';
+            }
+        }
+
+        // Get status text
+        function getStatusText(status) {
+            switch(status) {
+                case 'active': return 'กำลังใช้งาน';
+                case 'completed': return 'เสร็จสิ้น';
+                case 'cancelled': return 'ยกเลิก';
+                default: return 'ไม่ทราบสถานะ';
+            }
+        }
+
+        // View booking details
+        function viewBooking(bookingId) {
+            // Implementation for viewing booking details in modal
+            console.log('View booking:', bookingId);
+        }
+
+        // Cancel booking
+        async function cancelBooking(bookingId) {
+            if (!confirm('คุณต้องการยกเลิกการจองนี้หรือไม่?')) return;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    showToast('ยกเลิกการจองสำเร็จ', 'success');
+                    loadMyBookings();
+                    loadAllBookings();
+                    loadAvailableRooms();
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'เกิดข้อผิดพลาดในการยกเลิก', 'error');
+                }
+            } catch (error) {
+                console.error('Cancel booking error:', error);
+                showToast('เกิดข้อผิดพลาดในการยกเลิก', 'error');
+            }
+        }
+
+        // Show toast message
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+        }
+
+        // Event listeners for form updates
+        ['startDate', 'startTime', 'endDate', 'endTime'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateBookingSummary);
+        });
+    </script>
+</body>
+</html>

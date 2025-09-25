@@ -20,4 +20,32 @@ router.get('/contact', function(req, res, next) {
   res.render('contact',);
 });
 
+router.get('/loginform', function(req, res, next) {
+  res.render('loginForm');
+});
+
+router.get('/api-tester', function(req, res, next) {
+    res.render('apiTester');
+});
+
+router.get('/auth', function(req, res, next) {
+    res.render('auth');
+});
+
+router.get('/rooms', function(req, res, next) {
+    res.render('rooms');
+});
+
+router.get('/bookings', function(req, res, next) {
+    res.render('bookings');
+});
+
+router.get('/dashboard', function(req, res, next) {
+    res.render('dashboard');
+});
+
+router.get('/admin', function(req, res, next) {
+    res.render('admin');
+});
+
 module.exports = router;
