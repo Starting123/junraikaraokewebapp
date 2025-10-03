@@ -14,9 +14,10 @@ function handleValidation(req, res) {
 router.get('/roomForm', async (req, res, next) => {
   try {
     const [rows] = await db.query(
-      `SELECT r.room_id, r.name, r.type_id, t.type_name, r.status, r.capacity
+      `SELECT r.room_id, r.name, r.type_id, t.type_name, t.price_per_hour, r.status, r.capacity
        FROM rooms r
-       LEFT JOIN room_types t ON r.type_id = t.type_id`
+       LEFT JOIN room_types t ON r.type_id = t.type_id
+       ORDER BY t.price_per_hour ASC, r.name ASC`
     );
     res.json(rows);
   } catch (err) {
@@ -33,13 +34,47 @@ router.get('/:id', [
     if (handleValidation(req, res)) return;
     const id = parseInt(req.params.id, 10);
     const [rows] = await db.query(
-      `SELECT r.room_id, r.name, r.type_id, t.type_name, r.status, r.capacity
+      `SELECT r.room_id, r.name, r.type_id, t.type_name, t.price_per_hour, r.status, r.capacity
        FROM rooms r
        LEFT JOIN room_types t ON r.type_id = t.type_id
        WHERE r.room_id = ? LIMIT 1`, [id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'not found' });
     res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/rooms/available - ดึงห้องว่างในช่วงเวลาที่กำหนด
+router.get('/available', [
+  query('start_time').isISO8601().withMessage('start_time must be valid ISO date'),
+  query('end_time').isISO8601().withMessage('end_time must be valid ISO date')
+], async (req, res, next) => {
+  try {
+    if (handleValidation(req, res)) return;
+    
+    const { start_time, end_time } = req.query;
+    const start = new Date(start_time);
+    const end = new Date(end_time);
+    
+    if (!(start < end)) return res.status(400).json({ error: 'start_time must be before end_time' });
+    
+    const roomsModel = require('../../models/rooms');
+    const availableRooms = await roomsModel.getAvailableRooms(start_time, end_time);
+    
+    res.json({ rooms: availableRooms });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/rooms/update-status - อัปเดตสถานะห้องทั้งหมด
+router.post('/update-status', async (req, res, next) => {
+  try {
+    const roomsModel = require('../../models/rooms');
+    await roomsModel.updateRoomStatus();
+    res.json({ success: true, message: 'Room status updated' });
   } catch (err) {
     next(err);
   }

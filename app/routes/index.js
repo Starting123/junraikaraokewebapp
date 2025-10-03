@@ -48,4 +48,12 @@ router.get('/admin', function(req, res, next) {
     res.render('admin');
 });
 
+router.get('/payment/success', function(req, res, next) {
+    res.render('payment-success');
+});
+
+router.get('/payment/cancel', function(req, res, next) {
+    res.render('payment-cancel');
+});
+
 module.exports = router;

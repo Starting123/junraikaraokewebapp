@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/stylesheets/global.css">
     <link rel="stylesheet" href="/stylesheets/bookings.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -172,7 +173,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">รายละเอียดการจอง</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" onclick="closeModal('bookingModal')">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
                 <!-- Content will be loaded here -->
@@ -197,6 +198,8 @@
             checkAuth();
             loadAvailableRooms();
             setDefaultDateTime();
+            initializeStripe();
+            setupPaymentMethodListeners();
         });
 
         // Authentication check
@@ -225,6 +228,37 @@
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/auth';
+        }
+
+        // Handle authentication errors
+        function handleAuthError(response) {
+            if (response.status === 401 || response.status === 403) {
+                showError('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+                setTimeout(() => {
+                    logout();
+                }, 2000);
+                return true;
+            }
+            return false;
+        }
+
+        // Enhanced fetch with auth error handling
+        async function fetchWithAuth(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+
+            if (handleAuthError(response)) {
+                throw new Error('Authentication failed');
+            }
+
+            return response;
         }
 
         // Set default date and time
@@ -270,6 +304,9 @@
         // Load available rooms
         async function loadAvailableRooms() {
             try {
+                // อัปเดตสถานะห้องก่อน
+                await updateRoomStatus();
+                
                 const response = await fetch(`${API_BASE}/rooms/roomForm`);
                 if (response.ok) {
                     allRooms = await response.json();
@@ -286,6 +323,20 @@
                         <p>ไม่สามารถโหลดข้อมูลห้องได้</p>
                     </div>
                 `;
+            }
+        }
+
+        // อัปเดตสถานะห้องแบบ real-time
+        async function updateRoomStatus() {
+            try {
+                await fetch(`${API_BASE}/rooms/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating room status:', error);
             }
         }
 
@@ -435,8 +486,8 @@
                 
                 const data = await response.json();
                 
-                if (response.ok) {
-                    showToast('จองห้องสำเร็จ!', 'success');
+                if (response.ok && data.success) {
+                    showToast(data.message || 'จองห้องสำเร็จ!', 'success');
                     resetBookingForm();
                     loadAvailableRooms(); // Refresh available rooms
                     
@@ -446,7 +497,17 @@
                         document.querySelector('[onclick="showTab(\'mybookings\')"]').click();
                     }, 2000);
                 } else {
-                    showToast(data.error || 'เกิดข้อผิดพลาดในการจอง', 'error');
+                    // Handle room conflict errors with detailed information
+                    if (data.conflicts && data.conflicts.length > 0) {
+                        let errorMsg = data.message;
+                        if (data.suggestion) {
+                            errorMsg += '\n\n' + data.suggestion;
+                            errorMsg += '\n\nต้องการจองล่วงหน้าหรือไม่?';
+                        }
+                        showToast(errorMsg, 'error');
+                    } else {
+                        showToast(data.message || data.error || 'เกิดข้อผิดพลาดในการจอง', 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Booking error:', error);
@@ -546,6 +607,10 @@
                     
                     <div class="booking-body">
                         <h4><i class="fas fa-door-open"></i> ${booking.room_name}</h4>
+                        <div class="room-details">
+                            <span class="room-type">${booking.type_name || 'ห้องธรรมดา'}</span>
+                            <span class="room-capacity"><i class="fas fa-users"></i> ${booking.capacity || 4} คน</span>
+                        </div>
                         <div class="booking-info">
                             <div class="info-item">
                                 <i class="fas fa-user"></i>
@@ -559,6 +624,14 @@
                                 <i class="fas fa-clock"></i>
                                 <span>${formatDateTime(new Date(booking.end_time))}</span>
                             </div>
+                            <div class="info-item">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span>${booking.duration_hours || 1} ชั่วโมง</span>
+                            </div>
+                            <div class="info-item price">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>${booking.total_price || 0} บาท</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -570,10 +643,29 @@
                         </button>
                         ` : ''}
                         
-                        <button class="btn btn-outline btn-sm">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewBookingDetails(${booking.booking_id})">
                             <i class="fas fa-eye"></i>
                             ดูรายละเอียด
                         </button>
+                        
+                        ${booking.status === 'active' && booking.payment_status === 'pending' && (currentUser.user_id === booking.user_id || currentUser.role_id === 1) ? `
+                        <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); showPaymentModal(${booking.booking_id})">
+                            <i class="fas fa-credit-card"></i>
+                            ชำระเงิน
+                        </button>
+                        ` : ''}
+                        
+                        ${booking.payment_status === 'paid' ? `
+                        <span class="payment-status paid">
+                            <i class="fas fa-check-circle"></i>
+                            ชำระแล้ว
+                        </span>
+                        ` : booking.payment_status === 'pending' ? `
+                        <span class="payment-status pending">
+                            <i class="fas fa-clock"></i>
+                            รอชำระเงิน
+                        </span>
+                        ` : ''}
                     </div>
                 </div>
             `).join('');
@@ -600,9 +692,182 @@
         }
 
         // View booking details
+        async function viewBookingDetails(bookingId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings/${bookingId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showBookingDetailsModal(data.booking);
+                } else {
+                    showToast('ไม่สามารถโหลดรายละเอียดการจองได้', 'error');
+                }
+            } catch (error) {
+                console.error('View booking error:', error);
+                showToast('เกิดข้อผิดพลาดในการโหลดรายละเอียด', 'error');
+            }
+        }
+
+        // Show booking details modal
+        function showBookingDetailsModal(booking) {
+            const modal = document.getElementById('bookingDetailsModal');
+            const modalBody = document.getElementById('bookingDetailsBody');
+            
+            modalBody.innerHTML = `
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <strong><i class="fas fa-door-open"></i> ห้อง:</strong>
+                        <span>${booking.room_name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-tag"></i> ประเภทห้อง:</strong>
+                        <span>${booking.type_name || 'ห้องธรรมดา'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-users"></i> ขนาดห้อง:</strong>
+                        <span>${booking.capacity || 4} คน</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-money-bill-wave"></i> ราคาต่อชั่วโมง:</strong>
+                        <span>${booking.price_per_hour || 0} บาท</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-calendar"></i> วันเวลาเริ่ม:</strong>
+                        <span>${formatDateTime(new Date(booking.start_time))}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-calendar-check"></i> วันเวลาสิ้นสุด:</strong>
+                        <span>${formatDateTime(new Date(booking.end_time))}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-hourglass-half"></i> ระยะเวลาการใช้งาน:</strong>
+                        <span>${booking.duration_hours || 1} ชั่วโมง</span>
+                    </div>
+                    <div class="detail-row total-price">
+                        <strong><i class="fas fa-receipt"></i> ราคารวม:</strong>
+                        <span>${booking.total_price || 0} บาท</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-info-circle"></i> สถานะห้อง:</strong>
+                        <span class="status-badge ${booking.room_status}">
+                            ${booking.room_status === 'available' ? 'ว่าง' : 'ถูกจองแล้ว'}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <strong><i class="fas fa-credit-card"></i> สถานะการชำระเงิน:</strong>
+                        <span class="payment-badge ${booking.payment_status}">
+                            ${getPaymentStatusText(booking.payment_status)}
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Get payment status text
+        function getPaymentStatusText(status) {
+            switch(status) {
+                case 'paid': return 'ชำระแล้ว';
+                case 'pending': return 'รอชำระเงิน';
+                case 'failed': return 'ชำระไม่สำเร็จ';
+                default: return 'ไม่ทราบสถานะ';
+            }
+        }
+
+        // Show payment modal
+        function showPaymentModal(bookingId) {
+            currentBookingId = bookingId;
+            const modal = document.getElementById('paymentModal');
+            modal.style.display = 'block';
+            
+            // Load booking amount
+            loadBookingAmount(bookingId);
+        }
+
+        // Load booking amount for payment
+        async function loadBookingAmount(bookingId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings/${bookingId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('paymentAmount').textContent = `${data.booking.total_price || 0} บาท`;
+                }
+            } catch (error) {
+                console.error('Load booking amount error:', error);
+            }
+        }
+
+        // Process payment
+        async function processPayment() {
+            if (!currentBookingId) return;
+            
+            const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const transactionId = document.getElementById('transactionId').value;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/bookings/${currentBookingId}/payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        method,
+                        transaction_id: transactionId || null
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showToast(data.message || 'ชำระเงินสำเร็จ', 'success');
+                    closeModal('paymentModal');
+                    loadMyBookings();
+                    loadAllBookings();
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+            }
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                
+                // Reset form data when closing specific modals
+                if (modalId === 'paymentModal') {
+                    const transactionInput = document.getElementById('transactionId');
+                    const cashRadio = document.querySelector('input[name="paymentMethod"][value="cash"]');
+                    if (transactionInput) transactionInput.value = '';
+                    if (cashRadio) cashRadio.checked = true;
+                } else if (modalId === 'bookingModal') {
+                    // Reset booking form if needed
+                    document.getElementById('modalBody').innerHTML = '';
+                }
+            }
+        }
+
+        // View booking (legacy function - kept for compatibility)
         function viewBooking(bookingId) {
-            // Implementation for viewing booking details in modal
-            console.log('View booking:', bookingId);
+            viewBookingDetails(bookingId);
         }
 
         // Cancel booking
@@ -618,14 +883,15 @@
                     }
                 });
                 
-                if (response.ok) {
-                    showToast('ยกเลิกการจองสำเร็จ', 'success');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showToast(data.message || 'ยกเลิกการจองสำเร็จ', 'success');
                     loadMyBookings();
                     loadAllBookings();
                     loadAvailableRooms();
                 } else {
-                    const data = await response.json();
-                    showToast(data.error || 'เกิดข้อผิดพลาดในการยกเลิก', 'error');
+                    showToast(data.message || data.error || 'เกิดข้อผิดพลาดในการยกเลิก', 'error');
                 }
             } catch (error) {
                 console.error('Cancel booking error:', error);
@@ -650,15 +916,301 @@
             }, 3000);
         }
 
-        // Close modal
-        function closeModal() {
-            document.getElementById('bookingModal').style.display = 'none';
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = ['bookingModal', 'bookingDetailsModal', 'paymentModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
         }
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modals = ['bookingModal', 'bookingDetailsModal', 'paymentModal'];
+                modals.forEach(modalId => {
+                    const modal = document.getElementById(modalId);
+                    if (modal && modal.style.display === 'block') {
+                        closeModal(modalId);
+                    }
+                });
+            }
+        });
 
         // Event listeners for form updates
         ['startDate', 'startTime', 'endDate', 'endTime'].forEach(id => {
             document.getElementById(id).addEventListener('change', updateBookingSummary);
         });
+        
+        // Initialize current booking ID for payment
+        let currentBookingId = null;
+        
+        // Stripe variables
+        let stripe = null;
+        let elements = null;
+        let cardElement = null;
+        let stripeConfig = null;
+        let currentPaymentIntent = null;
+
+        // Initialize Stripe
+        async function initializeStripe() {
+            try {
+                // ดึง Stripe config
+                const response = await fetch('/api/payments/config');
+                stripeConfig = await response.json();
+                
+                if (stripeConfig.success && stripeConfig.publishableKey) {
+                    stripe = Stripe(stripeConfig.publishableKey);
+                    elements = stripe.elements();
+                    
+                    // สร้าง card element
+                    cardElement = elements.create('card', {
+                        style: {
+                            base: {
+                                fontSize: '16px',
+                                color: '#424770',
+                                '::placeholder': {
+                                    color: '#aab7c4',
+                                },
+                            },
+                            invalid: {
+                                color: '#9e2146',
+                            },
+                        },
+                    });
+                    
+                    cardElement.mount('#card-element');
+                    
+                    // Listen for realtime validation errors
+                    cardElement.on('change', ({error}) => {
+                        const displayError = document.getElementById('card-errors');
+                        if (error) {
+                            displayError.textContent = error.message;
+                        } else {
+                            displayError.textContent = '';
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+            }
+        }
+
+        // Setup payment method listeners
+        function setupPaymentMethodListeners() {
+            const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+            paymentMethods.forEach(method => {
+                method.addEventListener('change', togglePaymentForms);
+            });
+        }
+
+        // Toggle payment forms based on selected method
+        function togglePaymentForms() {
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const stripeForm = document.getElementById('stripePaymentForm');
+            const traditionalForm = document.getElementById('traditionalPaymentForm');
+            
+            if (selectedMethod === 'stripe') {
+                stripeForm.style.display = 'block';
+                traditionalForm.style.display = 'none';
+            } else {
+                stripeForm.style.display = 'none';
+                traditionalForm.style.display = 'block';
+            }
+        }
+
+        // Enhanced processPayment function
+        async function processPayment() {
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            if (selectedMethod === 'stripe') {
+                await processStripePayment();
+            } else {
+                await processTraditionalPayment();
+            }
+        }
+
+        // Process Stripe payment
+        async function processStripePayment() {
+            try {
+                if (!stripe || !cardElement) {
+                    showToast('ระบบชำระเงินไม่พร้อม กรุณาลองใหม่อีกครั้ง', 'error');
+                    return;
+                }
+
+                const paymentButton = document.querySelector('button[onclick="processPayment()"]');
+                paymentButton.disabled = true;
+                paymentButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดำเนินการ...';
+
+                // สร้าง Payment Intent
+                const response = await fetchWithAuth('/api/payments/create-payment-intent', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        bookingId: currentBookingId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+
+                // ยืนยันการชำระเงิน
+                const {error} = await stripe.confirmCardPayment(result.clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: currentUser.name,
+                            email: currentUser.email
+                        }
+                    }
+                });
+
+                if (error) {
+                    console.error('Payment failed:', error);
+                    showToast(`การชำระเงินไม่สำเร็จ: ${error.message}`, 'error');
+                } else {
+                    // ยืนยันการชำระเงินกับเซิร์ฟเวอร์
+                    const confirmResponse = await fetchWithAuth('/api/payments/confirm', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            paymentIntentId: result.paymentIntentId,
+                            bookingId: currentBookingId
+                        })
+                    });
+
+                    const confirmResult = await confirmResponse.json();
+
+                    if (confirmResult.success) {
+                        showToast('ชำระเงินสำเร็จ!', 'success');
+                        closeModal('paymentModal');
+                        loadMyBookings(); // Reload bookings
+                    } else {
+                        showToast('เกิดข้อผิดพลาดในการยืนยันการชำระเงิน', 'error');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error processing Stripe payment:', error);
+                showToast(error.message || 'เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+            } finally {
+                const paymentButton = document.querySelector('button[onclick="processPayment()"]');
+                paymentButton.disabled = false;
+                paymentButton.innerHTML = '<i class="fas fa-check"></i> ชำระเงิน';
+            }
+        }
+
+        // Process traditional payment (existing logic)
+        async function processTraditionalPayment() {
+            try {
+                const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                const transactionId = document.getElementById('transactionId').value;
+
+                const response = await fetch(`${API_BASE}/bookings/${currentBookingId}/payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        method: selectedMethod,
+                        transactionId: transactionId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('บันทึกการชำระเงินสำเร็จ!', 'success');
+                    closeModal('paymentModal');
+                    loadMyBookings();
+                } else {
+                    showToast(result.message || 'เกิดข้อผิดพลาดในการบันทึกการชำระเงิน', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error processing traditional payment:', error);
+                showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+            }
+        }
     </script>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> รายละเอียดการจอง</h3>
+                <span class="close" onclick="closeModal('bookingDetailsModal')">&times;</span>
+            </div>
+            <div class="modal-body" id="bookingDetailsBody">
+                <!-- Booking details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-credit-card"></i> ชำระเงิน</h3>
+                <span class="close" onclick="closeModal('paymentModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="payment-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill"></i> จำนวนเงิน</label>
+                        <div class="amount-display" id="paymentAmount">0 บาท</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-credit-card"></i> วิธีการชำระเงิน</label>
+                        <div class="payment-methods">
+                            <label class="payment-method">
+                                <input type="radio" name="paymentMethod" value="stripe" checked>
+                                <i class="fas fa-credit-card"></i> บัตรเครดิต/PromptPay (Stripe)
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="paymentMethod" value="cash">
+                                <i class="fas fa-money-bill-wave"></i> เงินสด
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="paymentMethod" value="bank_transfer">
+                                <i class="fas fa-university"></i> โอนเงิน
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="paymentMethod" value="qr_code">
+                                <i class="fas fa-qrcode"></i> QR Code
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Stripe Payment Form -->
+                    <div id="stripePaymentForm" class="form-group" style="display: block;">
+                        <label><i class="fas fa-credit-card"></i> ข้อมูลบัตร</label>
+                        <div id="card-element" class="stripe-element">
+                            <!-- Stripe Elements จะแสดงที่นี่ -->
+                        </div>
+                        <div id="card-errors" role="alert" class="error-message"></div>
+                    </div>
+                    
+                    <!-- Traditional Payment Form -->
+                    <div id="traditionalPaymentForm" class="form-group" style="display: none;">
+                        <label><i class="fas fa-receipt"></i> เลขอ้างอิง (ถ้ามี)</label>
+                        <input type="text" id="transactionId" class="form-control" placeholder="ใส่เลขอ้างอิงการชำระเงิน">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-success" onclick="processPayment()">
+                            <i class="fas fa-check"></i> ชำระเงิน
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('paymentModal')">
+                            <i class="fas fa-times"></i> ยกเลิก
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

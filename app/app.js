@@ -32,6 +32,7 @@ app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', apiAdmin);
 app.use('/api/orders', apiOrders);
+app.use('/api/payments', require('./routes/api/payments'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
