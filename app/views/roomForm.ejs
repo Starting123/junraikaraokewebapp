@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Room Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>เพิ่มข้อมูลห้อง</h2>
+        <form action="/api/rooms" method="POST">
+            <div class="form-group">
+                <label>ชื่อห้อง:</label>
+                <input type="text" class="form-control" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>ประเภทห้อง:</label>
+                <select class="form-control" name="type_id" required>
+                    <option value="1">ห้องเล็ก</option>
+                    <option value="2">ห้องกลาง</option>
+                    <option value="3">ห้องใหญ่</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ความจุ (คน):</label>
+                <input type="number" class="form-control" name="capacity" required>
+            </div>
+            <div class="form-group">
+                <label>สถานะ:</label>
+                <select class="form-control" name="status">
+                    <option value="available">ว่าง</option>
+                    <option value="occupied">ไม่ว่าง</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">บันทึก</button>
+        </form>
+
+        <!-- เพิ่มส่วนแสดงรายการห้อง -->
+        <h3>รายการห้องทั้งหมด</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ชื่อห้อง</th>
+                    <th>ประเภท</th>
+                    <th>ความจุ</th>
+                    <th>สถานะ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (rooms && rooms.length > 0) { %>
+                    <% rooms.forEach(function(room) { %>
+                        <tr>
+                            <td><%= room.name %></td>
+                            <td><%= room.type_id %></td>
+                            <td><%= room.capacity %></td>
+                            <td><%= room.status %></td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="4">ไม่พบข้อมูลห้อง</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

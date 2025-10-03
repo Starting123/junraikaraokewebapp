@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ชำระเงินสำเร็จ - Junrai Karaoke</title>
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+            animation: bounce 1s ease-in-out;
+        }
+        
+        .success-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 2rem;
+        }
+        
+        .success-title {
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+        
+        .booking-info {
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: var(--primary-orange);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            80% { transform: translateY(-10px); }
+        }
+        
+        @media (max-width: 768px) {
+            .actions {
+                flex-direction: column;
+            }
+            
+            .success-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="success-container">
+            <div class="success-card">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                
+                <h1 class="success-title">ชำระเงินสำเร็จ!</h1>
+                <p class="text-muted">การชำระเงินของคุณได้รับการยืนยันแล้ว</p>
+                
+                <div class="booking-info" id="bookingInfo">
+                    <h3><i class="fas fa-receipt"></i> รายละเอียดการจอง</h3>
+                    <div id="bookingDetails">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <a href="/bookings" class="btn btn-primary">
+                        <i class="fas fa-list"></i> ดูการจองของฉัน
+                    </a>
+                    <a href="/rooms" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i> จองห้องใหม่
+                    </a>
+                    <a href="/" class="btn btn-outline">
+                        <i class="fas fa-home"></i> กลับหน้าหลัก
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ดึงพารามิเตอร์จาก URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentIntentId = urlParams.get('payment_intent');
+        const bookingId = urlParams.get('booking_id');
+        
+        // ถ้าไม่มีพารามิเตอร์ ให้แสดงข้อมูลทั่วไป
+        if (!paymentIntentId && !bookingId) {
+            document.getElementById('bookingDetails').innerHTML = `
+                <div class="info-row">
+                    <span>สถานะ:</span>
+                    <span style="color: var(--success);">
+                        <i class="fas fa-check"></i> ชำระเงินสำเร็จ
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span>วันที่ชำระ:</span>
+                    <span>${new Date().toLocaleDateString('th-TH')}</span>
+                </div>
+            `;
+        } else {
+            // ดึงข้อมูลการจองจากเซิร์ฟเวอร์
+            loadBookingDetails();
+        }
+        
+        async function loadBookingDetails() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/auth';
+                    return;
+                }
+                
+                let url = '/api/payments/my-payments?limit=1';
+                if (bookingId) {
+                    url = `/api/bookings/${bookingId}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const booking = bookingId ? result.booking : result.payments[0];
+                    displayBookingDetails(booking);
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error loading booking details:', error);
+                document.getElementById('bookingDetails').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ไม่สามารถโหลดข้อมูลการจองได้
+                    </div>
+                `;
+            }
+        }
+        
+        function displayBookingDetails(booking) {
+            const startTime = new Date(booking.start_time).toLocaleString('th-TH');
+            const endTime = new Date(booking.end_time).toLocaleString('th-TH');
+            const amount = parseFloat(booking.total_price || booking.amount);
+            
+            document.getElementById('bookingDetails').innerHTML = `
+                <div class="info-row">
+                    <span><i class="fas fa-door-open"></i> ห้อง:</span>
+                    <span>${booking.room_name || 'ไม่ระบุ'}</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-tag"></i> ประเภท:</span>
+                    <span>${booking.type_name || 'ไม่ระบุ'}</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-clock"></i> เวลาเริ่ม:</span>
+                    <span>${startTime}</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-clock"></i> เวลาสิ้นสุด:</span>
+                    <span>${endTime}</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-credit-card"></i> วิธีชำระ:</span>
+                    <span>${booking.method === 'stripe' ? 'บัตรเครดิต (Stripe)' : booking.method}</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-check-circle"></i> สถานะ:</span>
+                    <span style="color: var(--success);">ชำระเงินแล้ว</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-money-bill"></i> ยอดรวม:</span>
+                    <span>${amount.toFixed(2)} บาท</span>
+                </div>
+            `;
+        }
+        
+        // Auto redirect after 30 seconds
+        setTimeout(() => {
+            if (confirm('คุณต้องการไปยังหน้าการจองของคุณหรือไม่?')) {
+                window.location.href = '/bookings';
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

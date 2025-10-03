@@ -1,0 +1,13 @@
+[33m0047d3b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mF_edit[m[33m, [m[1;31morigin/F_edit[m[33m)[m HEAD@{0}: commit (merge): Merge branch 'main' into F_edit
+[33m3448c94[m HEAD@{1}: checkout: moving from main to F_edit
+[33mc20552d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{2}: pull: Fast-forward
+[33m705f1e6[m HEAD@{3}: checkout: moving from F_edit to main
+[33m3448c94[m HEAD@{4}: commit: feat: add contact page and associated styles, update navigation branding
+[33m0eaade2[m HEAD@{5}: commit: feat: add initial CSS styles for navigation, search bar, and main content layout
+[33m705f1e6[m HEAD@{6}: merge main: Fast-forward
+[33m03aaa91[m HEAD@{7}: checkout: moving from main to F_edit
+[33m705f1e6[m HEAD@{8}: pull: Fast-forward
+[33m03aaa91[m HEAD@{9}: checkout: moving from F_edit to main
+[33m03aaa91[m HEAD@{10}: reset: moving to HEAD
+[33m03aaa91[m HEAD@{11}: checkout: moving from main to F_edit
+[33m03aaa91[m HEAD@{12}: clone: from https://github.com/Starting123/junraikaraokewebapp.git

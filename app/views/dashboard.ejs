@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แดชบอร์ด - Junrai Karaoke</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    <link rel="stylesheet" href="/stylesheets/dashboard.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-microphone-alt"></i>
+                <span>Junrai Karaoke</span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="nav-link">หน้าหลัก</a>
+                <a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a>
+                <a href="/bookings" class="nav-link">จองห้อง</a>
+                <a href="/contact" class="nav-link">ติดต่อเรา</a>
+                <div class="nav-user" id="navUser">
+                    <span class="user-name" id="userName">กำลังโหลด...</span>
+                    <button class="btn-logout" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+            
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-tachometer-alt"></i>
+                    ยินดีต้อนรับสู่แดชบอร์ด
+                </h1>
+                <p id="welcomeMessage">สวัสดี! ยินดีต้อนรับกลับมา</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Content -->
+    <section class="dashboard-content">
+        <div class="container">
+            <!-- Quick Actions -->
+            <div class="section-header">
+                <h2>เมนูด่วน</h2>
+                <p>เลือกการดำเนินการที่ต้องการ</p>
+            </div>
+            
+            <div class="quick-actions">
+                <a href="/rooms" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <h3>ดูห้องคาราโอเกะ</h3>
+                    <p>เลือกดูห้องที่ว่างและรายละเอียด</p>
+                </a>
+                
+                <a href="/bookings" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <h3>จองห้องใหม่</h3>
+                    <p>ทำการจองห้องคาราโอเกะ</p>
+                </a>
+                
+                <button class="action-card" onclick="loadUserBookings()">
+                    <div class="action-icon">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <h3>การจองของฉัน</h3>
+                    <p>ดูและจัดการการจองทั้งหมด</p>
+                </button>
+                
+                <a href="/contact" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>ติดต่อเรา</h3>
+                    <p>สอบถามข้อมูลหรือแจ้งปัญหา</p>
+                </a>
+            </div>
+
+            <!-- User Bookings Section -->
+            <div class="bookings-section" id="bookingsSection" style="display: none;">
+                <div class="section-header">
+                    <h2>การจองของฉัน</h2>
+                    <p>รายการการจองทั้งหมดของคุณ</p>
+                </div>
+                
+                <div class="bookings-container" id="bookingsContainer">
+                    <div class="loading" id="bookingsLoading">
+                        <div class="spinner"></div>
+                        <p>กำลังโหลดข้อมูลการจอง...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="stats-section">
+                <div class="section-header">
+                    <h2>สถิติการใช้งาน</h2>
+                    <p>ข้อมูลการใช้งานของคุณ</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalBookings">-</h3>
+                            <p>การจองทั้งหมด</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalHours">-</h3>
+                            <p>ชั่วโมงที่ใช้งาน</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="favoriteRoom">-</h3>
+                            <p>ห้องที่ชื่นชอบ</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="thisMonth">-</h3>
+                            <p>ครั้งในเดือนนี้</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="/stylesheets/dashboard.js"></script>
+</body>
+</html>
