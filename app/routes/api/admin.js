@@ -114,4 +114,135 @@ router.delete('/rooms/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (
   } catch (err) { next(err); }
 });
 
+// Menu CRUD
+router.get('/menu', adminOnly, async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query('SELECT m.*, mc.category_name FROM menu m LEFT JOIN menu_categories mc ON m.category_id = mc.category_id ORDER BY m.menu_id DESC LIMIT 1000');
+    res.json({ menu: rows });
+  } catch (err) { next(err); }
+});
+
+router.get('/menu/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query('SELECT m.*, mc.category_name FROM menu m LEFT JOIN menu_categories mc ON m.category_id = mc.category_id WHERE m.menu_id = ? LIMIT 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'menu item not found' });
+    res.json({ menu_item: rows[0] });
+  } catch (err) { next(err); }
+});
+
+router.post('/menu', adminOnly, [
+  body('name').notEmpty(),
+  body('category_id').isInt({ gt: 0 }),
+  body('price').isFloat({ min: 0 }),
+  body('description').optional(),
+  body('available').optional().isBoolean()
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const { name, category_id, price, description, available = true } = req.body;
+    const [result] = await require('../../db').query(
+      'INSERT INTO menu (name, category_id, price, description, available) VALUES (?,?,?,?,?)',
+      [name, category_id, price, description, available]
+    );
+    
+    const [rows] = await require('../../db').query(
+      'SELECT m.*, mc.category_name FROM menu m LEFT JOIN menu_categories mc ON m.category_id = mc.category_id WHERE m.menu_id = ?',
+      [result.insertId]
+    );
+    
+    res.status(201).json({ menu_item: rows[0] });
+  } catch (err) { next(err); }
+});
+
+router.put('/menu/:id', adminOnly, [
+  param('id').isInt({ gt: 0 }),
+  body('name').optional(),
+  body('category_id').optional().isInt({ gt: 0 }),
+  body('price').optional().isFloat({ min: 0 }),
+  body('description').optional(),
+  body('available').optional().isBoolean()
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const id = req.params.id;
+    const update = {};
+    if (req.body.name !== undefined) update.name = req.body.name;
+    if (req.body.category_id !== undefined) update.category_id = req.body.category_id;
+    if (req.body.price !== undefined) update.price = req.body.price;
+    if (req.body.description !== undefined) update.description = req.body.description;
+    if (req.body.available !== undefined) update.available = req.body.available;
+    
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ error: 'nothing to update' });
+    }
+    
+    await require('../../db').query('UPDATE menu SET ? WHERE menu_id = ?', [update, id]);
+    
+    const [rows] = await require('../../db').query(
+      'SELECT m.*, mc.category_name FROM menu m LEFT JOIN menu_categories mc ON m.category_id = mc.category_id WHERE m.menu_id = ?',
+      [id]
+    );
+    
+    if (!rows.length) return res.status(404).json({ error: 'menu item not found' });
+    res.json({ menu_item: rows[0] });
+  } catch (err) { next(err); }
+});
+
+router.delete('/menu/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    await require('../../db').query('DELETE FROM menu WHERE menu_id = ? LIMIT 1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// Menu Categories CRUD
+router.get('/menu-categories', adminOnly, async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query('SELECT * FROM menu_categories ORDER BY category_name');
+    res.json({ categories: rows });
+  } catch (err) { next(err); }
+});
+
+router.post('/menu-categories', adminOnly, [ body('category_name').notEmpty() ], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const [result] = await require('../../db').query(
+      'INSERT INTO menu_categories (category_name) VALUES (?)',
+      [req.body.category_name]
+    );
+    
+    const [rows] = await require('../../db').query('SELECT * FROM menu_categories WHERE category_id = ?', [result.insertId]);
+    res.status(201).json({ category: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// Room Types CRUD (for room management)
+router.get('/room-types', adminOnly, async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query('SELECT * FROM room_types ORDER BY type_name');
+    res.json({ room_types: rows });
+  } catch (err) { next(err); }
+});
+
+router.post('/room-types', adminOnly, [ body('type_name').notEmpty() ], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const [result] = await require('../../db').query(
+      'INSERT INTO room_types (type_name) VALUES (?)',
+      [req.body.type_name]
+    );
+    
+    const [rows] = await require('../../db').query('SELECT * FROM room_types WHERE type_id = ?', [result.insertId]);
+    res.status(201).json({ room_type: rows[0] });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

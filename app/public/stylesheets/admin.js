@@ -221,6 +221,16 @@ function showManageUsers() {
     loadUsers();
 }
 
+function showManageMenu() {
+    hideAllSections();
+    const section = document.getElementById('manageMenu');
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth' });
+    showMenuItems(); // Show menu items tab by default
+    loadMenuItems();
+    loadMenuCategories();
+}
+
 function showReports() {
     hideAllSections();
     const section = document.getElementById('reports');
@@ -498,6 +508,343 @@ function filterBookings() {
 
 function filterUsers() {
     alert('ฟีเจอร์ค้นหาผู้ใช้จะพร้อมใช้งานเร็วๆ นี้');
+}
+
+// ==========================================
+// Menu Management Functions
+// ==========================================
+
+function showMenuItems() {
+    // Switch tab
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+    
+    document.querySelector('.tab-button:first-child').classList.add('active');
+    document.getElementById('menuItemsTab').style.display = 'block';
+    
+    loadMenuItems();
+}
+
+function showMenuCategories() {
+    // Switch tab
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+    
+    document.querySelector('.tab-button:last-child').classList.add('active');
+    document.getElementById('categoriesTab').style.display = 'block';
+    
+    loadMenuCategories();
+}
+
+async function loadMenuItems() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const tbody = document.getElementById('menuTableBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="loading"><div class="spinner"></div><p>กำลังโหลดข้อมูล...</p></div></td></tr>';
+    
+    try {
+        const response = await fetch('/api/admin/menu', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayMenuItems(data.menu);
+        } else {
+            throw new Error('Failed to load menu items');
+        }
+    } catch (error) {
+        console.error('Error loading menu items:', error);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-error">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+    }
+}
+
+function displayMenuItems(menuItems) {
+    const tbody = document.getElementById('menuTableBody');
+    
+    if (menuItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">ไม่มีรายการอาหาร</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = menuItems.map(item => `
+        <tr>
+            <td>${item.menu_id}</td>
+            <td>${item.name}</td>
+            <td>${item.category_name || 'ไม่ระบุ'}</td>
+            <td>฿${parseFloat(item.price).toFixed(2)}</td>
+            <td>
+                <span class="status ${item.available ? 'available' : 'unavailable'}">
+                    ${item.available ? 'พร้อมจำหน่าย' : 'หมด'}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-action edit" onclick="editMenuItem(${item.menu_id})" title="แก้ไข">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action delete" onclick="deleteMenuItem(${item.menu_id})" title="ลบ">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function loadMenuCategories() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const container = document.getElementById('categoriesGrid');
+    container.innerHTML = '<div class="loading"><div class="spinner"></div><p>กำลังโหลดข้อมูล...</p></div>';
+    
+    try {
+        const response = await fetch('/api/admin/menu-categories', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayMenuCategories(data.categories);
+        } else {
+            throw new Error('Failed to load categories');
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        container.innerHTML = '<div class="text-center text-error">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    }
+}
+
+function displayMenuCategories(categories) {
+    const container = document.getElementById('categoriesGrid');
+    
+    if (categories.length === 0) {
+        container.innerHTML = '<div class="text-center">ไม่มีหมวดหมู่</div>';
+        return;
+    }
+    
+    container.innerHTML = categories.map(category => `
+        <div class="category-card">
+            <h4>${category.category_name}</h4>
+            <div class="category-actions">
+                <button class="btn btn-sm btn-outline" onclick="editCategory(${category.category_id})">
+                    <i class="fas fa-edit"></i>
+                    แก้ไข
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCategory(${category.category_id})">
+                    <i class="fas fa-trash"></i>
+                    ลบ
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddMenuForm() {
+    // Create modal for adding menu item
+    const modalHtml = `
+        <div class="modal-overlay" id="menuModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>เพิ่มรายการอาหารใหม่</h3>
+                    <button class="modal-close" onclick="closeMenuModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addMenuForm">
+                        <div class="form-group">
+                            <label for="menuName">ชื่อรายการ *</label>
+                            <input type="text" id="menuName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="menuCategory">หมวดหมู่ *</label>
+                            <select id="menuCategory" name="category_id" required>
+                                <option value="">เลือกหมวดหมู่</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="menuPrice">ราคา (บาท) *</label>
+                            <input type="number" id="menuPrice" name="price" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="menuDescription">คำอธิบาย</label>
+                            <textarea id="menuDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="menuAvailable" name="available" checked>
+                                พร้อมจำหน่าย
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="closeMenuModal()">ยกเลิก</button>
+                    <button class="btn btn-primary" onclick="submitMenuForm()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Load categories for dropdown
+    loadCategoriesForDropdown();
+}
+
+async function loadCategoriesForDropdown() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch('/api/admin/menu-categories', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const select = document.getElementById('menuCategory');
+            
+            data.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.category_id;
+                option.textContent = category.category_name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+function closeMenuModal() {
+    const modal = document.getElementById('menuModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function submitMenuForm() {
+    const form = document.getElementById('addMenuForm');
+    const formData = new FormData(form);
+    const token = localStorage.getItem('token');
+    
+    if (!token) return;
+    
+    const data = {
+        name: formData.get('name'),
+        category_id: parseInt(formData.get('category_id')),
+        price: parseFloat(formData.get('price')),
+        description: formData.get('description'),
+        available: formData.get('available') === 'on'
+    };
+    
+    try {
+        const response = await fetch('/api/admin/menu', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            alert('เพิ่มรายการอาหารสำเร็จ');
+            closeMenuModal();
+            loadMenuItems(); // Reload the menu items
+        } else {
+            const error = await response.json();
+            alert('เกิดข้อผิดพลาด: ' + (error.error || 'ไม่สามารถเพิ่มรายการได้'));
+        }
+    } catch (error) {
+        console.error('Error adding menu item:', error);
+        alert('เกิดข้อผิดพลาดในการเพิ่มรายการ');
+    }
+}
+
+function showAddCategoryForm() {
+    const categoryName = prompt('ชื่อหมวดหมู่ใหม่:');
+    if (categoryName && categoryName.trim()) {
+        addCategory(categoryName.trim());
+    }
+}
+
+async function addCategory(categoryName) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch('/api/admin/menu-categories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ category_name: categoryName })
+        });
+        
+        if (response.ok) {
+            alert('เพิ่มหมวดหมู่สำเร็จ');
+            loadMenuCategories(); // Reload categories
+        } else {
+            const error = await response.json();
+            alert('เกิดข้อผิดพลาด: ' + (error.error || 'ไม่สามารถเพิ่มหมวดหมู่ได้'));
+        }
+    } catch (error) {
+        console.error('Error adding category:', error);
+        alert('เกิดข้อผิดพลาดในการเพิ่มหมวดหมู่');
+    }
+}
+
+function editMenuItem(itemId) {
+    alert(`แก้ไขรายการอาหาร ID: ${itemId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+}
+
+async function deleteMenuItem(itemId) {
+    if (!confirm('คุณต้องการลบรายการนี้หรือไม่?')) {
+        return;
+    }
+    
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch(`/api/admin/menu/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            alert('ลบรายการสำเร็จ');
+            loadMenuItems(); // Reload the menu items
+        } else {
+            const error = await response.json();
+            alert('เกิดข้อผิดพลาด: ' + (error.error || 'ไม่สามารถลบรายการได้'));
+        }
+    } catch (error) {
+        console.error('Error deleting menu item:', error);
+        alert('เกิดข้อผิดพลาดในการลบรายการ');
+    }
+}
+
+function editCategory(categoryId) {
+    alert(`แก้ไขหมวดหมู่ ID: ${categoryId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+}
+
+function deleteCategory(categoryId) {
+    if (confirm('คุณต้องการลบหมวดหมู่นี้หรือไม่?')) {
+        alert(`ลบหมวดหมู่ ID: ${categoryId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+    }
 }
 
 function loadReports() {

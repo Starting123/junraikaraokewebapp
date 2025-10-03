@@ -133,6 +133,14 @@
                     <p>ดูและจัดการการจองทั้งหมด</p>
                 </div>
                 
+                <div class="action-card" onclick="showManageMenu()">
+                    <div class="action-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3>จัดการเมนูอาหาร</h3>
+                    <p>เพิ่ม แก้ไข ราคาอาหารและเครื่องดื่ม</p>
+                </div>
+                
                 <div class="action-card" onclick="showManageUsers()">
                     <div class="action-icon">
                         <i class="fas fa-users-cog"></i>
@@ -185,6 +193,72 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Manage Menu Section -->
+            <div class="management-section" id="manageMenu" style="display: none;">
+                <div class="section-header">
+                    <h2>จัดการเมนูอาหาร</h2>
+                    <button class="btn btn-primary" onclick="showAddMenuForm()">
+                        <i class="fas fa-plus"></i>
+                        เพิ่มรายการใหม่
+                    </button>
+                </div>
+                
+                <div class="menu-tabs">
+                    <button class="tab-button active" onclick="showMenuItems()">
+                        <i class="fas fa-utensils"></i>
+                        รายการอาหาร
+                    </button>
+                    <button class="tab-button" onclick="showMenuCategories()">
+                        <i class="fas fa-tags"></i>
+                        หมวดหมู่
+                    </button>
+                </div>
+                
+                <!-- Menu Items Tab -->
+                <div class="tab-content active" id="menuItemsTab">
+                    <div class="table-container">
+                        <table class="admin-table" id="menuTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>ชื่อรายการ</th>
+                                    <th>หมวดหมู่</th>
+                                    <th>ราคา</th>
+                                    <th>สถานะ</th>
+                                    <th>การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menuTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="loading">
+                                            <div class="spinner"></div>
+                                            <p>กำลังโหลดข้อมูล...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Categories Tab -->
+                <div class="tab-content" id="categoriesTab" style="display: none;">
+                    <div class="category-actions">
+                        <button class="btn btn-primary" onclick="showAddCategoryForm()">
+                            <i class="fas fa-plus"></i>
+                            เพิ่มหมวดหมู่ใหม่
+                        </button>
+                    </div>
+                    <div class="categories-grid" id="categoriesGrid">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>กำลังโหลดข้อมูล...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
