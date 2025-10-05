@@ -1,31 +1,444 @@
 // ==========================================
-// Admin Page JavaScript
+// Admin Page JavaScript - Modern Dashboard
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Navigation toggle
-    const navToggle = document.getElementById('navToggle');
-    const navMenu = document.getElementById('navMenu');
-    
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('active');
-            navToggle.classList.toggle('active');
-        });
-    }
+    // Initialize admin dashboard
+    initializeAdmin();
     
     // Check admin authentication
     checkAdminAuth();
     
-    // Logout functionality
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
+    // Setup navigation
+    setupNavigation();
+    
+    // Setup user dropdown
+    setupUserDropdown();
     
     // Load admin statistics
     loadAdminStats();
+    
+    // Setup section navigation
+    setupSectionNavigation();
 });
+
+// Initialize admin dashboard
+function initializeAdmin() {
+    console.log('🚀 Admin Dashboard initializing...');
+    
+    // Mobile navigation toggle
+    const adminNavToggle = document.getElementById('adminNavToggle');
+    const adminSidebar = document.getElementById('adminSidebar');
+    
+    if (adminNavToggle && adminSidebar) {
+        adminNavToggle.addEventListener('click', function() {
+            adminSidebar.classList.toggle('show');
+            adminNavToggle.classList.toggle('active');
+        });
+    }
+    
+    // Logout functionality
+    const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+    if (adminLogoutBtn) {
+        adminLogoutBtn.addEventListener('click', logout);
+    }
+}
+
+// Setup navigation system
+function setupNavigation() {
+    // Handle both sidebar and navbar navigation
+    const sidebarLinks = document.querySelectorAll('.sidebar-link[data-section]');
+    const navLinks = document.querySelectorAll('.admin-nav-link[data-section]');
+    
+    [...sidebarLinks, ...navLinks].forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sectionId = this.dataset.section;
+            showSection(sectionId);
+            
+            // Update active states
+            updateActiveNavigation(sectionId);
+        });
+    });
+}
+
+// Setup user dropdown
+function setupUserDropdown() {
+    const adminUserBtn = document.getElementById('adminUserBtn');
+    const adminDropdown = document.getElementById('adminDropdown');
+    
+    if (adminUserBtn && adminDropdown) {
+        adminUserBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            adminDropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            adminDropdown.classList.remove('show');
+        });
+    }
+}
+
+// Setup section navigation
+function setupSectionNavigation() {
+    // Show dashboard by default
+    showSection('dashboard');
+    
+    // Load content for each section when first accessed
+    const sections = ['users', 'rooms', 'menu', 'bookings', 'reports'];
+    sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId + '-section');
+        if (section) {
+            // Add intersection observer to lazy load content
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !section.dataset.loaded) {
+                        loadSectionContent(sectionId);
+                        section.dataset.loaded = 'true';
+                    }
+                });
+            });
+            observer.observe(section);
+        }
+    });
+}
+
+// Show specific section
+function showSection(sectionId) {
+    // Hide all sections
+    const sections = document.querySelectorAll('.admin-section');
+    sections.forEach(section => {
+        section.style.display = 'none';
+        section.classList.remove('active');
+    });
+    
+    // Show target section
+    const targetSection = document.getElementById(sectionId + '-section');
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        targetSection.classList.add('active');
+        
+        // Load content if not loaded
+        if (!targetSection.dataset.loaded) {
+            loadSectionContent(sectionId);
+            targetSection.dataset.loaded = 'true';
+        }
+    }
+    
+    // Update URL hash
+    window.location.hash = sectionId;
+}
+
+// Update active navigation states
+function updateActiveNavigation(sectionId) {
+    // Update sidebar links
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.section === sectionId) {
+            link.classList.add('active');
+        }
+    });
+    
+    // Update navbar links
+    const navLinks = document.querySelectorAll('.admin-nav-link');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.section === sectionId) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Load content for specific section
+function loadSectionContent(sectionId) {
+    console.log(`📄 Loading content for section: ${sectionId}`);
+    
+    switch(sectionId) {
+        case 'users':
+            loadUsersContent();
+            break;
+        case 'rooms':
+            loadRoomsContent();
+            break;
+        case 'menu':
+            loadMenuContent();
+            break;
+        case 'bookings':
+            loadBookingsContent();
+            break;
+        case 'reports':
+            loadReportsContent();
+            break;
+        default:
+            console.log(`No loader defined for section: ${sectionId}`);
+    }
+}
+
+// Load Users Content
+async function loadUsersContent() {
+    const contentDiv = document.getElementById('users-content');
+    if (!contentDiv) return;
+    
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            displayUsersTable(users, contentDiv);
+        } else {
+            throw new Error('Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        contentDiv.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้</p>
+            </div>
+        `;
+    }
+}
+
+// Load Rooms Content
+async function loadRoomsContent() {
+    const contentDiv = document.getElementById('rooms-content');
+    if (!contentDiv) return;
+    
+    try {
+        const response = await fetch('/api/admin/rooms', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const rooms = await response.json();
+            displayRoomsTable(rooms, contentDiv);
+        } else {
+            throw new Error('Failed to load rooms');
+        }
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        contentDiv.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>เกิดข้อผิดพลาดในการโหลดข้อมูลห้อง</p>
+            </div>
+        `;
+    }
+}
+
+// Load Menu Content
+async function loadMenuContent() {
+    const contentDiv = document.getElementById('menu-content');
+    if (!contentDiv) return;
+    
+    // Use existing menu management function
+    showManageMenu();
+}
+
+// Load Bookings Content
+async function loadBookingsContent() {
+    const contentDiv = document.getElementById('bookings-content');
+    if (!contentDiv) return;
+    
+    try {
+        const response = await fetch('/api/bookings', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const bookings = await response.json();
+            displayBookingsTable(bookings, contentDiv);
+        } else {
+            throw new Error('Failed to load bookings');
+        }
+    } catch (error) {
+        console.error('Error loading bookings:', error);
+        contentDiv.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>เกิดข้อผิดพลาดในการโหลดข้อมูลการจอง</p>
+            </div>
+        `;
+    }
+}
+
+// Load Reports Content
+function loadReportsContent() {
+    const reportsSection = document.getElementById('reports-section');
+    if (!reportsSection) return;
+    
+    console.log('📊 Loading reports and analytics...');
+    
+    // Initialize charts (placeholder for now)
+    setTimeout(() => {
+        const charts = reportsSection.querySelectorAll('.chart-placeholder');
+        charts.forEach(chart => {
+            const chartType = chart.parentElement.id;
+            console.log(`Initializing chart: ${chartType}`);
+        });
+    }, 1000);
+}
+
+// Display Users Table
+function displayUsersTable(users, container) {
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ชื่อผู้ใช้</th>
+                        <th>อีเมล</th>
+                        <th>ชื่อ-นามสกุล</th>
+                        <th>เบอร์โทร</th>
+                        <th>สิทธิ์</th>
+                        <th>วันที่สมัคร</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(user => `
+                        <tr>
+                            <td>${user.user_id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.first_name} ${user.last_name}</td>
+                            <td>${user.phone || '-'}</td>
+                            <td>
+                                <span class="role-badge ${user.role_id === 1 ? 'admin' : 'user'}">
+                                    ${user.role_id === 1 ? 'ผู้ดูแล' : 'สมาชิก'}
+                                </span>
+                            </td>
+                            <td>${new Date(user.created_at).toLocaleDateString('th-TH')}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="editUser(${user.user_id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.user_id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// Display Rooms Table
+function displayRoomsTable(rooms, container) {
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ชื่อห้อง</th>
+                        <th>ประเภท</th>
+                        <th>ความจุ</th>
+                        <th>ราคา/ชม</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rooms.map(room => `
+                        <tr>
+                            <td>${room.room_id}</td>
+                            <td>${room.room_name}</td>
+                            <td>${room.type_name || '-'}</td>
+                            <td>${room.capacity} คน</td>
+                            <td>฿${room.price_per_hour}</td>
+                            <td>
+                                <span class="status-badge ${room.status}">
+                                    ${room.status === 'available' ? 'ว่าง' : 
+                                      room.status === 'occupied' ? 'ไม่ว่าง' : 
+                                      room.status === 'maintenance' ? 'ซ่อมบำรุง' : room.status}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="editRoom(${room.room_id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteRoom(${room.room_id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// Display Bookings Table
+function displayBookingsTable(bookings, container) {
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ผู้จอง</th>
+                        <th>ห้อง</th>
+                        <th>วันที่จอง</th>
+                        <th>เวลา</th>
+                        <th>ระยะเวลา</th>
+                        <th>ราคา</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${bookings.map(booking => `
+                        <tr>
+                            <td>${booking.booking_id}</td>
+                            <td>${booking.username || booking.user_id}</td>
+                            <td>${booking.room_name || booking.room_id}</td>
+                            <td>${new Date(booking.booking_date).toLocaleDateString('th-TH')}</td>
+                            <td>${booking.start_time}</td>
+                            <td>${booking.duration_hours} ชม.</td>
+                            <td>฿${booking.total_price}</td>
+                            <td>
+                                <span class="status-badge ${booking.status}">
+                                    ${booking.status === 'pending' ? 'รอยืนยัน' : 
+                                      booking.status === 'confirmed' ? 'ยืนยันแล้ว' : 
+                                      booking.status === 'cancelled' ? 'ยกเลิก' : booking.status}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-success" onclick="confirmBooking(${booking.booking_id})">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="cancelBooking(${booking.booking_id})">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
 
 // Check admin authentication
 async function checkAdminAuth() {

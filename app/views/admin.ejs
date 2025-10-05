@@ -14,27 +14,67 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="admin-navbar">
         <div class="container">
             <div class="nav-brand">
-                <i class="fas fa-microphone-alt"></i>
-                <span>Junrai Karaoke</span>
+                <i class="fas fa-shield-alt"></i>
+                <span>Admin Panel</span>
             </div>
             
-            <div class="nav-menu" id="navMenu">
-                <a href="/" class="nav-link">หน้าหลัก</a>
-                <a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a>
-                <a href="/admin" class="nav-link active">ผู้ดูแลระบบ</a>
-                <div class="nav-user" id="navUser">
-                    <span class="user-name" id="userName">กำลังโหลด...</span>
-                    <button class="btn-logout" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        ออกจากระบบ
+            <!-- Admin Navigation Menu -->
+            <div class="admin-nav-menu" id="adminNavMenu">
+                <a href="#dashboard" class="admin-nav-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>แดชบอร์ด</span>
+                </a>
+                <a href="#users" class="admin-nav-link" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>จัดการผู้ใช้</span>
+                </a>
+                <a href="#rooms" class="admin-nav-link" data-section="rooms">
+                    <i class="fas fa-door-open"></i>
+                    <span>จัดการห้อง</span>
+                </a>
+                <a href="#menu" class="admin-nav-link" data-section="menu">
+                    <i class="fas fa-utensils"></i>
+                    <span>จัดการเมนู</span>
+                </a>
+                <a href="#bookings" class="admin-nav-link" data-section="bookings">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>การจอง</span>
+                </a>
+                <a href="#reports" class="admin-nav-link" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>รายงาน</span>
+                </a>
+            </div>
+            
+            <div class="admin-nav-user" id="adminNavUser">
+                <span class="admin-user-name" id="adminUserName">กำลังโหลด...</span>
+                <div class="admin-user-dropdown">
+                    <button class="admin-user-btn" id="adminUserBtn">
+                        <i class="fas fa-user-circle"></i>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
+                    <div class="admin-dropdown-menu" id="adminDropdown">
+                        <a href="/" class="dropdown-item">
+                            <i class="fas fa-home"></i>
+                            กลับหน้าหลัก
+                        </a>
+                        <a href="/dashboard" class="dropdown-item">
+                            <i class="fas fa-user"></i>
+                            โปรไฟล์
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item logout-btn" id="adminLogoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            ออกจากระบบ
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <div class="nav-toggle" id="navToggle">
+            <div class="admin-nav-toggle" id="adminNavToggle">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -42,27 +82,72 @@
         </div>
     </nav>
 
-    <!-- Header Section -->
-    <section class="admin-header">
-        <div class="container">
-            <div class="header-content">
-                <h1>
-                    <i class="fas fa-cogs"></i>
-                    แดชบอร์ดผู้ดูแลระบบ
-                </h1>
-                <p id="welcomeMessage">ยินดีต้อนรับผู้ดูแลระบบ</p>
+    <!-- Admin Main Container -->
+    <div class="admin-main">
+        <!-- Sidebar for Desktop -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <h3>
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Admin
+                </h3>
             </div>
-        </div>
-    </section>
+            
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="sidebar-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>แดชบอร์ด</span>
+                </a>
+                <a href="#users" class="sidebar-link" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>จัดการผู้ใช้</span>
+                </a>
+                <a href="#rooms" class="sidebar-link" data-section="rooms">
+                    <i class="fas fa-door-open"></i>
+                    <span>จัดการห้อง</span>
+                </a>
+                <a href="#menu" class="sidebar-link" data-section="menu">
+                    <i class="fas fa-utensils"></i>
+                    <span>จัดการเมนู</span>
+                </a>
+                <a href="#bookings" class="sidebar-link" data-section="bookings">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>การจอง</span>
+                </a>
+                <a href="#reports" class="sidebar-link" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>รายงาน</span>
+                </a>
+                
+                <div class="sidebar-divider"></div>
+                
+                <a href="/" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>กลับหน้าหลัก</span>
+                </a>
+            </nav>
+        </aside>
 
-    <!-- Admin Content -->
-    <section class="admin-content">
-        <div class="container">
-            <!-- System Statistics -->
-            <div class="section-header">
-                <h2>สรุประบบ</h2>
-                <p>ภาพรวมการใช้งานระบบ</p>
-            </div>
+        <!-- Main Content Area -->
+        <main class="admin-content-wrapper">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="admin-section active">
+                <div class="section-header">
+                    <h1>
+                        <i class="fas fa-tachometer-alt"></i>
+                        แดชบอร์ดผู้ดูแลระบบ
+                    </h1>
+                    <p id="welcomeMessage">ยินดีต้อนรับผู้ดูแลระบบ</p>
+                </div>
+
+                <!-- System Statistics -->
+                <div class="dashboard-stats">
+                    <h2>
+                        <i class="fas fa-chart-line"></i>
+                        สรุประบบ
+                    </h2>
+                    <p>ภาพรวมการใช้งานระบบ</p>
+                </div>
             
             <div class="stats-grid">
                 <div class="stat-card total-users">
@@ -382,9 +467,178 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
+            </section>
+            
+            <!-- Users Management Section -->
+            <section id="users-section" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>
+                        <i class="fas fa-users"></i>
+                        จัดการผู้ใช้
+                    </h1>
+                    <button class="btn btn-primary" id="addUserBtn">
+                        <i class="fas fa-plus"></i>
+                        เพิ่มผู้ใช้ใหม่
+                    </button>
+                </div>
+                
+                <div class="content-area">
+                    <div id="users-content">
+                        <!-- Users content will be loaded here -->
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>กำลังโหลดข้อมูลผู้ใช้...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Rooms Management Section -->
+            <section id="rooms-section" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>
+                        <i class="fas fa-door-open"></i>
+                        จัดการห้อง
+                    </h1>
+                    <button class="btn btn-primary" id="addRoomBtn">
+                        <i class="fas fa-plus"></i>
+                        เพิ่มห้องใหม่
+                    </button>
+                </div>
+                
+                <div class="content-area">
+                    <div id="rooms-content">
+                        <!-- Rooms content will be loaded here -->
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>กำลังโหลดข้อมูลห้อง...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Menu Management Section -->
+            <section id="menu-section" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>
+                        <i class="fas fa-utensils"></i>
+                        จัดการเมนู
+                    </h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="manageCategoriesBtn">
+                            <i class="fas fa-tags"></i>
+                            จัดการหมวดหมู่
+                        </button>
+                        <button class="btn btn-primary" id="addMenuBtn">
+                            <i class="fas fa-plus"></i>
+                            เพิ่มเมนูใหม่
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="content-area">
+                    <div id="menu-content">
+                        <!-- Menu content will be loaded here -->
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>กำลังโหลดข้อมูลเมนู...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Bookings Management Section -->
+            <section id="bookings-section" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>
+                        <i class="fas fa-calendar-check"></i>
+                        จัดการการจอง
+                    </h1>
+                    <div class="header-filters">
+                        <select id="bookingStatusFilter" class="form-control">
+                            <option value="">ทุกสถานะ</option>
+                            <option value="pending">รอยืนยัน</option>
+                            <option value="confirmed">ยืนยันแล้ว</option>
+                            <option value="cancelled">ยกเลิก</option>
+                        </select>
+                        <input type="date" id="bookingDateFilter" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="content-area">
+                    <div id="bookings-content">
+                        <!-- Bookings content will be loaded here -->
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>กำลังโหลดข้อมูลการจอง...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Reports Section -->
+            <section id="reports-section" class="admin-section" style="display: none;">
+                <div class="section-header">
+                    <h1>
+                        <i class="fas fa-chart-bar"></i>
+                        รายงานและสถิติ
+                    </h1>
+                    <div class="header-actions">
+                        <select id="reportPeriod" class="form-control">
+                            <option value="today">วันนี้</option>
+                            <option value="week">สัปดาห์นี้</option>
+                            <option value="month">เดือนนี้</option>
+                            <option value="year">ปีนี้</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="content-area">
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h3>รายได้รายเดือน</h3>
+                            <div class="report-chart" id="monthlyRevenueChart">
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-line"></i>
+                                    <p>กราฟรายได้รายเดือน</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>การจองยอดนิยม</h3>
+                            <div class="report-chart" id="popularRoomsChart">
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <p>กราฟห้องยอดนิยม</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>สถิติผู้ใช้งาน</h3>
+                            <div class="report-chart" id="userStatsChart">
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <p>กราฟสถิติผู้ใช้งาน</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>อัตราการใช้ห้อง</h3>
+                            <div class="report-chart" id="roomUtilizationChart">
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-doughnut"></i>
+                                    <p>กราฟอัตราการใช้ห้อง</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <!-- JavaScript -->
     <script src="/stylesheets/admin.js"></script>
