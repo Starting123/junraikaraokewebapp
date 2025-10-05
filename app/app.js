@@ -35,6 +35,7 @@ app.use('/api/admin', apiAdmin);
 app.use('/api/orders', apiOrders);
 app.use('/api/payments', require('./routes/api/payments'));
 app.use('/payment', paymentRouter);
+app.use('/admin', require('./routes/admin'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -51,7 +52,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-module.exports = app;
 
 module.exports = app;

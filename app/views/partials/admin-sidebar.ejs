@@ -1,0 +1,84 @@
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'dashboard' ? 'active' : '' %>" href="/admin">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Management</span>
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'admins' ? 'active' : '' %>" href="/admin/admins">
+                    <i class="fas fa-user-shield me-2"></i>
+                    Admins
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'members' ? 'active' : '' %>" href="/admin/members">
+                    <i class="fas fa-users me-2"></i>
+                    Members
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'rooms' ? 'active' : '' %>" href="/admin/rooms">
+                    <i class="fas fa-door-open me-2"></i>
+                    Rooms
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'bookings' ? 'active' : '' %>" href="/admin/bookings">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Bookings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'payments' ? 'active' : '' %>" href="/admin/payments">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    Payments
+                </a>
+            </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Reports & Analytics</span>
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/reports">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/analytics">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Analytics
+                </a>
+            </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>System</span>
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/settings">
+                    <i class="fas fa-cog me-2"></i>
+                    Settings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/logs">
+                    <i class="fas fa-file-alt me-2"></i>
+                    System Logs
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

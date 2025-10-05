@@ -4,224 +4,295 @@
 
 class AdminDashboard {
     constructor() {
-        this.currentSection = 'dashboard';
-        this.isAuthenticated = false;
-        this.user = null;
+        this.charts = {};
         this.init();
     }
 
     async init() {
-        console.log('🚀 Admin Dashboard initializing...');
-        
-        // Check authentication first
-        await this.checkAuth();
-        
-        if (this.isAuthenticated) {
-            this.setupNavigation();
-            this.setupEventListeners();
-            this.loadDashboardStats();
-            this.showSection('dashboard');
-        }
+        await this.loadDashboardData();
+        this.initializeCharts();
+        this.setupEventListeners();
+        this.updateLastLogin();
     }
 
-    async checkAuth() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            this.redirectToAuth();
-            return;
-        }
-
+    async loadDashboardData() {
         try {
-            const response = await fetch('/api/auth/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.user.role_id === 1) {
-                    this.isAuthenticated = true;
-                    this.user = data.user;
-                    this.updateUserInfo();
-                } else {
-                    this.redirectToAuth('ไม่มีสิทธิ์เข้าถึงระบบผู้ดูแล');
-                }
-            } else {
-                this.redirectToAuth();
+            const response = await fetch('/admin/api/dashboard-stats');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateStatisticsCards(data.stats);
+                this.updateRecentActivities(data.recent);
             }
         } catch (error) {
-            console.error('Auth check failed:', error);
-            this.redirectToAuth();
+            console.error('Error loading dashboard data:', error);
+            this.showError('Failed to load dashboard data');
         }
     }
 
-    setupNavigation() {
-        const navLinks = document.querySelectorAll('[data-section]');
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const section = e.target.closest('[data-section]').dataset.section;
-                this.showSection(section);
-            });
+    updateStatisticsCards(stats) {
+        // Update statistics cards
+        const totalMembers = document.getElementById('totalMembers');
+        const totalRooms = document.getElementById('totalRooms');
+        const activeBookings = document.getElementById('activeBookings');
+        const totalRevenue = document.getElementById('totalRevenue');
+
+        if (totalMembers) totalMembers.textContent = stats.totalMembers || 0;
+        if (totalRooms) totalRooms.textContent = stats.totalRooms || 0;
+        if (activeBookings) activeBookings.textContent = stats.activeBookings || 0;
+        if (totalRevenue) totalRevenue.textContent = `₿${(stats.totalRevenue || 0).toFixed(2)}`;
+    }
+
+    updateRecentActivities(recent) {
+        // Update recent bookings
+        const recentBookingsTable = document.getElementById('recentBookings');
+        if (recentBookingsTable && recent.bookings) {
+            recentBookingsTable.innerHTML = recent.bookings.map(booking => `
+                <tr>
+                    <td>${booking.customer_name}</td>
+                    <td>${booking.room_name}</td>
+                    <td>${new Date(booking.booking_date).toLocaleDateString()}</td>
+                    <td><span class="badge bg-${this.getStatusColor(booking.status)}">${booking.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Update recent payments
+        const recentPaymentsTable = document.getElementById('recentPayments');
+        if (recentPaymentsTable && recent.payments) {
+            recentPaymentsTable.innerHTML = recent.payments.map(payment => `
+                <tr>
+                    <td>${payment.customer_name}</td>
+                    <td>₿${payment.amount}</td>
+                    <td>${payment.payment_method}</td>
+                    <td><span class="badge bg-${this.getStatusColor(payment.status)}">${payment.status}</span></td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    async initializeCharts() {
+        try {
+            const response = await fetch('/admin/api/charts-data');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.createMonthlyChart(data.monthlyData);
+                this.createRoomTypesChart(data.roomTypes);
+            }
+        } catch (error) {
+            console.error('Error loading charts data:', error);
+        }
+    }
+
+    createMonthlyChart(monthlyData) {
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx) return;
+
+        this.charts.monthly = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: monthlyData.months || [],
+                datasets: [
+                    {
+                        label: 'Bookings',
+                        data: monthlyData.bookings || [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Revenue (฿)',
+                        data: monthlyData.revenue || [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Bookings'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Revenue (฿)'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                }
+            }
+        });
+    }
+
+    createRoomTypesChart(roomTypesData) {
+        const ctx = document.getElementById('roomTypesChart');
+        if (!ctx) return;
+
+        this.charts.roomTypes = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: roomTypesData.labels || [],
+                datasets: [{
+                    data: roomTypesData.data || [],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
         });
     }
 
     setupEventListeners() {
-        // Logout button
-        const logoutBtn = document.getElementById('adminLogoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => this.logout());
-        }
-
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('adminNavToggle');
-        if (menuToggle) {
-            menuToggle.addEventListener('click', () => this.toggleMobileMenu());
+        // Refresh dashboard button
+        const refreshBtn = document.querySelector('[onclick="refreshDashboard()"]');
+        if (refreshBtn) {
+            refreshBtn.onclick = () => this.refreshDashboard();
         }
     }
 
-    showSection(sectionName) {
-        // Hide all sections
-        document.querySelectorAll('.admin-section').forEach(section => {
-            section.style.display = 'none';
-        });
-
-        // Show target section
-        const targetSection = document.getElementById(`${sectionName}-section`);
-        if (targetSection) {
-            targetSection.style.display = 'block';
-            this.currentSection = sectionName;
-            this.updateActiveNav(sectionName);
-            this.updateBreadcrumb(sectionName);
-            this.loadSectionContent(sectionName);
+    async refreshDashboard() {
+        const refreshBtn = document.querySelector('[onclick="refreshDashboard()"]');
+        if (refreshBtn) {
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            refreshBtn.disabled = true;
         }
 
-        // Update URL
-        window.location.hash = sectionName;
-    }
-
-    updateBreadcrumb(sectionName) {
-        const breadcrumbMap = {
-            'dashboard': 'แดชบอร์ด',
-            'users': 'จัดการผู้ใช้',
-            'rooms': 'จัดการห้อง',
-            'menu': 'จัดการเมนู',
-            'bookings': 'การจอง',
-            'reports': 'รายงาน'
-        };
-        
-        const currentSectionEl = document.getElementById('currentSection');
-        if (currentSectionEl && breadcrumbMap[sectionName]) {
-            currentSectionEl.textContent = breadcrumbMap[sectionName];
-        }
-    }
-
-    updateActiveNav(sectionName) {
-        document.querySelectorAll('[data-section]').forEach(link => {
-            link.classList.remove('active');
-            if (link.dataset.section === sectionName) {
-                link.classList.add('active');
-            }
-        });
-    }
-
-    async loadSectionContent(sectionName) {
-        switch (sectionName) {
-            case 'users':
-                if (window.AdminCRUD) {
-                    await window.AdminCRUD.loadUsers();
-                }
-                break;
-            case 'rooms':
-                if (window.AdminCRUD) {
-                    await window.AdminCRUD.loadRooms();
-                }
-                break;
-            case 'menu':
-                if (window.AdminCRUD) {
-                    await window.AdminCRUD.loadMenu();
-                }
-                break;
-            case 'bookings':
-                if (window.AdminCRUD) {
-                    await window.AdminCRUD.loadBookings();
-                }
-                break;
-            case 'reports':
-                if (window.AdminStats) {
-                    await window.AdminStats.loadReports();
-                }
-                break;
-        }
-    }
-
-    async loadDashboardStats() {
         try {
-            const response = await fetch('/api/admin/stats', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-
-            if (response.ok) {
-                const stats = await response.json();
-                this.updateStatsDisplay(stats);
-            }
+            await this.loadDashboardData();
+            
+            // Destroy and recreate charts
+            Object.values(this.charts).forEach(chart => chart.destroy());
+            this.charts = {};
+            await this.initializeCharts();
+            
+            this.showSuccess('Dashboard refreshed successfully');
         } catch (error) {
-            console.error('Error loading dashboard stats:', error);
-        }
-    }
-
-    updateStatsDisplay(stats) {
-        const elements = {
-            totalUsers: document.getElementById('totalUsers'),
-            totalRooms: document.getElementById('totalRooms'),
-            totalBookings: document.getElementById('totalBookings'),
-            totalRevenue: document.getElementById('totalRevenue')
-        };
-
-        Object.keys(elements).forEach(key => {
-            if (elements[key] && stats[key] !== undefined) {
-                elements[key].textContent = this.formatStatValue(key, stats[key]);
+            console.error('Error refreshing dashboard:', error);
+            this.showError('Failed to refresh dashboard');
+        } finally {
+            if (refreshBtn) {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                refreshBtn.disabled = false;
             }
-        });
-    }
-
-    formatStatValue(key, value) {
-        if (key === 'totalRevenue') {
-            return `฿${Number(value).toLocaleString()}`;
-        }
-        return Number(value).toLocaleString();
-    }
-
-    updateUserInfo() {
-        const userName = document.getElementById('userName');
-        if (userName && this.user) {
-            userName.textContent = this.user.name;
         }
     }
 
-    toggleMobileMenu() {
-        const sidebar = document.getElementById('adminSidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('show');
+    updateLastLogin() {
+        const lastLoginElement = document.getElementById('lastLogin');
+        if (lastLoginElement) {
+            const now = new Date();
+            lastLoginElement.textContent = now.toLocaleString();
+        }
+
+        // Update last backup time
+        const lastBackupElement = document.getElementById('lastBackup');
+        if (lastBackupElement) {
+            const backupTime = new Date();
+            backupTime.setHours(backupTime.getHours() - 2); // Simulate 2 hours ago
+            lastBackupElement.textContent = backupTime.toLocaleString();
         }
     }
 
-    logout() {
-        if (confirm('ต้องการออกจากระบบหรือไม่?')) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/auth';
-        }
+    getStatusColor(status) {
+        const colorMap = {
+            'active': 'success',
+            'confirmed': 'success',
+            'verified': 'success',
+            'paid': 'success',
+            'pending': 'warning',
+            'inactive': 'secondary',
+            'cancelled': 'danger',
+            'rejected': 'danger',
+            'suspended': 'danger',
+            'completed': 'primary'
+        };
+        return colorMap[status] || 'secondary';
     }
 
-    redirectToAuth(message = null) {
-        if (message) alert(message);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/auth';
+    showSuccess(message) {
+        this.showAlert(message, 'success');
+    }
+
+    showError(message) {
+        this.showAlert(message, 'danger');
+    }
+
+    showAlert(message, type) {
+        // Create alert element
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        // Add to document
+        document.body.appendChild(alertDiv);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv && alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
     }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.adminDashboard = new AdminDashboard();
+// Utility functions for global use
+window.refreshDashboard = function() {
+    if (window.adminDashboard) {
+        window.adminDashboard.refreshDashboard();
+    }
+};
+
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('totalMembers')) {
+        window.adminDashboard = new AdminDashboard();
+    }
 });
+
+// Export for module use if needed
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AdminDashboard;
+}
