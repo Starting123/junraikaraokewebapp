@@ -70,7 +70,7 @@ class AdminCRUD {
         container.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>รายการผู้ใช้ (${users.length} คน)</h3>
-                <button class="btn btn-primary" onclick="window.AdminCRUD.showCreateUserModal()">
+                <button class="btn btn-primary" onclick="window.AdminModals.showCreateUserModal()">
                     <i class="fas fa-plus"></i> เพิ่มผู้ใช้ใหม่
                 </button>
             </div>
@@ -147,7 +147,7 @@ class AdminCRUD {
         container.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>รายการห้อง (${rooms.length} ห้อง)</h3>
-                <button class="btn btn-primary" onclick="window.AdminCRUD.showCreateRoomModal()">
+                <button class="btn btn-primary" onclick="window.AdminModals.showCreateRoomModal()">
                     <i class="fas fa-plus"></i> เพิ่มห้องใหม่
                 </button>
             </div>
@@ -222,7 +222,7 @@ class AdminCRUD {
         container.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>รายการเมนู (${menuItems.length} รายการ)</h3>
-                <button class="btn btn-primary" onclick="window.AdminCRUD.showCreateMenuModal()">
+                <button class="btn btn-primary" onclick="window.AdminModals.showCreateMenuModal()">
                     <i class="fas fa-plus"></i> เพิ่มเมนูใหม่
                 </button>
             </div>
