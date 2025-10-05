@@ -91,11 +91,28 @@ class AdminDashboard {
             targetSection.style.display = 'block';
             this.currentSection = sectionName;
             this.updateActiveNav(sectionName);
+            this.updateBreadcrumb(sectionName);
             this.loadSectionContent(sectionName);
         }
 
         // Update URL
         window.location.hash = sectionName;
+    }
+
+    updateBreadcrumb(sectionName) {
+        const breadcrumbMap = {
+            'dashboard': 'แดชบอร์ด',
+            'users': 'จัดการผู้ใช้',
+            'rooms': 'จัดการห้อง',
+            'menu': 'จัดการเมนู',
+            'bookings': 'การจอง',
+            'reports': 'รายงาน'
+        };
+        
+        const currentSectionEl = document.getElementById('currentSection');
+        if (currentSectionEl && breadcrumbMap[sectionName]) {
+            currentSectionEl.textContent = breadcrumbMap[sectionName];
+        }
     }
 
     updateActiveNav(sectionName) {

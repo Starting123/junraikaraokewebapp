@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/stylesheets/theme.css">
     <link rel="stylesheet" href="/stylesheets/admin-reset.css">
     <link rel="stylesheet" href="/stylesheets/admin-unified.css">
+    <link rel="stylesheet" href="/stylesheets/admin-ui-enhancements.css">
     <link rel="stylesheet" href="/stylesheets/components/forms.css">
     <link rel="stylesheet" href="/stylesheets/components/modals.css">
     <link rel="stylesheet" href="/stylesheets/components/buttons.css">
@@ -141,6 +142,15 @@
 
         <!-- Main Content Area -->
         <main class="admin-content-wrapper">
+            <!-- Breadcrumb Navigation -->
+            <nav class="breadcrumb" id="adminBreadcrumb">
+                <span class="breadcrumb-item">
+                    <i class="fas fa-home"></i> หน้าหลัก
+                </span>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-item active" id="currentSection">แดชบอร์ด</span>
+            </nav>
+
             <!-- Dashboard Section -->
             <section id="dashboard-section" class="admin-section active">
                 <div class="section-header">

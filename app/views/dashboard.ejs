@@ -28,6 +28,9 @@
                         <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
                         <li><a href="/bookings" class="nav-link" id="bookingsLink">การจอง</a></li>
                         <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                        <li><a href="/admin" class="nav-link admin-link" id="adminLink" style="display: none;">
+                            <i class="fas fa-shield-alt"></i> แดชบอร์ดผู้ดูแล
+                        </a></li>
                         <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
                         <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                     </ul>
@@ -178,6 +181,7 @@
     </section>
 
     <!-- JavaScript -->
-    <script src="/stylesheets/dashboard.js"></script>
+    <script src="/javascripts/shared/auth-nav.js"></script>
+    <script src="/javascripts/dashboard.js"></script>
 </body>
 </html>

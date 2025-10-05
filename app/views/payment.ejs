@@ -24,6 +24,9 @@
                     <li><a href="/bookings" class="nav-link">การจอง</a></li>
                     <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
                     <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
+                    <li><a href="/admin" class="nav-link admin-link" id="adminLink" style="display: none;">
+                        <i class="fas fa-shield-alt"></i> แดชบอร์ดผู้ดูแล
+                    </a></li>
                     <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
                     <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                 </ul>
@@ -161,6 +164,7 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="/stylesheets/payment.js"></script>
+    <script src="/javascripts/shared/auth-nav.js"></script>
+    <script src="/javascripts/payment.js"></script>
 </body>
 </html>

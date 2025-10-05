@@ -1,0 +1,282 @@
+/* ==========================================
+   ADMIN DASHBOARD UI ENHANCEMENTS
+   ========================================== */
+
+/* Enhanced responsive design improvements */
+@media (max-width: 768px) {
+    .admin-dashboard-container .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    .admin-dashboard-container .stat-card {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .admin-dashboard-container .admin-content {
+        padding: 1rem !important;
+    }
+    
+    .admin-dashboard-container .dashboard-header h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .admin-dashboard-container .admin-nav-menu {
+        display: none !important;
+    }
+    
+    .admin-dashboard-container .admin-nav-toggle {
+        display: block !important;
+    }
+}
+
+/* Improved card hover effects */
+.admin-dashboard-container .stat-card {
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+}
+
+.admin-dashboard-container .stat-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    border-color: var(--primary) !important;
+}
+
+/* Enhanced table styling */
+.admin-dashboard-container .table {
+    border-collapse: separate !important;
+    border-spacing: 0 0.5rem !important;
+    background: transparent !important;
+}
+
+.admin-dashboard-container .table tbody tr {
+    background: var(--card-bg) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+.admin-dashboard-container .table tbody tr:hover {
+    transform: translateX(5px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.admin-dashboard-container .table td {
+    border: none !important;
+    padding: 1rem !important;
+    vertical-align: middle !important;
+}
+
+.admin-dashboard-container .table td:first-child {
+    border-radius: 8px 0 0 8px !important;
+}
+
+.admin-dashboard-container .table td:last-child {
+    border-radius: 0 8px 8px 0 !important;
+}
+
+/* Enhanced button states */
+.admin-dashboard-container .btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.admin-dashboard-container .btn::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    transition: width 0.3s, height 0.3s !important;
+    z-index: 0 !important;
+}
+
+.admin-dashboard-container .btn:hover::before {
+    width: 300px !important;
+    height: 300px !important;
+}
+
+.admin-dashboard-container .btn:active {
+    transform: scale(0.98) !important;
+}
+
+/* Enhanced status badges */
+.admin-dashboard-container .badge {
+    padding: 0.5rem 1rem !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border: 2px solid transparent !important;
+    transition: all 0.2s ease !important;
+}
+
+.admin-dashboard-container .badge:hover {
+    transform: scale(1.05) !important;
+}
+
+.admin-dashboard-container .bg-success {
+    background: linear-gradient(45deg, #4CAF50, #8BC34A) !important;
+    border-color: rgba(76, 175, 80, 0.3) !important;
+}
+
+.admin-dashboard-container .bg-danger {
+    background: linear-gradient(45deg, #f44336, #FF5722) !important;
+    border-color: rgba(244, 67, 54, 0.3) !important;
+}
+
+.admin-dashboard-container .bg-warning {
+    background: linear-gradient(45deg, #FF9800, #FFC107) !important;
+    border-color: rgba(255, 152, 0, 0.3) !important;
+}
+
+/* Improved section transitions */
+.admin-dashboard-container .section-content {
+    opacity: 0 !important;
+    transform: translateX(20px) !important;
+    transition: all 0.3s ease !important;
+}
+
+.admin-dashboard-container .section-content.active {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+}
+
+/* Enhanced loading states */
+.admin-dashboard-container .loading-skeleton {
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.1) 25%, 
+        rgba(255, 255, 255, 0.2) 50%, 
+        rgba(255, 255, 255, 0.1) 75%) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 2s infinite !important;
+    border-radius: 6px !important;
+    height: 20px !important;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Enhanced navigation breadcrumb */
+.admin-dashboard-container .breadcrumb {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 25px !important;
+    padding: 0.75rem 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.admin-dashboard-container .breadcrumb-item {
+    color: var(--text-muted) !important;
+}
+
+.admin-dashboard-container .breadcrumb-item.active {
+    color: var(--primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Enhanced form controls */
+.admin-dashboard-container .form-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+    transform: scale(1.02) !important;
+}
+
+.admin-dashboard-container .form-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+}
+
+/* Enhanced dropdown menus */
+.admin-dashboard-container .dropdown-menu {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    padding: 0.5rem !important;
+}
+
+.admin-dashboard-container .dropdown-item {
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.admin-dashboard-container .dropdown-item:hover {
+    background: var(--primary) !important;
+    color: white !important;
+    transform: translateX(5px) !important;
+}
+
+/* Enhanced charts and analytics */
+.admin-dashboard-container .chart-container {
+    background: var(--card-bg) !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid var(--border) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.admin-dashboard-container .chart-container::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    background: var(--gradient-primary) !important;
+}
+
+/* Enhanced notification styles */
+.admin-dashboard-container .alert {
+    border-radius: 12px !important;
+    border: none !important;
+    padding: 1rem 1.5rem !important;
+    margin-bottom: 1rem !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.admin-dashboard-container .alert::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 4px !important;
+    background: currentColor !important;
+}
+
+/* Enhanced search and filters */
+.admin-dashboard-container .search-container {
+    background: var(--card-bg) !important;
+    border-radius: 25px !important;
+    padding: 0.5rem 1rem !important;
+    border: 2px solid var(--border) !important;
+    transition: all 0.3s ease !important;
+}
+
+.admin-dashboard-container .search-container:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25) !important;
+    transform: scale(1.02) !important;
+}
+
+.admin-dashboard-container .search-container input {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    width: 100% !important;
+    padding: 0.5rem !important;
+}

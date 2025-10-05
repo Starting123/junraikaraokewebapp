@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/stylesheets/bookings.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="/javascripts/shared/auth-nav.js"></script>
     <script src="/javascripts/timeSlotBooking.js"></script>
 </head>
 <body>
@@ -26,6 +27,9 @@
                         <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
                         <li><a href="/bookings" class="nav-link active" id="bookingsLink">การจอง</a></li>
                         <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                        <li><a href="/admin" class="nav-link admin-link" id="adminLink" style="display: none;">
+                            <i class="fas fa-shield-alt"></i> แดชบอร์ดผู้ดูแล
+                        </a></li>
                         <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
                         <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                     </ul>
@@ -240,7 +244,8 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            checkAuth(); // Shared auth check
+            checkBookingsAuth(); // Page-specific auth check
             loadAvailableRooms();
             initializeStripe();
             setupPaymentMethodListeners();
@@ -248,8 +253,8 @@
             // The timeSlotBooking.js will initialize automatically
         });
 
-        // Authentication check
-        function checkAuth() {
+        // Authentication check (extended from shared auth)
+        function checkBookingsAuth() {
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
             
@@ -259,9 +264,10 @@
                 document.getElementById('logoutBtn').style.display = 'block';
                 document.getElementById('myBookingsTab').style.display = 'block';
                 
-                // Show admin tab
+                // Show admin features
                 if (currentUser.role_id === 1) {
                     document.getElementById('allBookingsTab').style.display = 'block';
+                    document.getElementById('adminLink').style.display = 'block';
                 }
             } else {
                 // Redirect to login if not authenticated

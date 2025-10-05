@@ -608,3 +608,46 @@ p {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+/* ==========================================
+   Admin Dashboard Navigation Link (Global)
+   ========================================== */
+
+.admin-link {
+  background: linear-gradient(45deg, var(--primary-orange), var(--earth-clay)) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.25rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border: 2px solid transparent !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.admin-link:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  background: linear-gradient(45deg, var(--earth-clay), var(--primary-orange)) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.admin-link i {
+  font-size: 1.1em !important;
+}
+
+/* Make admin link more prominent on mobile */
+@media (max-width: 768px) {
+  .admin-link {
+    display: block !important;
+    text-align: center !important;
+    margin: 0.5rem 0 !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 8px !important;
+  }
+}
