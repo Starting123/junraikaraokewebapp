@@ -135,10 +135,18 @@
                             <i class="fas fa-lock"></i> รหัสผ่าน
                         </label>
                         <div class="password-input">
-                            <input type="password" class="form-control" id="registerPassword" placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)" required>
+                            <input type="password" class="form-control" id="registerPassword" placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)" required>
                             <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
+                        </div>
+                        
+                        <!-- Password Strength Meter -->
+                        <div class="password-strength" id="registerPasswordStrength" style="display: none;">
+                            <div class="strength-meter">
+                                <div class="strength-bar" id="registerStrengthBar"></div>
+                            </div>
+                            <div class="strength-text" id="registerStrengthText"></div>
                         </div>
                     </div>
                     
@@ -147,11 +155,27 @@
                             <i class="fas fa-lock"></i> ยืนยันรหัสผ่าน
                         </label>
                         <div class="password-input">
-                            <input type="password" class="form-control" id="confirmPassword" placeholder="กรุณายืนยันรหัสผ่าน" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <input type="password" class="form-control" id="registerConfirmPassword" placeholder="กรุณายืนยันรหัสผ่าน" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('registerConfirmPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
+                    </div>
+                    
+                    <!-- Password Requirements -->
+                    <div class="password-requirements">
+                        <h4>
+                            <i class="fas fa-shield-alt"></i>
+                            ข้อกำหนดรหัสผ่าน
+                        </h4>
+                        <ul class="requirements-list">
+                            <li id="register-req-length">อย่างน้อย 8 ตัวอักษร</li>
+                            <li id="register-req-lowercase">ตัวพิมพ์เล็ก (a-z)</li>
+                            <li id="register-req-uppercase">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                            <li id="register-req-number">ตัวเลข (0-9)</li>
+                            <li id="register-req-special">ตัวอักษรพิเศษ (@$!%*?&)</li>
+                            <li id="register-req-match">รหัสผ่านตรงกัน</li>
+                        </ul>
                     </div>
                     
                     <button type="submit" class="btn btn-primary auth-btn">
@@ -297,6 +321,78 @@
             }
         });
 
+        // Password validation functions
+        function validateRegisterPasswordStrength(password) {
+            const strengthIndicator = document.getElementById('registerPasswordStrength');
+            const strengthBar = document.getElementById('registerStrengthBar');
+            const strengthText = document.getElementById('registerStrengthText');
+            
+            if (!password) {
+                strengthIndicator.style.display = 'none';
+                return false;
+            }
+            
+            strengthIndicator.style.display = 'block';
+            
+            let score = 0;
+            const requirements = {
+                length: password.length >= 8,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                number: /\d/.test(password),
+                special: /[@$!%*?&]/.test(password)
+            };
+            
+            // Update requirement indicators
+            document.getElementById('register-req-length').classList.toggle('valid', requirements.length);
+            document.getElementById('register-req-lowercase').classList.toggle('valid', requirements.lowercase);
+            document.getElementById('register-req-uppercase').classList.toggle('valid', requirements.uppercase);
+            document.getElementById('register-req-number').classList.toggle('valid', requirements.number);
+            document.getElementById('register-req-special').classList.toggle('valid', requirements.special);
+            
+            // Calculate strength
+            Object.values(requirements).forEach(req => {
+                if (req) score++;
+            });
+            
+            // Update strength meter
+            strengthIndicator.className = 'password-strength';
+            if (score < 3) {
+                strengthIndicator.classList.add('strength-weak');
+                strengthText.textContent = 'รหัสผ่านอ่อน';
+            } else if (score < 5) {
+                strengthIndicator.classList.add('strength-medium');
+                strengthText.textContent = 'รหัสผ่านปานกลาง';
+            } else {
+                strengthIndicator.classList.add('strength-strong');
+                strengthText.textContent = 'รหัสผ่านแข็งแกร่ง';
+            }
+            
+            return score === 5; // All requirements met
+        }
+        
+        function validateRegisterPasswordMatch() {
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            const matchReq = document.getElementById('register-req-match');
+            const isMatch = password && confirmPassword && password === confirmPassword;
+            
+            matchReq.classList.toggle('valid', isMatch);
+            
+            return isMatch;
+        }
+
+        // Add event listeners for real-time validation
+        document.getElementById('registerPassword').addEventListener('input', function() {
+            validateRegisterPasswordStrength(this.value);
+            validateRegisterPasswordMatch();
+        });
+        
+        document.getElementById('registerConfirmPassword').addEventListener('input', function() {
+            validateRegisterPasswordMatch();
+        });
+
         // Register form submission
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -304,20 +400,20 @@
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
             
-            // Validation
+            // Enhanced validation
             if (!name || !email || !password || !confirmPassword) {
                 showResult('registerResult', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
                 return;
             }
 
-            if (password.length < 6) {
-                showResult('registerResult', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'warning');
+            if (!validateRegisterPasswordStrength(password)) {
+                showResult('registerResult', 'รหัสผ่านไม่ตรงตามข้อกำหนด กรุณาตรวจสอบข้อกำหนดด้านล่าง', 'warning');
                 return;
             }
 
-            if (password !== confirmPassword) {
+            if (!validateRegisterPasswordMatch()) {
                 showResult('registerResult', 'รหัสผ่านไม่ตรงกัน', 'warning');
                 return;
             }
@@ -331,7 +427,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ name, email, password, confirmPassword })
                 });
 
                 const data = await response.json();
