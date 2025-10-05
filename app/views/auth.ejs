@@ -87,6 +87,14 @@
                         เข้าสู่ระบบ
                     </button>
                     
+                    <!-- Forgot Password Link -->
+                    <div class="forgot-password-section">
+                        <a href="/forgot-password" class="forgot-password-link">
+                            <i class="fas fa-key"></i>
+                            ลืมรหัสผ่าน?
+                        </a>
+                    </div>
+                    
                     <div class="auth-divider">
                         <span>หรือ</span>
                     </div>
@@ -414,10 +422,43 @@
             }
         }
 
+        // Check for URL parameters (success messages)
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message');
+            
+            if (message) {
+                // Create success message element
+                const successDiv = document.createElement('div');
+                successDiv.className = 'auth-success-message show';
+                successDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    ${decodeURIComponent(message)}
+                `;
+                
+                // Insert before the login card
+                const loginCard = document.getElementById('loginCard');
+                loginCard.parentNode.insertBefore(successDiv, loginCard);
+                
+                // Remove the parameter from URL without refresh
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path: newUrl}, '', newUrl);
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    successDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        successDiv.remove();
+                    }, 300);
+                }, 10000);
+            }
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             updateStoreStatus();
+            checkUrlParams(); // Check for success messages
             
             // Update store status every minute
             setInterval(updateStoreStatus, 60000);

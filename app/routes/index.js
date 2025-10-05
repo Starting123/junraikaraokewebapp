@@ -56,4 +56,15 @@ router.get('/payment/cancel', function(req, res, next) {
     res.render('payment-cancel');
 });
 
+// Forgot password page
+router.get('/forgot-password', function(req, res, next) {
+    res.render('forgot-password');
+});
+
+// Reset password page
+router.get('/reset-password/:token', function(req, res, next) {
+    const { token } = req.params;
+    res.render('reset-password', { token });
+});
+
 module.exports = router;

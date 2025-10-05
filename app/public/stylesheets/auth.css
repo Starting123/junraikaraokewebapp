@@ -356,6 +356,73 @@
 }
 
 /* ==========================================
+   Forgot Password Styles
+   ========================================== */
+
+.forgot-password-section {
+  text-align: center;
+  margin: var(--space-lg) 0;
+}
+
+.forgot-password-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--primary-orange);
+  text-decoration: none;
+  font-weight: 500;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+  font-size: 0.95em;
+}
+
+.forgot-password-link:hover {
+  color: var(--primary-orange-dark);
+  background: rgba(210, 105, 30, 0.08);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.forgot-password-link:active {
+  transform: translateY(0);
+}
+
+.forgot-password-link i {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Success message from URL parameters */
+.auth-success-message {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+  text-align: center;
+  font-weight: 500;
+  display: none;
+}
+
+.auth-success-message.show {
+  display: block;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
    Dark Mode Support (Optional)
    ========================================== */
 
