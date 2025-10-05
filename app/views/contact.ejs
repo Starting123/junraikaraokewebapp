@@ -26,9 +26,10 @@
                     <ul class="navbar-nav">
                         <li><a href="/" class="nav-link">หน้าหลัก</a></li>
                         <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                        <li><a href="/bookings" class="nav-link">จองห้อง</a></li>
+                        <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
                         <li><a href="/contact" class="nav-link active">ติดต่อเรา</a></li>
-                        <li><a href="/auth" class="nav-link btn-outline">เข้าสู่ระบบ</a></li>
+                        <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                     </ul>
                     
                     <!-- Store Hours Info -->
@@ -412,10 +413,30 @@
             }
         }
 
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                document.getElementById('authLink').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('bookingsLink').style.display = 'block';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth';
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             updateStoreStatus();
             toggleMobileNav();
+            checkAuth();
             
             // Update store status every minute
             setInterval(updateStoreStatus, 60000);
