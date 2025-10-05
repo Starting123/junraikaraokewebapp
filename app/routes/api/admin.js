@@ -44,6 +44,31 @@ router.get('/users/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req
   } catch (err) { next(err); }
 });
 
+// Create new user
+router.post('/users', adminOnly, [
+  body('name').notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('role_id').isInt({ min: 1, max: 2 }).withMessage('Valid role is required')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const { name, email, password, role_id } = req.body;
+    
+    // Check if email already exists
+    const [existingUsers] = await require('../../db').query('SELECT user_id FROM users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+    
+    // Create user using model
+    const newUser = await usersModel.create({ name, email, password, role_id });
+    res.status(201).json({ user: newUser, message: 'User created successfully' });
+  } catch (err) { next(err); }
+});
+
 router.put('/users/:id', adminOnly, [ param('id').isInt({ gt: 0 }), body('role_id').optional().isInt(), body('status').optional().isIn(['active','inactive']) ], async (req, res, next) => {
   try {
     const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -70,6 +95,14 @@ router.get('/rooms', adminOnly, async (req, res, next) => {
   try {
     const rows = await roomsModel.list({ limit: 1000 });
     res.json({ rooms: rows });
+  } catch (err) { next(err); }
+});
+
+router.get('/rooms/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    const room = await roomsModel.getById(req.params.id);
+    if (!room) return res.status(404).json({ error: 'room not found' });
+    res.json({ room });
   } catch (err) { next(err); }
 });
 
@@ -126,7 +159,7 @@ router.get('/menu/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req,
   try {
     const [rows] = await require('../../db').query('SELECT m.*, mc.category_name FROM menu m LEFT JOIN menu_categories mc ON m.category_id = mc.category_id WHERE m.menu_id = ? LIMIT 1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'menu item not found' });
-    res.json({ menu_item: rows[0] });
+    res.json({ item: rows[0] });
   } catch (err) { next(err); }
 });
 
@@ -196,6 +229,55 @@ router.delete('/menu/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (r
   try {
     await require('../../db').query('DELETE FROM menu WHERE menu_id = ? LIMIT 1', [req.params.id]);
     res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// Bookings Management
+router.get('/bookings', adminOnly, async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query(`
+      SELECT b.*, u.name as user_name, r.name as room_name 
+      FROM bookings b 
+      LEFT JOIN users u ON b.user_id = u.user_id 
+      LEFT JOIN rooms r ON b.room_id = r.room_id 
+      ORDER BY b.start_time DESC 
+      LIMIT 1000
+    `);
+    res.json({ bookings: rows });
+  } catch (err) { next(err); }
+});
+
+router.get('/bookings/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    const [rows] = await require('../../db').query(`
+      SELECT b.*, u.name as user_name, r.name as room_name 
+      FROM bookings b 
+      LEFT JOIN users u ON b.user_id = u.user_id 
+      LEFT JOIN rooms r ON b.room_id = r.room_id 
+      WHERE b.booking_id = ? 
+      LIMIT 1
+    `, [req.params.id]);
+    
+    if (!rows.length) return res.status(404).json({ error: 'booking not found' });
+    res.json({ booking: rows[0] });
+  } catch (err) { next(err); }
+});
+
+router.put('/bookings/:id/cancel', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    await require('../../db').query('UPDATE bookings SET status = ? WHERE booking_id = ?', ['cancelled', req.params.id]);
+    
+    const [rows] = await require('../../db').query(`
+      SELECT b.*, u.name as user_name, r.name as room_name 
+      FROM bookings b 
+      LEFT JOIN users u ON b.user_id = u.user_id 
+      LEFT JOIN rooms r ON b.room_id = r.room_id 
+      WHERE b.booking_id = ? 
+      LIMIT 1
+    `, [req.params.id]);
+    
+    if (!rows.length) return res.status(404).json({ error: 'booking not found' });
+    res.json({ booking: rows[0], message: 'Booking cancelled successfully' });
   } catch (err) { next(err); }
 });
 

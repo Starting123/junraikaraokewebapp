@@ -8,9 +8,13 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <!-- Custom Styles -->
     <link rel="stylesheet" href="/stylesheets/global.css">
     <link rel="stylesheet" href="/stylesheets/admin.css">
+    <link rel="stylesheet" href="/stylesheets/admin_enhanced.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -201,45 +205,65 @@
                 <p>เลือกการดำเนินการที่ต้องการ</p>
             </div>
             
-            <div class="admin-actions">
-                <div class="action-card" onclick="showManageRooms()">
-                    <div class="action-icon">
-                        <i class="fas fa-door-open"></i>
+            <div class="actions-grid row g-4 mb-5">
+                <div class="col-lg-4 col-md-6">
+                    <div class="action-card" data-section="rooms">
+                        <div class="action-card-icon">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <h4>จัดการห้อง</h4>
+                        <p>เพิ่ม แก้ไข หรือลบห้องคาราโอเกะ</p>
                     </div>
-                    <h3>จัดการห้อง</h3>
-                    <p>เพิ่ม แก้ไข หรือลบห้องคาราโอเกะ</p>
                 </div>
                 
-                <div class="action-card" onclick="showManageBookings()">
-                    <div class="action-icon">
-                        <i class="fas fa-calendar-alt"></i>
+                <div class="col-lg-4 col-md-6">
+                    <div class="action-card" data-section="bookings">
+                        <div class="action-card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h4>จัดการการจอง</h4>
+                        <p>ดูและจัดการการจองทั้งหมด</p>
                     </div>
-                    <h3>จัดการการจอง</h3>
-                    <p>ดูและจัดการการจองทั้งหมด</p>
                 </div>
                 
-                <div class="action-card" onclick="showManageMenu()">
-                    <div class="action-icon">
-                        <i class="fas fa-utensils"></i>
+                <div class="col-lg-4 col-md-6">
+                    <div class="action-card" data-section="menu">
+                        <div class="action-card-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h4>จัดการเมนูอาหาร</h4>
+                        <p>เพิ่ม แก้ไข ราคาอาหารและเครื่องดื่ม</p>
                     </div>
-                    <h3>จัดการเมนูอาหาร</h3>
-                    <p>เพิ่ม แก้ไข ราคาอาหารและเครื่องดื่ม</p>
                 </div>
                 
-                <div class="action-card" onclick="showManageUsers()">
-                    <div class="action-icon">
-                        <i class="fas fa-users-cog"></i>
+                <div class="col-lg-4 col-md-6">
+                    <div class="action-card" data-section="users">
+                        <div class="action-card-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h4>จัดการผู้ใช้</h4>
+                        <p>ดูและจัดการข้อมูลผู้ใช้</p>
                     </div>
-                    <h3>จัดการผู้ใช้</h3>
-                    <p>ดูและจัดการข้อมูลผู้ใช้</p>
                 </div>
                 
-                <div class="action-card" onclick="showReports()">
-                    <div class="action-icon">
-                        <i class="fas fa-chart-bar"></i>
+                <div class="col-lg-4 col-md-6">
+                    <div class="action-card" data-section="reports">
+                        <div class="action-card-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4>รายงาน</h4>
+                        <p>ดูรายงานการใช้งานและรายได้</p>
                     </div>
-                    <h3>รายงาน</h3>
-                    <p>ดูรายงานการใช้งานและรายได้</p>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="action-card" onclick="window.location.href='/dashboard'">
+                        <div class="action-card-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h4>กลับหน้าลูกค้า</h4>
+                        <p>เข้าสู่หน้าลูกค้าทั่วไป</p>
+                    </div>
                 </div>
             </div>
 
@@ -640,7 +664,117 @@
         </main>
     </div>
 
-    <!-- JavaScript -->
-    <script src="/stylesheets/admin.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="/javascripts/admin.js"></script>
+    
+    <!-- Enhanced Initialization -->
+    <script>
+        // Add loading animations and UI enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading state to all buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (this.classList.contains('loading')) return;
+                    
+                    const originalText = this.innerHTML;
+                    this.classList.add('loading');
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังโหลด...';
+                    
+                    setTimeout(() => {
+                        this.classList.remove('loading');
+                        this.innerHTML = originalText;
+                    }, 2000);
+                });
+            });
+            
+            // Add smooth scroll to hash links
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+            
+            // Add notification system
+            window.showNotification = function(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 5000);
+            };
+        });
+    </script>
+    
+    <style>
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 9999;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-success {
+            border-left: 4px solid var(--success);
+            color: var(--success);
+        }
+        
+        .notification-error {
+            border-left: 4px solid var(--error);
+            color: var(--error);
+        }
+        
+        .notification button {
+            background: none;
+            border: none;
+            color: currentColor;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
+        }
+        
+        /* Loading Button States */
+        .btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
 </body>
 </html>
