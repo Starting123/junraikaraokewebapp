@@ -21,60 +21,116 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Create a booking
+// Create a booking (Updated for Time Slots)
 router.post('/', authMiddleware, [
   body('room_id').isInt({ gt: 0 }),
-  body('start_time').isISO8601(),
-  body('end_time').isISO8601(),
-  body('duration_hours').optional().isInt({ min: 1, max: 24 }),
+  body('start_datetime').isISO8601(),
+  body('end_datetime').isISO8601(),
   body('customer_id').optional().isInt({ gt: 0 })
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-  const { room_id, start_time, end_time, duration_hours = 1, customer_id } = req.body;
-    const start = new Date(start_time);
-    const end = new Date(end_time);
-    if (!(start < end)) return res.status(400).json({ error: 'start_time must be before end_time' });
+    const { room_id, start_datetime, end_datetime, customer_id } = req.body;
+    const start = new Date(start_datetime);
+    const end = new Date(end_datetime);
+    
+    // Basic validation
+    if (!(start < end)) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'invalid_time_range', 
+        message: 'เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุด' 
+      });
+    }
 
-    // check room exists
+    // Check if booking is in the past
+    const now = new Date();
+    if (start < now) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'past_booking', 
+        message: 'ไม่สามารถจองในเวลาที่ผ่านไปแล้ว' 
+      });
+    }
+
+    // Check room exists
     const room = await roomsModel.getById(room_id);
-    if (!room) return res.status(404).json({ error: 'room not found' });
+    if (!room) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'room_not_found', 
+        message: 'ไม่พบห้องที่ระบุ' 
+      });
+    }
 
-    // check for overlapping active bookings for the same room
-    const availability = await roomsModel.checkRoomAvailability(room_id, start_time, end_time);
-    if (!availability.available) {
-      const nextAvailableMsg = availability.nextAvailable 
-        ? `สามารถจองได้อีกครั้งในเวลา ${new Date(availability.nextAvailable).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}` 
-        : '';
+    // Check time slot availability using new method
+    const availability = await roomsModel.checkTimeSlotAvailability(
+      room_id, 
+      start_datetime, 
+      end_datetime
+    );
+    
+    if (!availability.is_available) {
+      // Get alternative available slots
+      const date = start.toISOString().split('T')[0];
+      const preferredTime = start.toTimeString().substr(0, 5);
+      const alternativeSlots = await roomsModel.getNextAvailableSlots(
+        room_id, 
+        date, 
+        preferredTime
+      );
       
       return res.status(409).json({ 
         success: false,
-        error: 'Error: Room already booked',
-        message: availability.message,
-        nextAvailable: availability.nextAvailable,
-        suggestion: nextAvailableMsg,
-        conflicts: availability.conflicts
+        error: 'time_slot_unavailable', 
+        message: availability.message || 'ช่วงเวลานี้ไม่สามารถจองได้',
+        conflict_bookings: availability.conflict_bookings,
+        alternative_slots: alternativeSlots.slice(0, 3), // แนะนำ 3 slot แรก
+        room_name: room.name
       });
     }
 
     // If customer_id is provided and requester is admin, allow creating on behalf of that customer
     let user_id = req.user.user_id;
     if (customer_id) {
-      if (req.user.role_id !== 1) return res.status(403).json({ error: 'admin required to create booking for another user' });
+      if (req.user.role_id !== 1) {
+        return res.status(403).json({ 
+          success: false,
+          error: 'admin_required', 
+          message: 'ต้องเป็นผู้ดูแลระบบเท่านั้นที่สามารถจองให้ผู้อื่นได้' 
+        });
+      }
       user_id = customer_id;
     }
     
-    const booking = await bookingsModel.create({ user_id, room_id, start_time, end_time, duration_hours });
+    // Calculate duration in hours for backward compatibility
+    const duration_hours = Math.ceil((end - start) / (1000 * 60 * 60));
     
-    // อัปเดตสถานะห้อง
+    const booking = await bookingsModel.create({ 
+      user_id, 
+      room_id, 
+      start_time: start_datetime, 
+      end_time: end_datetime, 
+      duration_hours 
+    });
+    
+    // Update room status
     await roomsModel.updateRoomStatus();
     
     res.status(201).json({ 
       success: true,
-      message: 'Booking successful',
-      booking 
+      message: 'จองห้องสำเร็จ',
+      booking: {
+        ...booking,
+        room_name: room.name,
+        time_slot: {
+          start: start.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'}),
+          end: end.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'}),
+          date: start.toLocaleDateString('th-TH')
+        }
+      }
     });
   } catch (err) {
     next(err);

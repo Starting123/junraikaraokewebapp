@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/stylesheets/bookings.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="/javascripts/timeSlotBooking.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -55,78 +56,100 @@
 
             <!-- New Booking Tab -->
             <div class="tab-content active" id="bookingTab">
-                <div class="booking-form-container">
+                <div id="booking-container" class="booking-form-container">
                     <div class="room-selection">
                         <h3><i class="fas fa-door-open"></i> เลือกห้อง</h3>
-                        <div class="room-grid" id="availableRooms">
-                            <div class="loading">
-                                <div class="spinner"></div>
-                                <p>กำลังโหลดห้องที่ว่าง...</p>
-                            </div>
+                        <div class="form-group">
+                            <select class="form-control" id="room_id">
+                                <option value="">เลือกห้อง...</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="booking-details" id="bookingForm" style="display: none;">
+                    <div class="booking-details" id="bookingForm">
                         <h3><i class="fas fa-calendar-check"></i> รายละเอียดการจอง</h3>
                         
-                        <form id="newBookingForm">
-                            <input type="hidden" id="selectedRoomId">
-                            
-                            <div class="selected-room-info" id="selectedRoomInfo">
-                                <!-- Room info will be displayed here -->
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-calendar"></i>
-                                        วันที่เริ่ม
-                                    </label>
-                                    <input type="date" class="form-control" id="startDate" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-clock"></i>
-                                        เวลาเริ่ม
-                                    </label>
-                                    <input type="time" class="form-control" id="startTime" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-calendar"></i>
-                                        วันที่สิ้นสุด
-                                    </label>
-                                    <input type="date" class="form-control" id="endDate" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-clock"></i>
-                                        เวลาสิ้นสุด
-                                    </label>
-                                    <input type="time" class="form-control" id="endTime" required>
+                        <!-- Date Selection -->
+                        <div class="date-selection">
+                            <label class="form-label">
+                                <i class="fas fa-calendar"></i>
+                                เลือกวันที่
+                            </label>
+                            <input type="date" class="form-control" id="booking_date">
+                        </div>
+                        
+                        <!-- Loading Indicator -->
+                        <div id="loading-indicator" class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>กำลังโหลดช่วงเวลา...</p>
+                        </div>
+                        
+                        <!-- Time Slots Grid -->
+                        <div class="time-slots-section" id="time-slots-section">
+                            <div class="section-header">
+                                <h4><i class="fas fa-clock"></i> เลือกช่วงเวลา</h4>
+                                <div class="legend">
+                                    <span class="legend-item">
+                                        <span class="legend-dot available"></span> ว่าง
+                                    </span>
+                                    <span class="legend-item">
+                                        <span class="legend-dot booked"></span> จองแล้ว
+                                    </span>
+                                    <span class="legend-item">
+                                        <span class="legend-dot selected"></span> เลือกแล้ว
+                                    </span>
+                                    <span class="legend-item">
+                                        <span class="legend-dot past"></span> ผ่านไปแล้ว
+                                    </span>
                                 </div>
                             </div>
                             
-                            <div class="booking-summary" id="bookingSummary">
-                                <!-- Booking summary will be displayed here -->
+                            <div class="time-slots-grid" id="time-slots-grid">
+                                <div class="no-slots-message">
+                                    <p>กรุณาเลือกห้องและวันที่เพื่อดูช่วงเวลาที่ว่าง</p>
+                                </div>
                             </div>
-                            
-                            <div class="form-actions">
-                                <button type="button" class="btn btn-secondary" onclick="resetBookingForm()">
-                                    <i class="fas fa-times"></i>
-                                    ยกเลิก
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-check-circle"></i>
-                                    ยืนยันการจอง
-                                </button>
+                        </div>
+                        
+                        <!-- Selected Slot Summary -->
+                        <div class="selected-slot-summary" id="selected-slot-summary" style="display: none;">
+                            <div class="summary-card">
+                                <h4><i class="fas fa-check-circle"></i> ช่วงเวลาที่เลือก</h4>
+                                <div class="summary-row">
+                                    <span class="summary-label">จำนวนช่วงเวลา:</span>
+                                    <span id="selected-slots-count">0</span> ช่วง
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">เวลา:</span>
+                                    <span id="selected-time-range">-</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">ระยะเวลา:</span>
+                                    <span id="total-duration">0 ชั่วโมง</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">ราคาประมาณ:</span>
+                                    <span id="total-price">0 บาท</span>
+                                </div>
                             </div>
-                        </form>
+                        </div>
+                        
+                        <!-- Booking Actions -->
+                        <div class="form-actions" id="booking-actions" style="display: none;">
+                            <button type="button" class="btn btn-secondary" id="clear-selection">
+                                <i class="fas fa-times"></i>
+                                ล้างการเลือก
+                            </button>
+                            <button type="button" class="btn btn-primary" id="book-button">
+                                <i class="fas fa-check-circle"></i>
+                                ยืนยันการจอง
+                            </button>
+                        </div>
+                        
+                        <!-- Error/Success Messages -->
+                        <div id="error-message" class="booking-messages" style="display: none;">
+                            <!-- Messages will be displayed here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -197,9 +220,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             loadAvailableRooms();
-            setDefaultDateTime();
             initializeStripe();
             setupPaymentMethodListeners();
+            
+            // The timeSlotBooking.js will initialize automatically
         });
 
         // Authentication check
@@ -261,18 +285,15 @@
             return response;
         }
 
-        // Set default date and time
+        // Set default date for time slot booking
         function setDefaultDateTime() {
-            const now = new Date();
-            const today = now.toISOString().split('T')[0];
-            const currentHour = now.getHours();
-            const nextHour = (currentHour + 1).toString().padStart(2, '0') + ':00';
-            const endHour = (currentHour + 3).toString().padStart(2, '0') + ':00';
-            
-            document.getElementById('startDate').value = today;
-            document.getElementById('endDate').value = today;
-            document.getElementById('startTime').value = nextHour;
-            document.getElementById('endTime').value = endHour;
+            const bookingDateInput = document.getElementById('booking_date');
+            if (bookingDateInput) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                bookingDateInput.value = tomorrowStr;
+            }
         }
 
         // Tab management
@@ -304,26 +325,33 @@
         // Load available rooms
         async function loadAvailableRooms() {
             try {
-                // อัปเดตสถานะห้องก่อน
-                await updateRoomStatus();
-                
                 const response = await fetch(`${API_BASE}/rooms/roomForm`);
                 if (response.ok) {
                     allRooms = await response.json();
-                    availableRooms = allRooms.filter(room => room.status === 'available');
-                    displayAvailableRooms();
+                    populateRoomSelect();
                 } else {
                     throw new Error('Failed to load rooms');
                 }
             } catch (error) {
                 console.error('Error loading rooms:', error);
-                document.getElementById('availableRooms').innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>ไม่สามารถโหลดข้อมูลห้องได้</p>
-                    </div>
-                `;
+                showError('ไม่สามารถโหลดข้อมูลห้องได้');
             }
+        }
+
+        // Populate room select dropdown
+        function populateRoomSelect() {
+            const roomSelect = document.getElementById('room_id');
+            if (!roomSelect) return;
+
+            // Clear existing options except the first one
+            roomSelect.innerHTML = '<option value="">เลือกห้อง...</option>';
+
+            allRooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.room_id;
+                option.textContent = `${room.name} - ${room.type_name || 'ไม่ระบุประเภท'} (${room.price_per_hour} บาท/ชั่วโมง)`;
+                roomSelect.appendChild(option);
+            });
         }
 
         // อัปเดตสถานะห้องแบบ real-time
@@ -442,7 +470,9 @@
         }
 
         // Handle booking form submission
-        document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
+        const newBookingForm = document.getElementById('newBookingForm');
+        if (newBookingForm) {
+            newBookingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const roomId = document.getElementById('selectedRoomId').value;
@@ -513,15 +543,18 @@
                 console.error('Booking error:', error);
                 showToast('เกิดข้อผิดพลาดในการจอง', 'error');
             }
-        });
+            });
+        }
 
-        // Reset booking form
+        // Reset booking form  
         function resetBookingForm() {
-            document.getElementById('newBookingForm').reset();
-            document.getElementById('bookingForm').style.display = 'none';
-            document.getElementById('selectedRoomInfo').innerHTML = '';
-            document.getElementById('bookingSummary').innerHTML = '';
-            setDefaultDateTime();
+            const bookingForm = document.getElementById('newBookingForm');
+            if (bookingForm) bookingForm.reset();
+            
+            // Reset time slot booking system
+            if (window.timeSlotBooking) {
+                window.timeSlotBooking.clearSelection();
+            }
         }
 
         // Load my bookings
@@ -784,10 +817,27 @@
         function showPaymentModal(bookingId) {
             currentBookingId = bookingId;
             const modal = document.getElementById('paymentModal');
+            const modalBody = modal.querySelector('.modal-body');
+            
             modal.style.display = 'block';
+            
+            // Reset scroll position to top
+            if (modalBody) {
+                modalBody.scrollTop = 0;
+            }
+            
+            // Add CSS class for mobile scroll detection
+            if (window.innerWidth <= 480) {
+                modal.classList.add('mobile-modal');
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+            }
             
             // Load booking amount
             loadBookingAmount(bookingId);
+            
+            // Focus on the modal for accessibility
+            modal.focus();
         }
 
         // Load booking amount for payment
@@ -852,6 +902,12 @@
             if (modal) {
                 modal.style.display = 'none';
                 
+                // Remove mobile modal class and restore body scroll
+                if (modal.classList.contains('mobile-modal')) {
+                    modal.classList.remove('mobile-modal');
+                    document.body.style.overflow = 'auto';
+                }
+                
                 // Reset form data when closing specific modals
                 if (modalId === 'paymentModal') {
                     const transactionInput = document.getElementById('transactionId');
@@ -860,7 +916,8 @@
                     if (cashRadio) cashRadio.checked = true;
                 } else if (modalId === 'bookingModal') {
                     // Reset booking form if needed
-                    document.getElementById('modalBody').innerHTML = '';
+                    const modalBody = document.getElementById('modalBody');
+                    if (modalBody) modalBody.innerHTML = '';
                 }
             }
         }
@@ -942,7 +999,10 @@
 
         // Event listeners for form updates
         ['startDate', 'startTime', 'endDate', 'endTime'].forEach(id => {
-            document.getElementById(id).addEventListener('change', updateBookingSummary);
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', updateBookingSummary);
+            }
         });
         
         // Initialize current booking ID for payment
@@ -955,14 +1015,19 @@
         let stripeConfig = null;
         let currentPaymentIntent = null;
 
-        // Initialize Stripe
+        // Initialize Stripe with error handling
         async function initializeStripe() {
             try {
                 // ดึง Stripe config
                 const response = await fetch('/api/payments/config');
-                stripeConfig = await response.json();
+                if (!response.ok) {
+                    console.warn('Stripe config not available, payment features disabled');
+                    return;
+                }
                 
-                if (stripeConfig.success && stripeConfig.publishableKey) {
+                const config = await response.json();
+                if (config.success && config.publishableKey) {
+                    stripeConfig = config;
                     stripe = Stripe(stripeConfig.publishableKey);
                     elements = stripe.elements();
                     
@@ -993,9 +1058,12 @@
                             displayError.textContent = '';
                         }
                     });
+                } else {
+                    console.warn('Stripe configuration invalid');
                 }
             } catch (error) {
-                console.error('Error initializing Stripe:', error);
+                console.warn('Stripe initialization failed:', error.message);
+                // Continue without Stripe - payment features will be disabled
             }
         }
 

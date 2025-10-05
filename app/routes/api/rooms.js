@@ -194,4 +194,194 @@ router.get('/search', [
   }
 });
 
+// ==========================================
+// Time Slots API Endpoints
+// ==========================================
+
+const roomsModel = require('../../models/rooms');
+
+// GET /api/rooms/:id/slots - ดึง time slots ของห้องพร้อมสถานะการจอง
+router.get('/:id/slots', [
+  param('id').isInt({ gt: 0 }),
+  query('date').optional().isISO8601().toDate()
+], async (req, res, next) => {
+  try {
+    if (handleValidation(req, res)) return;
+    
+    const room_id = parseInt(req.params.id, 10);
+    const date = req.query.date ? req.query.date.toISOString().split('T')[0] : null;
+    
+    // ตรวจสอบว่าห้องมีอยู่จริง
+    const room = await roomsModel.getById(room_id);
+    if (!room) {
+      return res.status(404).json({ 
+        error: 'Room not found',
+        message: 'ไม่พบห้องที่ระบุ' 
+      });
+    }
+    
+    // ดึง time slots พร้อมสถานะการจอง
+    const slots = await roomsModel.getTimeSlotsWithBookingStatus(room_id, date);
+    
+    res.json({
+      room_id,
+      room_name: room.name,
+      date: date || new Date().toISOString().split('T')[0],
+      open_time: room.open_time || '11:00:00',
+      close_time: room.close_time || '21:00:00',
+      slot_duration: room.slot_duration || 60,
+      break_duration: room.break_duration || 10,
+      total_slots: slots.length,
+      available_slots: slots.filter(s => !s.isBooked && !s.isPast).length,
+      slots
+    });
+  } catch (err) {
+    console.error('Error getting time slots:', err);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'เกิดข้อผิดพลาดในการดึงข้อมูลเวลาจอง' 
+    });
+  }
+});
+
+// POST /api/rooms/:id/slots/check - ตรวจสอบความพร้อมของ time slot
+router.post('/:id/slots/check', [
+  param('id').isInt({ gt: 0 }),
+  body('start_datetime').isISO8601(),
+  body('end_datetime').isISO8601()
+], async (req, res, next) => {
+  try {
+    if (handleValidation(req, res)) return;
+    
+    const room_id = parseInt(req.params.id, 10);
+    const { start_datetime, end_datetime } = req.body;
+    
+    // ตรวจสอบว่าห้องมีอยู่จริง
+    const room = await roomsModel.getById(room_id);
+    if (!room) {
+      return res.status(404).json({ 
+        error: 'Room not found',
+        message: 'ไม่พบห้องที่ระบุ' 
+      });
+    }
+    
+    // ตรวจสอบความพร้อม
+    const availability = await roomsModel.checkTimeSlotAvailability(
+      room_id, 
+      start_datetime, 
+      end_datetime
+    );
+    
+    res.json({
+      room_id,
+      room_name: room.name,
+      start_datetime,
+      end_datetime,
+      ...availability
+    });
+  } catch (err) {
+    console.error('Error checking time slot availability:', err);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'เกิดข้อผิดพลาดในการตรวจสอบความพร้อม' 
+    });
+  }
+});
+
+// GET /api/rooms/:id/slots/available - ดึงช่วงเวลาถัดไปที่ว่าง
+router.get('/:id/slots/available', [
+  param('id').isInt({ gt: 0 }),
+  query('date').optional().isISO8601().toDate(),
+  query('preferred_time').optional().matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+], async (req, res, next) => {
+  try {
+    if (handleValidation(req, res)) return;
+    
+    const room_id = parseInt(req.params.id, 10);
+    const date = req.query.date ? req.query.date.toISOString().split('T')[0] : null;
+    const preferred_time = req.query.preferred_time || null;
+    
+    // ตรวจสอบว่าห้องมีอยู่จริง
+    const room = await roomsModel.getById(room_id);
+    if (!room) {
+      return res.status(404).json({ 
+        error: 'Room not found',
+        message: 'ไม่พบห้องที่ระบุ' 
+      });
+    }
+    
+    // ดึงช่วงเวลาที่ว่าง
+    const availableSlots = await roomsModel.getNextAvailableSlots(
+      room_id, 
+      date, 
+      preferred_time
+    );
+    
+    res.json({
+      room_id,
+      room_name: room.name,
+      date: date || new Date().toISOString().split('T')[0],
+      preferred_time,
+      available_count: availableSlots.length,
+      slots: availableSlots
+    });
+  } catch (err) {
+    console.error('Error getting available slots:', err);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'เกิดข้อผิดพลาดในการดึงข้อมูลเวลาว่าง' 
+    });
+  }
+});
+
+// GET /api/rooms/:id/generate-slots - สร้าง time slots (สำหรับทดสอบ)
+router.get('/:id/generate-slots', [
+  param('id').isInt({ gt: 0 }),
+  query('date').optional().isISO8601().toDate()
+], async (req, res, next) => {
+  try {
+    if (handleValidation(req, res)) return;
+    
+    const room_id = parseInt(req.params.id, 10);
+    const date = req.query.date ? req.query.date.toISOString().split('T')[0] : null;
+    
+    // ตรวจสอบว่าห้องมีอยู่จริง
+    const room = await roomsModel.getById(room_id);
+    if (!room) {
+      return res.status(404).json({ 
+        error: 'Room not found',
+        message: 'ไม่พบห้องที่ระบุ' 
+      });
+    }
+    
+    // ดึง time slots พร้อมสถานะการจอง
+    const slots = await roomsModel.getTimeSlotsWithBookingStatus(room_id, date);
+    
+    // เพิ่ม time_display และ is_available สำหรับ frontend
+    const formattedSlots = slots.map(slot => ({
+      ...slot,
+      time_display: `${slot.start_time} - ${slot.end_time}`,
+      is_available: !slot.isBooked && !slot.isPast
+    }));
+    
+    res.json({
+      room_id,
+      room_name: room.name,
+      date: date || new Date().toISOString().split('T')[0],
+      open_time: room.open_time || '11:00:00',
+      close_time: room.close_time || '21:00:00',
+      slot_duration: room.slot_duration || 60,
+      break_duration: room.break_duration || 10,
+      total_slots: formattedSlots.length,
+      slots: formattedSlots
+    });
+  } catch (err) {
+    console.error('Error generating time slots:', err);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'เกิดข้อผิดพลาดในการสร้างช่วงเวลาจอง' 
+    });
+  }
+});
+
 module.exports = router;

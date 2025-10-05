@@ -12,16 +12,37 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="navbar-content">
                 <a href="/" class="navbar-brand">
                     <i class="fas fa-microphone-alt"></i>
                     Junrai Karaoke
                 </a>
-                <ul class="navbar-nav">
-                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
-                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-                </ul>
+                
+                <div class="navbar-main">
+                    <ul class="navbar-nav">
+                        <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                        <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                        <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                    </ul>
+                    
+                    <!-- Store Hours Info -->
+                    <div class="store-hours-info" id="storeHoursInfo">
+                        <div class="hours-display">
+                            <i class="fas fa-clock"></i>
+                            <div class="hours-text">
+                                <span class="hours-time">11.00 - 21.00</span>
+                                <span class="hours-duration">10 ชม</span>
+                            </div>
+                        </div>
+                        <div class="days-display">
+                            <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
+                            <span class="closed-day">(หยุด) จันทร์</span>
+                        </div>
+                        <div class="store-status" id="storeStatus">
+                            <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -339,9 +360,61 @@
             }
         }
 
+        // Store Hours Management
+        function updateStoreStatus() {
+            const now = new Date();
+            const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour + (currentMinute / 60);
+            
+            const statusElement = document.getElementById('statusText');
+            const hoursInfo = document.getElementById('storeHoursInfo');
+            
+            // Store hours: 11:00 - 21:00, Tuesday - Sunday (Closed Monday)
+            const openTime = 11; // 11:00
+            const closeTime = 21; // 21:00
+            const isMonday = currentDay === 1;
+            const isOpenDays = currentDay >= 2 || currentDay === 0; // Tuesday-Sunday
+            const isWithinHours = currentTime >= openTime && currentTime < closeTime;
+            
+            if (isMonday) {
+                statusElement.textContent = '🔴 ปิด (วันหยุด)';
+                statusElement.className = 'status-text status-closed';
+                hoursInfo.classList.add('store-closed');
+            } else if (isOpenDays && isWithinHours) {
+                const hoursLeft = closeTime - currentTime;
+                const hoursText = hoursLeft > 1 ? `${Math.floor(hoursLeft)} ชม` : `${Math.floor(hoursLeft * 60)} นาที`;
+                statusElement.textContent = `🟢 เปิด (อีก ${hoursText})`;
+                statusElement.className = 'status-text status-open';
+                hoursInfo.classList.remove('store-closed');
+            } else {
+                // Check if tomorrow is open
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowDay = tomorrow.getDay();
+                
+                if (tomorrowDay === 1) {
+                    statusElement.textContent = '🔴 ปิด (เปิดวันอังคาร 11:00)';
+                } else if (currentTime < openTime) {
+                    const hoursUntilOpen = openTime - currentTime;
+                    const timeText = hoursUntilOpen > 1 ? `${Math.floor(hoursUntilOpen)} ชม` : `${Math.floor(hoursUntilOpen * 60)} นาที`;
+                    statusElement.textContent = `🟡 ปิด (เปิดอีก ${timeText})`;
+                } else {
+                    statusElement.textContent = '🔴 ปิด (เปิดพรุ่งนี้ 11:00)';
+                }
+                statusElement.className = 'status-text status-closed';
+                hoursInfo.classList.add('store-closed');
+            }
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
+            updateStoreStatus();
+            
+            // Update store status every minute
+            setInterval(updateStoreStatus, 60000);
         });
     </script>
 </body>
