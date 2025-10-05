@@ -1,0 +1,118 @@
+/* ==========================================
+   JUNRAI KARAOKE - UNIFIED THEME SYSTEM
+   ========================================== */
+
+:root {
+    /* === KARAOKE BRAND COLORS === */
+    --karaoke-primary: #ff6b35;        /* Vibrant orange-red */
+    --karaoke-secondary: #f7931e;      /* Golden yellow */
+    --karaoke-accent: #7c4dff;        /* Karaoke purple */
+    --karaoke-pink: #e91e63;          /* Hot pink */
+    
+    /* === NEUTRAL PALETTE === */
+    --bg-dark: #1a1a2e;              /* Deep navy background */
+    --bg-card: #16213e;              /* Card backgrounds */
+    --bg-surface: #0f3460;           /* Surface elements */
+    --bg-light: #ffffff;             /* Light backgrounds */
+    
+    /* === TEXT COLORS === */
+    --text-primary: #ffffff;          /* Primary text */
+    --text-secondary: #b3c5ef;       /* Secondary text */
+    --text-dark: #2c3e50;           /* Dark text for light bg */
+    --text-muted: #6c757d;          /* Muted text */
+    
+    /* === STATUS COLORS === */
+    --success: #4caf50;
+    --warning: #ff9800;
+    --error: #f44336;
+    --info: #2196f3;
+    
+    /* === BORDERS & SHADOWS === */
+    --border-color: #2d4a7a;
+    --border-light: #e9ecef;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.2);
+    --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.3);
+    
+    /* === GRADIENTS === */
+    --gradient-primary: linear-gradient(135deg, var(--karaoke-primary), var(--karaoke-secondary));
+    --gradient-dark: linear-gradient(135deg, var(--bg-dark), var(--bg-surface));
+    --gradient-glass: linear-gradient(135deg, rgba(22, 33, 62, 0.8), rgba(15, 52, 96, 0.6));
+    
+    /* === TYPOGRAPHY === */
+    --font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 2rem;      /* 32px */
+    
+    /* === SPACING === */
+    --spacing-xs: 0.25rem;      /* 4px */
+    --spacing-sm: 0.5rem;       /* 8px */
+    --spacing-md: 1rem;         /* 16px */
+    --spacing-lg: 1.5rem;       /* 24px */
+    --spacing-xl: 2rem;         /* 32px */
+    --spacing-2xl: 3rem;        /* 48px */
+    
+    /* === BORDERS === */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+    
+    /* === TRANSITIONS === */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* === GLOBAL RESET & BASE === */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--gradient-dark);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* === UTILITY CLASSES === */
+.text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+}
+
+.bg-glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+}
+
+.shadow-glow {
+    box-shadow: var(--shadow-glow);
+}
+
+/* === RESPONSIVE BREAKPOINTS === */
+/* Mobile: up to 768px */
+/* Tablet: 769px - 1024px */
+/* Desktop: 1025px+ */
+
+@media (max-width: 768px) {
+    :root {
+        --font-size-base: 0.9rem;
+        --spacing-md: 0.75rem;
+        --spacing-lg: 1rem;
+    }
+}

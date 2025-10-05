@@ -1,0 +1,188 @@
+/* ==========================================
+   REUSABLE COMPONENTS - TABLES
+   ========================================== */
+
+/* === BASE TABLE STYLES === */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table th {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-table td {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.admin-table tbody tr {
+    transition: var(--transition-fast);
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(124, 77, 255, 0.1);
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* === TABLE RESPONSIVE === */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .admin-table {
+        font-size: var(--font-size-xs);
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* === TABLE VARIANTS === */
+.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(22, 33, 62, 0.5);
+}
+
+.table-hover tbody tr:hover {
+    background: rgba(124, 77, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+/* === STATUS BADGES IN TABLES === */
+.admin-table .badge {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.admin-table .badge.bg-success {
+    background: var(--success) !important;
+    color: white;
+}
+
+.admin-table .badge.bg-warning {
+    background: var(--warning) !important;
+    color: white;
+}
+
+.admin-table .badge.bg-danger {
+    background: var(--error) !important;
+    color: white;
+}
+
+.admin-table .badge.bg-secondary {
+    background: var(--bg-surface) !important;
+    color: var(--text-secondary);
+}
+
+/* === ACTION BUTTONS IN TABLES === */
+.admin-table .action-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.admin-table .btn-sm {
+    padding: var(--spacing-xs);
+    min-width: 32px;
+    height: 32px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* === TABLE LOADING STATE === */
+.table-loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.table-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--karaoke-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* === EMPTY STATE === */
+.table-empty {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--text-muted);
+}
+
+.table-empty i {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+/* === TABLE HEADER ACTIONS === */
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.table-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-xl);
+}
+
+.table-header .search-box {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.table-header .search-box input {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+}
+
+.table-header .search-box input::placeholder {
+    color: var(--text-muted);
+}
