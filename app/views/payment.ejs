@@ -3,168 +3,593 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชำระเงิน - Junrai Karaoke</title>
+    <title><%= title %></title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="/stylesheets/global.css">
     <link rel="stylesheet" href="/stylesheets/payment.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- Thai Font Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <a href="/" class="navbar-brand">
-                    <i class="fas fa-microphone-alt"></i>
-                    Junrai Karaoke
-                </a>
-                <ul class="navbar-nav">
-                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
-                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
-                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-                    <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
-                    <li><a href="/admin" class="nav-link admin-link" id="adminLink" style="display: none;">
-                        <i class="fas fa-shield-alt"></i> แดชบอร์ดผู้ดูแล
-                    </a></li>
-                    <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-mic-fill me-2"></i>Junrai Karaoke
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">หน้าหลัก</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/rooms">ห้องคาราโอเกะ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/bookings">จองห้อง</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/payment">ชำระเงิน</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container">
-        <div class="payment-page">
-            <div class="page-header">
-                <h1><i class="fas fa-credit-card"></i> ชำระเงิน</h1>
-                <p>ชำระเงินสำหรับการจองห้องคาราโอเกะ</p>
-            </div>
-
-            <!-- Payment Form -->
-            <div class="payment-container">
-                <div class="booking-summary" id="bookingSummary">
-                    <!-- Booking summary will be loaded here -->
-                </div>
-
-                <div class="payment-form-container">
-                    <h2><i class="fas fa-money-check-alt"></i> เลือกวิธีการชำระเงิน</h2>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Payment Form Card -->
+                <div class="card shadow-lg border-0 rounded-3">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h3 class="mb-0">
+                            <i class="bi bi-credit-card me-2"></i>ชำระเงิน
+                        </h3>
+                        <p class="mb-0 mt-2">กรุณากรอกข้อมูลการชำระเงินให้ครบถ้วน</p>
+                    </div>
                     
-                    <form id="paymentForm" class="payment-form">
-                        <div class="payment-methods-grid">
-                            <div class="payment-method-card">
-                                <input type="radio" id="cash" name="paymentMethod" value="cash" checked>
-                                <label for="cash" class="payment-method-label">
-                                    <div class="payment-method-icon">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                    </div>
-                                    <div class="payment-method-info">
-                                        <h3>เงินสด</h3>
-                                        <p>ชำระเงินสดที่หน้าร้าน</p>
-                                    </div>
-                                </label>
+                    <div class="card-body p-4">
+                        <!-- Error Messages -->
+                        <% if (errors && errors.length > 0) { %>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>เกิดข้อผิดพลาด!</strong>
+                                <ul class="mb-0 mt-2">
+                                    <% errors.forEach(error => { %>
+                                        <li><%= error.msg %></li>
+                                    <% }); %>
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
-
-                            <div class="payment-method-card">
-                                <input type="radio" id="credit_card" name="paymentMethod" value="credit_card">
-                                <label for="credit_card" class="payment-method-label">
-                                    <div class="payment-method-icon">
-                                        <i class="fas fa-credit-card"></i>
+                        <% } %>
+                        
+                        <!-- Payment Method Selection -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-credit-card me-2"></i>เลือกวิธีการชำระเงิน
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card h-100 payment-method-card" data-method="bank">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-bank display-4 text-primary"></i>
+                                            <h6 class="mt-2">โอนเงินธนาคาร</h6>
+                                            <p class="small text-muted">อัปโหลดสลิปการโอนเงิน</p>
+                                        </div>
                                     </div>
-                                    <div class="payment-method-info">
-                                        <h3>บัตรเครดิต</h3>
-                                        <p>Visa, MasterCard, JCB</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100 payment-method-card" data-method="stripe">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-credit-card display-4 text-success"></i>
+                                            <h6 class="mt-2">บัตรเครดิต/เดบิต</h6>
+                                            <p class="small text-muted">ชำระด้วย Stripe (ปลอดภัย)</p>
+                                        </div>
                                     </div>
-                                </label>
-                            </div>
-
-                            <div class="payment-method-card">
-                                <input type="radio" id="bank_transfer" name="paymentMethod" value="bank_transfer">
-                                <label for="bank_transfer" class="payment-method-label">
-                                    <div class="payment-method-icon">
-                                        <i class="fas fa-university"></i>
-                                    </div>
-                                    <div class="payment-method-info">
-                                        <h3>โอนเงิน</h3>
-                                        <p>โอนผ่านธนาคาร</p>
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div class="payment-method-card">
-                                <input type="radio" id="qr_code" name="paymentMethod" value="qr_code">
-                                <label for="qr_code" class="payment-method-label">
-                                    <div class="payment-method-icon">
-                                        <i class="fas fa-qrcode"></i>
-                                    </div>
-                                    <div class="payment-method-info">
-                                        <h3>QR Code</h3>
-                                        <p>PromptPay, TrueMoney</p>
-                                    </div>
-                                </label>
+                                </div>
                             </div>
                         </div>
+                        
+                        <!-- Bank Transfer Form -->
+                        <form id="bankTransferForm" action="/payment/submit" method="POST" enctype="multipart/form-data" novalidate style="display: none;">
+                            <!-- Hidden Fields -->
+                            <input type="hidden" name="bookingId" value="<%= bookingId %>">
+                            
+                            <!-- Payer Name -->
+                            <div class="mb-3">
+                                <label for="payerName" class="form-label required">
+                                    <i class="bi bi-person me-1"></i>ชื่อผู้ชำระ
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control form-control-lg" 
+                                    id="payerName" 
+                                    name="payerName" 
+                                    placeholder="กรุณากรอกชื่อ-นามสกุล"
+                                    value="<%= formData.payerName || (user ? user.name : '') %>"
+                                    required
+                                    maxlength="255"
+                                >
+                                <div class="invalid-feedback">
+                                    กรุณากรอกชื่อผู้ชำระ
+                                </div>
+                            </div>
 
-                        <!-- Payment Details Section -->
-                        <div class="payment-details" id="paymentDetails">
-                            <!-- Dynamic payment details will be shown here -->
-                        </div>
+                            <!-- Amount -->
+                            <div class="mb-3">
+                                <label for="amount" class="form-label required">
+                                    <i class="bi bi-currency-dollar me-1"></i>ยอดเงิน (บาท)
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">฿</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-control" 
+                                        id="amount" 
+                                        name="amount" 
+                                        placeholder="0.00"
+                                        value="<%= formData.amount || amount %>"
+                                        min="0.01"
+                                        max="999999.99"
+                                        step="0.01"
+                                        required
+                                    >
+                                </div>
+                                <div class="invalid-feedback">
+                                    กรุณากรอกยอดเงินที่ถูกต้อง
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>ยอดเงินขั้นต่ำ 0.01 บาท
+                                </div>
+                            </div>
 
-                        <!-- Transaction Reference -->
-                        <div class="form-group">
-                            <label for="transactionId" class="form-label">
-                                <i class="fas fa-receipt"></i>
-                                เลขอ้างอิง (ถ้ามี)
-                            </label>
-                            <input type="text" id="transactionId" class="form-control" 
-                                   placeholder="ใส่เลขอ้างอิงการชำระเงิน (ไม่บังคับ)">
-                        </div>
+                            <!-- Bank -->
+                            <div class="mb-3">
+                                <label for="bank" class="form-label required">
+                                    <i class="bi bi-building me-1"></i>ธนาคาร
+                                </label>
+                                <select 
+                                    class="form-select form-select-lg" 
+                                    id="bank" 
+                                    name="bank" 
+                                    required
+                                >
+                                    <option value="">-- เลือกธนาคาร --</option>
+                                    <option value="กสิกรไทย" <%= formData.bank === 'กสิกรไทย' ? 'selected' : '' %>>
+                                        ธนาคารกสิกรไทย
+                                    </option>
+                                    <option value="ไทยพาณิชย์" <%= formData.bank === 'ไทยพาณิชย์' ? 'selected' : '' %>>
+                                        ธนาคารไทยพาณิชย์
+                                    </option>
+                                    <option value="กรุงเทพ" <%= formData.bank === 'กรุงเทพ' ? 'selected' : '' %>>
+                                        ธนาคารกรุงเทพ
+                                    </option>
+                                    <option value="กรุงไทย" <%= formData.bank === 'กรุงไทย' ? 'selected' : '' %>>
+                                        ธนาคารกรุงไทย
+                                    </option>
+                                    <option value="ทหารไทยธนชาต" <%= formData.bank === 'ทหารไทยธนชาต' ? 'selected' : '' %>>
+                                        ธนาคารทหารไทยธนชาต (TTB)
+                                    </option>
+                                    <option value="กรุงศรีอยุธยา" <%= formData.bank === 'กรุงศรีอยุธยา' ? 'selected' : '' %>>
+                                        ธนาคารกรุงศรีอยุธยา
+                                    </option>
+                                    <option value="ออมสิน" <%= formData.bank === 'ออมสิน' ? 'selected' : '' %>>
+                                        ธนาคารออมสิน
+                                    </option>
+                                    <option value="อาคารสงเคราะห์" <%= formData.bank === 'อาคารสงเคราะห์' ? 'selected' : '' %>>
+                                        ธนาคารอาคารสงเคราะห์
+                                    </option>
+                                    <option value="เกียรตินาคิน" <%= formData.bank === 'เกียรตินาคิน' ? 'selected' : '' %>>
+                                        ธนาคารเกียรตินาคินภัทร
+                                    </option>
+                                    <option value="ซีไอเอ็มบี ไทย" <%= formData.bank === 'ซีไอเอ็มบี ไทย' ? 'selected' : '' %>>
+                                        ธนาคารซีไอเอ็มบี ไทย
+                                    </option>
+                                    <option value="อื่นๆ" <%= formData.bank === 'อื่นๆ' ? 'selected' : '' %>>
+                                        อื่นๆ
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    กรุณาเลือกธนาคาร
+                                </div>
+                            </div>
 
-                        <!-- Form Actions -->
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="goBack()">
-                                <i class="fas fa-arrow-left"></i>
-                                ย้อนกลับ
-                            </button>
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-check-circle"></i>
-                                ยืนยันการชำระเงิน
-                            </button>
+                            <!-- Payment Date -->
+                            <div class="mb-3">
+                                <label for="paymentDate" class="form-label required">
+                                    <i class="bi bi-calendar-event me-1"></i>วันที่ชำระ
+                                </label>
+                                <input 
+                                    type="date" 
+                                    class="form-control form-control-lg" 
+                                    id="paymentDate" 
+                                    name="paymentDate" 
+                                    value="<%= formData.paymentDate || '' %>"
+                                    required
+                                >
+                                <div class="invalid-feedback">
+                                    กรุณาเลือกวันที่ชำระ
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>สามารถเลือกวันที่ย้อนหลังได้ไม่เกิน 30 วัน
+                                </div>
+                            </div>
+
+                            <!-- Upload Slip -->
+                            <div class="mb-4">
+                                <label for="uploadSlip" class="form-label required">
+                                    <i class="bi bi-cloud-upload me-1"></i>อัปโหลดสลิปการชำระเงิน
+                                </label>
+                                <input 
+                                    type="file" 
+                                    class="form-control form-control-lg" 
+                                    id="uploadSlip" 
+                                    name="uploadSlip" 
+                                    accept="image/jpeg,image/jpg,image/png,image/gif"
+                                    required
+                                >
+                                <div class="invalid-feedback">
+                                    กรุณาอัปโหลดสลิปการชำระเงิน
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    รองรับไฟล์ JPG, PNG, GIF ขนาดไม่เกิน 5MB
+                                </div>
+                                
+                                <!-- File Preview -->
+                                <div id="filePreview" class="mt-2" style="display: none;">
+                                    <img id="previewImage" class="img-thumbnail" style="max-width: 200px; max-height: 200px;" alt="Preview">
+                                    <div class="mt-1">
+                                        <small class="text-muted" id="fileName"></small>
+                                        <small class="text-muted ms-2" id="fileSize"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        ฉันยอมรับ <a href="#" class="text-decoration-none">ข้อกำหนดและเงื่อนไข</a> 
+                                        และยืนยันว่าข้อมูลที่กรอกถูกต้อง
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        กรุณายอมรับข้อกำหนดและเงื่อนไข
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/" class="btn btn-outline-secondary btn-lg me-md-2">
+                                    <i class="bi bi-arrow-left me-1"></i>กลับหน้าหลัก
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBankBtn">
+                                    <i class="bi bi-upload me-1"></i>ส่งสลิปการโอนเงิน
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Stripe Payment Form -->
+                        <div id="stripePaymentForm" style="display: none;">
+                            <form id="stripeForm">
+                                <!-- Payer Name for Stripe -->
+                                <div class="mb-3">
+                                    <label for="stripePayerName" class="form-label required">
+                                        <i class="bi bi-person me-1"></i>ชื่อผู้ชำระ
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control form-control-lg" 
+                                        id="stripePayerName" 
+                                        name="payerName" 
+                                        placeholder="กรุณากรอกชื่อ-นามสกุล"
+                                        value="<%= user ? user.name : '' %>"
+                                        required
+                                        maxlength="255"
+                                    >
+                                </div>
+
+                                <!-- Amount for Stripe -->
+                                <div class="mb-3">
+                                    <label for="stripeAmount" class="form-label required">
+                                        <i class="bi bi-currency-dollar me-1"></i>ยอดเงิน (บาท)
+                                    </label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text">฿</span>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="stripeAmount" 
+                                            name="amount" 
+                                            placeholder="0.00"
+                                            value="<%= amount %>"
+                                            min="0.01"
+                                            max="999999.99"
+                                            step="0.01"
+                                            required
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Stripe Payment Info -->
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>การชำระด้วยบัตรเครดิต/เดบิต</strong><br>
+                                    • ปลอดภัยด้วยระบบ Stripe<br>
+                                    • รองรับบัตรวีซ่า, มาสเตอร์การ์ด<br>
+                                    • ได้รับการยืนยันทันที
+                                </div>
+
+                                <!-- Terms for Stripe -->
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="stripeTerms" required>
+                                        <label class="form-check-label" for="stripeTerms">
+                                            ฉันยอมรับ <a href="#" class="text-decoration-none">ข้อกำหนดและเงื่อนไข</a> 
+                                            และยืนยันการชำระเงิน
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Stripe Submit Button -->
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="/" class="btn btn-outline-secondary btn-lg me-md-2">
+                                        <i class="bi bi-arrow-left me-1"></i>กลับหน้าหลัก
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg" id="submitStripeBtn">
+                                        <i class="bi bi-credit-card me-1"></i>ชำระด้วยบัตรเครดิต
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Help Card -->
+                <div class="card mt-4 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-question-circle me-1"></i>ต้องการความช่วยเหลือ?
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">
+                            <strong>ขั้นตอนการชำระเงิน:</strong>
+                        </p>
+                        <ol class="mb-3">
+                            <li>โอนเงินผ่านบัญชีธนาคารที่ระบุ</li>
+                            <li>ถ่ายรูปสลิปการโอนเงิน</li>
+                            <li>กรอกข้อมูลและอัปโหลดสลิปในแบบฟอร์มนี้</li>
+                            <li>รอการตรวจสอบจากระบบ</li>
+                        </ol>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><i class="bi bi-telephone me-1"></i><strong>โทร:</strong> 02-XXX-XXXX</p>
+                                <p class="mb-1"><i class="bi bi-envelope me-1"></i><strong>Email:</strong> support@junrai.com</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><i class="bi bi-clock me-1"></i><strong>เวลาทำการ:</strong> 9:00-21:00</p>
+                                <p class="mb-1"><i class="bi bi-calendar3 me-1"></i><strong>ทุกวัน</strong> ยกเว้นวันหยุดนักขัตฤกษ์</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content success-modal">
-            <div class="modal-body">
-                <div class="success-content">
-                    <div class="success-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h2>ชำระเงินสำเร็จ!</h2>
-                    <p>การจองของคุณได้รับการยืนยันแล้ว</p>
-                    <div class="success-actions">
-                        <button class="btn btn-primary" onclick="goToDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            ไปยังแดชบอร์ด
-                        </button>
-                        <button class="btn btn-outline" onclick="goToBookings()">
-                            <i class="fas fa-list"></i>
-                            ดูการจองทั้งหมด
-                        </button>
-                    </div>
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-mic-fill me-2"></i>Junrai Karaoke</h5>
+                    <p class="mb-0">ระบบจองห้องคาราโอเกะออนไลน์</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">&copy; 2025 Junrai Karaoke. All rights reserved.</p>
                 </div>
             </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- JavaScript -->
-    <script src="/javascripts/shared/auth-nav.js"></script>
-    <script src="/javascripts/payment.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Payment JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bankForm = document.getElementById('bankTransferForm');
+            const stripeForm = document.getElementById('stripePaymentForm');
+            const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+            
+            // Payment method selection
+            paymentMethodCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove active class from all cards
+                    paymentMethodCards.forEach(c => c.classList.remove('border-primary', 'bg-light'));
+                    
+                    // Add active class to clicked card
+                    this.classList.add('border-primary', 'bg-light');
+                    
+                    // Show appropriate form
+                    const method = this.dataset.method;
+                    if (method === 'bank') {
+                        bankForm.style.display = 'block';
+                        stripeForm.style.display = 'none';
+                    } else if (method === 'stripe') {
+                        bankForm.style.display = 'none';
+                        stripeForm.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Bank Transfer Form Elements
+            const fileInput = document.getElementById('uploadSlip');
+            const previewDiv = document.getElementById('filePreview');
+            const previewImage = document.getElementById('previewImage');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const submitBankBtn = document.getElementById('submitBankBtn');
+            
+            // Set default date to today
+            const paymentDateInput = document.getElementById('paymentDate');
+            if (!paymentDateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                paymentDateInput.value = today;
+            }
+            
+            // Set min and max date (30 days ago to today)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            paymentDateInput.min = thirtyDaysAgo.toISOString().split('T')[0];
+            paymentDateInput.max = today.toISOString().split('T')[0];
+            
+            // File preview functionality
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Check file type
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (JPG, PNG, GIF)');
+                        fileInput.value = '';
+                        previewDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Check file size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('ไฟล์มีขนาดใหญ่เกินไป (ขนาดสูงสุด 5MB)');
+                        fileInput.value = '';
+                        previewDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        fileName.textContent = file.name;
+                        fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                        previewDiv.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewDiv.style.display = 'none';
+                }
+            });
+            
+            // Bank Transfer Form validation
+            if (bankForm) {
+                bankForm.addEventListener('submit', function(e) {
+                    if (!bankForm.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    
+                    bankForm.classList.add('was-validated');
+                    
+                    // Show loading state
+                    if (bankForm.checkValidity()) {
+                        submitBankBtn.disabled = true;
+                        submitBankBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>กำลังประมวลผล...';
+                    }
+                });
+            }
+
+            // Stripe Form handling
+            const stripeFormElement = document.getElementById('stripeForm');
+            const submitStripeBtn = document.getElementById('submitStripeBtn');
+            
+            if (stripeFormElement) {
+                stripeFormElement.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (!stripeFormElement.checkValidity()) {
+                        stripeFormElement.classList.add('was-validated');
+                        return;
+                    }
+
+                    const payerName = document.getElementById('stripePayerName').value;
+                    const amount = document.getElementById('stripeAmount').value;
+                    const bookingId = '<%= bookingId %>';
+
+                    // Show loading state
+                    submitStripeBtn.disabled = true;
+                    submitStripeBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>กำลังสร้างการชำระ...';
+
+                    try {
+                        // Create Stripe Checkout Session
+                        const response = await fetch('/payment/create-stripe-session', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                amount: amount,
+                                payerName: payerName,
+                                bookingId: bookingId
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.url) {
+                            // Redirect to Stripe Checkout
+                            window.location.href = data.url;
+                        } else {
+                            throw new Error(data.error || 'เกิดข้อผิดพลาดในการสร้างการชำระเงิน');
+                        }
+                    } catch (error) {
+                        console.error('Stripe payment error:', error);
+                        alert('เกิดข้อผิดพลาด: ' + error.message);
+                        
+                        // Reset button
+                        submitStripeBtn.disabled = false;
+                        submitStripeBtn.innerHTML = '<i class="bi bi-credit-card me-1"></i>ชำระด้วยบัตรเครดิต';
+                    }
+                });
+            }
+            
+            // Format amount input
+            const amountInput = document.getElementById('amount');
+            amountInput.addEventListener('input', function(e) {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value) || value < 0) {
+                    e.target.setCustomValidity('กรุณากรอกยอดเงินที่ถูกต้อง');
+                } else {
+                    e.target.setCustomValidity('');
+                }
+            });
+            
+            // Name validation (Thai and English only)
+            const nameInput = document.getElementById('payerName');
+            nameInput.addEventListener('input', function(e) {
+                const thaiEnglishPattern = /^[ก-๙a-zA-Z\s]+$/;
+                if (!thaiEnglishPattern.test(e.target.value) && e.target.value !== '') {
+                    e.target.setCustomValidity('ชื่อผู้ชำระต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น');
+                } else {
+                    e.target.setCustomValidity('');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

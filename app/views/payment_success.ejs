@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    
+    <!-- Thai Font Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Sarabun', sans-serif;
+        }
+        .success-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .success-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+        .payment-details-card {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+        }
+        .btn-download {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+            background: linear-gradient(135deg, #e74c3c, #ff6b35);
+        }
+        .btn-home {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+            background: linear-gradient(135deg, #1e7e34, #28a745);
+        }
+        .btn-outline-primary {
+            border: 2px solid #007bff;
+            color: #007bff;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-outline-primary:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+        }
+        .btn-outline-primary:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 0.6s ease;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .floating-elements::before {
+            content: '🎤';
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+            top: 10%;
+            left: 10%;
+        }
+        .floating-elements::after {
+            content: '🎵';
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.1;
+            animation: float 8s ease-in-out infinite reverse;
+            top: 70%;
+            right: 15%;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements"></div>
+    
+    <!-- Main Content -->
+    <div class="container py-5">
+        <div class="row justify-content-center min-vh-100 align-items-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Success Card -->
+                <div class="card success-card">
+                    <div class="card-body p-5 text-center">
+                        <!-- Success Icon -->
+                        <div class="success-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        
+                        <!-- Success Message -->
+                        <h1 class="text-success fw-bold mb-3">ชำระเงินสำเร็จ!</h1>
+                        <p class="lead text-muted mb-4">
+                            ข้อมูลการชำระเงินของคุณได้รับการบันทึกเรียบร้อยแล้ว<br>
+                            ระบบจะตรวจสอบและยืนยันการชำระเงินในภายหลัง
+                        </p>
+
+                        <!-- Payment Details -->
+                        <div class="payment-details-card p-4 rounded mb-4 text-start">
+                            <h5 class="text-dark mb-3">
+                                <i class="bi bi-receipt me-2"></i>รายละเอียดการชำระเงิน
+                            </h5>
+                            
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>เลขที่ใบเสร็จ:</strong></div>
+                                <div class="col-8">#<%= payment.id.toString().padStart(6, '0') %></div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>ชื่อผู้ชำระ:</strong></div>
+                                <div class="col-8"><%= payment.payerName %></div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>ยอดเงิน:</strong></div>
+                                <div class="col-8 text-success fw-bold">
+                                    ฿<%= parseFloat(payment.amount).toLocaleString('th-TH', { minimumFractionDigits: 2 }) %>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>ธนาคาร:</strong></div>
+                                <div class="col-8"><%= payment.bank %></div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>วันที่ชำระ:</strong></div>
+                                <div class="col-8">
+                                    <%= new Date(payment.paymentDate).toLocaleDateString('th-TH', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }) %>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>สถานะ:</strong></div>
+                                <div class="col-8">
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-clock me-1"></i>รอตรวจสอบ
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-4"><strong>วันที่บันทึก:</strong></div>
+                                <div class="col-8">
+                                    <%= new Date(payment.created_at).toLocaleString('th-TH', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slip Preview -->
+                        <% if (payment.slipPath) { %>
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">สลิปการชำระเงินที่อัปโหลด</h6>
+                            <img src="/uploads/slips/<%= payment.slipPath %>" 
+                                 class="img-thumbnail rounded" 
+                                 style="max-width: 200px; max-height: 200px;"
+                                 alt="Payment Slip">
+                        </div>
+                        <% } %>
+
+                        <!-- Enhanced Action Buttons -->
+                        <div class="d-grid gap-3 d-md-block mt-4">
+                            <a href="/payment/receipt/<%= payment.id %>/view" 
+                               class="btn btn-outline-primary me-md-2"
+                               target="_blank"
+                               style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                                <i class="bi bi-eye me-2"></i>ดูใบเสร็จ
+                            </a>
+                            <a href="/payment/receipt/<%= payment.id %>/download" 
+                               class="btn btn-download text-white me-md-3"
+                               style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                                <i class="bi bi-download me-2"></i>ดาวน์โหลด PDF
+                            </a>
+                            <a href="/" class="btn btn-home text-white"
+                               style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                                <i class="bi bi-house-door me-2"></i>กลับหน้าหลัก
+                            </a>
+                        </div>
+                        
+                        <!-- Receipt Preview Info -->
+                        <div class="mt-3 p-3 bg-info bg-opacity-10 rounded">
+                            <h6 class="text-info mb-2">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>ใบเสร็จอิเล็กทรอนิกส์
+                            </h6>
+                            <p class="small text-muted mb-0">
+                                • <strong>ดูใบเสร็จ</strong>: เปิดดูใบเสร็จในเบราว์เซอร์<br>
+                                • <strong>ดาวน์โหลด PDF</strong>: บันทึกไฟล์ PDF ลงเครื่อง<br>
+                                • มี QR Code สำหรับตรวจสอบความถูกต้อง
+                            </p>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h6 class="text-primary mb-2">
+                                <i class="bi bi-info-circle me-1"></i>ขั้นตอนต่อไป
+                            </h6>
+                            <p class="small text-muted mb-0">
+                                ระบบจะตรวจสอบการชำระเงินภายใน <strong>1-2 วันทำการ</strong><br>
+                                หากมีปัญหา เจ้าหน้าที่จะติดต่อกลับตามข้อมูลที่ได้รับ<br>
+                                สามารถติดตามสถานะได้ผ่าน <a href="/dashboard" class="text-decoration-none">แดชบอร์ด</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Card -->
+                <div class="card mt-4" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                    <div class="card-body text-center">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-headset me-1"></i>ต้องการความช่วยเหลือ?
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="small mb-1">
+                                    <i class="bi bi-telephone me-1"></i>โทร: 02-XXX-XXXX
+                                </p>
+                                <p class="small mb-0">
+                                    <i class="bi bi-envelope me-1"></i>Email: support@junrai.com
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="small mb-1">
+                                    <i class="bi bi-clock me-1"></i>เวลาทำการ: 9:00-21:00
+                                </p>
+                                <p class="small mb-0">
+                                    <i class="bi bi-calendar3 me-1"></i>ทุกวัน (ยกเว้นวันหยุด)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Auto-scroll and effects -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Add entrance animation
+            const card = document.querySelector('.success-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(50px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.8s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // Confetti effect (optional)
+            setTimeout(() => {
+                // Simple confetti simulation with emojis
+                const emojis = ['🎉', '🎊', '🎈', '✨', '🌟'];
+                
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(() => {
+                        const emoji = document.createElement('div');
+                        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                        emoji.style.position = 'fixed';
+                        emoji.style.left = Math.random() * 100 + '%';
+                        emoji.style.top = '-50px';
+                        emoji.style.fontSize = '2rem';
+                        emoji.style.pointerEvents = 'none';
+                        emoji.style.zIndex = '9999';
+                        emoji.style.animation = 'fall 3s linear forwards';
+                        
+                        document.body.appendChild(emoji);
+                        
+                        setTimeout(() => {
+                            document.body.removeChild(emoji);
+                        }, 3000);
+                    }, i * 200);
+                }
+            }, 1000);
+        });
+        
+        // Add CSS for falling animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

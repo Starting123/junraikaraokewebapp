@@ -327,4 +327,268 @@ router.post('/room-types', adminOnly, [ body('type_name').notEmpty() ], async (r
   } catch (err) { next(err); }
 });
 
+// ==================== PAYMENT MANAGEMENT ====================
+
+// Get all payments with pagination and search
+router.get('/payments', adminOnly, async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const search = req.query.search || '';
+    const status = req.query.status || '';
+    const dateFrom = req.query.dateFrom || '';
+    const dateTo = req.query.dateTo || '';
+    const offset = (page - 1) * limit;
+
+    // Build WHERE clause for search and filters
+    let whereClause = 'WHERE 1=1';
+    const queryParams = [];
+
+    if (search) {
+      whereClause += ' AND (payerName LIKE ? OR bank LIKE ?)';
+      queryParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (status) {
+      whereClause += ' AND status = ?';
+      queryParams.push(status);
+    }
+
+    if (dateFrom) {
+      whereClause += ' AND paymentDate >= ?';
+      queryParams.push(dateFrom);
+    }
+
+    if (dateTo) {
+      whereClause += ' AND paymentDate <= ?';
+      queryParams.push(dateTo);
+    }
+
+    // Get total count
+    const [countResult] = await require('../../db').query(
+      `SELECT COUNT(*) as total FROM slip_payments ${whereClause}`,
+      queryParams
+    );
+    const totalRecords = countResult[0].total;
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    // Get payments with pagination
+    const [payments] = await require('../../db').query(
+      `SELECT * FROM slip_payments ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [...queryParams, limit, offset]
+    );
+
+    // Get statistics
+    const [statsResult] = await require('../../db').query(`
+      SELECT 
+        COUNT(*) as totalPayments,
+        SUM(amount) as totalAmount,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pendingCount,
+        COUNT(CASE WHEN status = 'verified' THEN 1 END) as verifiedCount,
+        COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejectedCount,
+        SUM(CASE WHEN status = 'verified' THEN amount ELSE 0 END) as verifiedAmount
+      FROM slip_payments
+    `);
+
+    res.json({
+      payments,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalRecords,
+        limit,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      },
+      statistics: statsResult[0]
+    });
+  } catch (err) { 
+    next(err); 
+  }
+});
+
+// Get single payment by ID
+router.get('/payments/:id', adminOnly, [
+  param('id').isInt({ gt: 0 }).withMessage('Valid payment ID required')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid payment ID', details: errors.array() });
+    }
+
+    const [payments] = await require('../../db').query(
+      'SELECT * FROM slip_payments WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (payments.length === 0) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    res.json({ payment: payments[0] });
+  } catch (err) { 
+    next(err); 
+  }
+});
+
+// Update payment status
+router.patch('/payments/:id/status', adminOnly, [
+  param('id').isInt({ gt: 0 }).withMessage('Valid payment ID required'),
+  body('status').isIn(['pending', 'verified', 'rejected']).withMessage('Status must be pending, verified, or rejected'),
+  body('notes').optional().isLength({ max: 500 }).withMessage('Notes must be max 500 characters')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Validation failed', details: errors.array() });
+    }
+
+    const { status, notes } = req.body;
+    const paymentId = req.params.id;
+
+    // Check if payment exists
+    const [existingPayment] = await require('../../db').query(
+      'SELECT * FROM payments WHERE id = ?',
+      [paymentId]
+    );
+
+    if (existingPayment.length === 0) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    // Update payment status
+    await require('../../db').query(
+      'UPDATE slip_payments SET status = ?, updated_at = NOW() WHERE id = ?',
+      [status, paymentId]
+    );
+
+    // Log the status change (optional - you can create a payment_logs table)
+    console.log(`Payment ${paymentId} status changed to ${status} by admin ${req.user.id}`);
+
+    // Return updated payment
+    const [updatedPayment] = await require('../../db').query(
+      'SELECT * FROM slip_payments WHERE id = ?',
+      [paymentId]
+    );
+
+    res.json({ 
+      message: 'Payment status updated successfully',
+      payment: updatedPayment[0]
+    });
+  } catch (err) { 
+    next(err); 
+  }
+});
+
+// Delete payment (admin only - use with caution)
+router.delete('/payments/:id', adminOnly, [
+  param('id').isInt({ gt: 0 }).withMessage('Valid payment ID required')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid payment ID', details: errors.array() });
+    }
+
+    const paymentId = req.params.id;
+
+    // Check if payment exists
+    const [existingPayment] = await require('../../db').query(
+      'SELECT * FROM payments WHERE id = ?',
+      [paymentId]
+    );
+
+    if (existingPayment.length === 0) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    const payment = existingPayment[0];
+
+    // Delete the slip file if exists
+    const fs = require('fs-extra');
+    const path = require('path');
+    
+    if (payment.slipPath) {
+      const slipFilePath = path.join(__dirname, '../../public/uploads/slips', payment.slipPath);
+      try {
+        await fs.unlink(slipFilePath);
+        console.log(`Deleted slip file: ${payment.slipPath}`);
+      } catch (fileErr) {
+        console.error('Error deleting slip file:', fileErr);
+        // Continue with database deletion even if file deletion fails
+      }
+    }
+
+    // Delete payment record
+    await require('../../db').query('DELETE FROM payments WHERE id = ?', [paymentId]);
+
+    console.log(`Payment ${paymentId} deleted by admin ${req.user.id}`);
+
+    res.json({ 
+      message: 'Payment deleted successfully',
+      deletedPayment: payment
+    });
+  } catch (err) { 
+    next(err); 
+  }
+});
+
+// Export payments to CSV
+router.get('/payments/export/csv', adminOnly, async (req, res, next) => {
+  try {
+    const status = req.query.status || '';
+    const dateFrom = req.query.dateFrom || '';
+    const dateTo = req.query.dateTo || '';
+
+    // Build WHERE clause for filters
+    let whereClause = 'WHERE 1=1';
+    const queryParams = [];
+
+    if (status) {
+      whereClause += ' AND status = ?';
+      queryParams.push(status);
+    }
+
+    if (dateFrom) {
+      whereClause += ' AND paymentDate >= ?';
+      queryParams.push(dateFrom);
+    }
+
+    if (dateTo) {
+      whereClause += ' AND paymentDate <= ?';
+      queryParams.push(dateTo);
+    }
+
+    // Get all payments matching criteria
+    const [payments] = await require('../../db').query(
+      `SELECT 
+        id, payerName, amount, bank, paymentDate, status, 
+        DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at,
+        DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') as updated_at
+       FROM payments ${whereClause} ORDER BY created_at DESC`,
+      queryParams
+    );
+
+    // Generate CSV content
+    const csvHeader = 'ID,ชื่อผู้ชำระ,ยอดเงิน,ธนาคาร,วันที่ชำระ,สถานะ,วันที่บันทึก,วันที่อัปเดต\n';
+    const csvRows = payments.map(payment => 
+      `${payment.id},"${payment.payerName}",${payment.amount},"${payment.bank}","${payment.paymentDate}","${payment.status}","${payment.created_at}","${payment.updated_at}"`
+    ).join('\n');
+    
+    const csvContent = csvHeader + csvRows;
+
+    // Set response headers for CSV download
+    const filename = `payments_export_${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    // Add BOM for proper Thai character display in Excel
+    res.write('\ufeff');
+    res.end(csvContent);
+  } catch (err) { 
+    next(err); 
+  }
+});
+
 module.exports = router;

@@ -12,6 +12,7 @@ var apiAuth = require('./routes/api/auth');
 var apiBookings = require('./routes/api/bookings');
 var apiAdmin = require('./routes/api/admin');
 var apiOrders = require('./routes/api/orders');
+const paymentRouter = require('./routes/payment');
 
 var app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/bookings', apiBookings);
 app.use('/api/admin', apiAdmin);
 app.use('/api/orders', apiOrders);
 app.use('/api/payments', require('./routes/api/payments'));
+app.use('/payment', paymentRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

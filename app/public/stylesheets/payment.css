@@ -1,35 +1,119 @@
 /* ==========================================
-   Payment Page Styles
+   Payment System Styles - Bootstrap Compatible
    ========================================== */
 
-.payment-page {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: var(--space-2xl) 0;
+/* Thai Font Support */
+        body {
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Payment Method Cards */
+        .payment-method-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .payment-method-card:hover {
+            border-color: #0d6efd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .payment-method-card.border-primary {
+            border-color: #0d6efd !important;
+            background-color: #f8f9fa !important;
+        }/* Form Enhancements */
+.form-label.required::after {
+  content: ' *';
+  color: #dc3545;
+  font-weight: bold;
 }
 
-.page-header {
-  text-align: center;
-  margin-bottom: var(--space-2xl);
-  padding: var(--space-2xl) 0;
-  background: linear-gradient(135deg, var(--white), var(--light-gray));
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-light);
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
 }
 
-.page-header h1 {
-  color: var(--primary-orange);
-  margin-bottom: var(--space-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
+.invalid-feedback {
+  font-size: 0.875rem;
 }
 
-.page-header p {
-  color: var(--dark-gray);
-  font-size: 1.1rem;
-  margin: 0;
+/* File Upload Preview */
+.img-thumbnail {
+  border: 2px dashed #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.img-thumbnail:hover {
+  border-color: #0d6efd;
+  transform: scale(1.02);
+}
+
+/* Button Animations */
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card Enhancements */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Alert Animations */
+.alert {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spinner Animation */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Loading State */
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Success Animations */
+@keyframes bounce {
+  0%, 20%, 60%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  80% {
+    transform: translateY(-10px);
+  }
+}
+
+.bounce-animation {
+  animation: bounce 2s infinite;
 }
 
 /* ==========================================
