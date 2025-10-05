@@ -2,6 +2,130 @@
    Homepage Styles - Earth-tone Orange Theme
    ========================================== */
 
+/* Admin Dashboard Link Styling */
+.admin-link {
+  background: linear-gradient(45deg, var(--primary-orange), var(--earth-clay)) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.25rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border: 2px solid transparent !important;
+}
+
+.admin-link:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  background: linear-gradient(45deg, var(--earth-clay), var(--primary-orange)) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.admin-link i {
+  margin-right: 0.5rem !important;
+  font-size: 1.1em !important;
+}
+
+/* Make admin link more prominent on mobile */
+@media (max-width: 768px) {
+  .admin-link {
+    display: block !important;
+    text-align: center !important;
+    margin: 0.5rem 0 !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* Admin Hero Card */
+.admin-hero-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.admin-hero-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.admin-card-content {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.admin-card-icon {
+  font-size: 3rem;
+  color: var(--earth-clay);
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.admin-hero-card h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.admin-hero-card p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.btn-admin-primary {
+  background: linear-gradient(45deg, var(--earth-clay), var(--primary-orange));
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-admin-primary:hover {
+  background: linear-gradient(45deg, var(--primary-orange), var(--earth-clay));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.btn-admin-primary i {
+  font-size: 1.1em;
+}
+
+@media (max-width: 768px) {
+  .admin-hero-card {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+  }
+  
+  .admin-card-icon {
+    font-size: 2.5rem;
+  }
+  
+  .admin-hero-card h3 {
+    font-size: 1.25rem;
+  }
+}
+
 /* Hero Section */
 .hero-section {
   background: linear-gradient(135deg, 

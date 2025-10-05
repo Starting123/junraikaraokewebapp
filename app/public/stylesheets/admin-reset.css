@@ -1,0 +1,224 @@
+/* ==========================================
+   ADMIN DASHBOARD - CSS RESET & ISOLATION
+   ========================================== */
+
+/* Reset any conflicting styles specifically for admin dashboard */
+.admin-dashboard-container {
+    /* Override any global styles that might conflict */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+}
+
+.admin-dashboard-container *,
+.admin-dashboard-container *::before,
+.admin-dashboard-container *::after {
+    box-sizing: inherit;
+}
+
+/* Isolate admin dashboard from global styles */
+.admin-dashboard-container .container,
+.admin-dashboard-container .row,
+.admin-dashboard-container .col {
+    margin: 0;
+    padding: 0;
+}
+
+/* Override Bootstrap conflicts in admin area */
+.admin-dashboard-container .navbar {
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+}
+
+.admin-dashboard-container .btn {
+    font-family: inherit;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.admin-dashboard-container .form-control {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.admin-dashboard-container .table {
+    margin-bottom: 0;
+    background: transparent;
+}
+
+.admin-dashboard-container .card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    margin-bottom: 1rem;
+}
+
+/* Fix modal conflicts */
+.admin-dashboard-container .modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.admin-dashboard-container .modal {
+    z-index: 1050 !important;
+}
+
+/* Ensure proper text colors in admin */
+.admin-dashboard-container h1,
+.admin-dashboard-container h2,
+.admin-dashboard-container h3,
+.admin-dashboard-container h4,
+.admin-dashboard-container h5,
+.admin-dashboard-container h6 {
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.admin-dashboard-container p {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+/* Fix any text selection issues */
+.admin-dashboard-container ::selection {
+    background: var(--primary);
+    color: white;
+}
+
+/* Override any conflicting animations */
+.admin-dashboard-container .fade {
+    transition: opacity 0.15s linear;
+}
+
+.admin-dashboard-container .show {
+    opacity: 1;
+}
+
+/* Ensure proper spacing */
+.admin-dashboard-container .mt-0 { margin-top: 0 !important; }
+.admin-dashboard-container .mb-0 { margin-bottom: 0 !important; }
+.admin-dashboard-container .pt-0 { padding-top: 0 !important; }
+.admin-dashboard-container .pb-0 { padding-bottom: 0 !important; }
+
+/* Fix any flexbox conflicts */
+.admin-dashboard-container .d-flex {
+    display: flex !important;
+}
+
+.admin-dashboard-container .justify-content-between {
+    justify-content: space-between !important;
+}
+
+.admin-dashboard-container .align-items-center {
+    align-items: center !important;
+}
+
+/* Ensure proper button states */
+.admin-dashboard-container .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-dashboard-container .btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Fix table styling conflicts */
+.admin-dashboard-container .table-responsive {
+    border: none;
+    overflow-x: auto;
+}
+
+.admin-dashboard-container .table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+}
+
+.admin-dashboard-container .table td {
+    vertical-align: middle;
+}
+
+/* Reset any unwanted margins/padding */
+.admin-dashboard-container .section-content {
+    padding: 0;
+    margin: 0;
+}
+
+.admin-dashboard-container .section-content.active {
+    display: block;
+}
+
+.admin-dashboard-container .section-content:not(.active) {
+    display: none;
+}
+
+/* Ensure proper scrolling */
+.admin-dashboard-container {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Fix any z-index issues */
+.admin-dashboard-container .admin-navbar {
+    z-index: 1000;
+}
+
+.admin-dashboard-container .admin-sidebar {
+    z-index: 999;
+}
+
+/* Ensure responsive behavior */
+@media (max-width: 768px) {
+    .admin-dashboard-container .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .admin-dashboard-container .admin-sidebar.show {
+        transform: translateX(0);
+    }
+}
+
+/* Fix any font conflicts */
+.admin-dashboard-container .fas,
+.admin-dashboard-container .fab,
+.admin-dashboard-container .far {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+}
+
+/* Ensure proper focus states */
+.admin-dashboard-container input:focus,
+.admin-dashboard-container select:focus,
+.admin-dashboard-container textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+/* Fix any layout conflicts */
+.admin-dashboard-container .main-content {
+    flex: 1;
+    min-height: calc(100vh - 70px);
+}
+
+/* Ensure proper spacing for admin content */
+.admin-dashboard-container .admin-content {
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .admin-dashboard-container .admin-content {
+        padding: 1rem;
+    }
+}

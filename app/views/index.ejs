@@ -24,6 +24,9 @@
             <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
             <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
             <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+            <li><a href="/admin" class="nav-link admin-link" id="adminLink" style="display: none;">
+              <i class="fas fa-shield-alt"></i> แดชบอร์ดผู้ดูแล
+            </a></li>
             <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
             <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
           </ul>
@@ -67,6 +70,19 @@
             <i class="fas fa-calendar-plus"></i>
             จองห้องตอนนี้
           </a>
+        </div>
+        
+        <!-- Admin Dashboard Card (Only visible to administrators) -->
+        <div class="admin-hero-card" id="adminHeroCard" style="display: none;">
+          <div class="admin-card-content">
+            <i class="fas fa-shield-alt admin-card-icon"></i>
+            <h3>ผู้ดูแลระบบ</h3>
+            <p>จัดการระบบ ดูรายงาน และควบคุมการจองห้อง</p>
+            <a href="/admin" class="btn btn-admin-primary">
+              <i class="fas fa-tachometer-alt"></i>
+              เข้าสู่แดshboard
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -378,6 +394,12 @@
         document.getElementById('logoutBtn').style.display = 'block';
         document.getElementById('bookingsLink').style.display = 'block';
         document.getElementById('heroBookingBtn').style.display = 'inline-flex';
+        
+        // Show admin link for administrators (role_id = 1)
+        if (currentUser.role_id === 1) {
+          document.getElementById('adminLink').style.display = 'block';
+          document.getElementById('adminHeroCard').style.display = 'block';
+        }
       }
     }
 
