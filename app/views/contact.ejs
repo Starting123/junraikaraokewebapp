@@ -16,23 +16,46 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div class="nav-brand">
-                <i class="fas fa-microphone-alt"></i>
-                <span>Junrai Karaoke</span>
-            </div>
-            
-            <div class="nav-menu" id="navMenu">
-                <a href="/" class="nav-link">หน้าหลัก</a>
-                <a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a>
-                <a href="/bookings" class="nav-link">จองห้อง</a>
-                <a href="/contact" class="nav-link active">ติดต่อเรา</a>
-                <a href="/auth" class="nav-link btn-outline">เข้าสู่ระบบ</a>
-            </div>
-            
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
+            <div class="navbar-content">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                
+                <div class="navbar-main">
+                    <ul class="navbar-nav">
+                        <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                        <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                        <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
+                        <li><a href="/contact" class="nav-link active">ติดต่อเรา</a></li>
+                        <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                    </ul>
+                    
+                    <!-- Store Hours Info -->
+                    <div class="store-hours-info" id="storeHoursInfo">
+                        <div class="hours-display">
+                            <i class="fas fa-clock"></i>
+                            <div class="hours-text">
+                                <span class="hours-time">11.00 - 21.00</span>
+                                <span class="hours-duration">10 ชม</span>
+                            </div>
+                        </div>
+                        <div class="days-display">
+                            <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
+                            <span class="closed-day">(หยุด) จันทร์</span>
+                        </div>
+                        <div class="store-status" id="storeStatus">
+                            <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nav-toggle" id="navToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
         </div>
     </nav>
@@ -104,23 +127,32 @@
                         </h2>
                     </div>
                     <div class="card-body">
+                        <!-- Current Status -->
+                        <div class="current-status" id="currentStatus">
+                            <div class="status-indicator" id="statusIndicator">
+                                <span class="status-dot" id="statusDot"></span>
+                                <span class="status-message" id="statusMessage">กำลังตรวจสอบสถานะ...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Opening Hours -->
                         <div class="hours-list">
-                            <div class="hours-item">
-                                <span class="day">จันทร์ - พฤหัสบดี</span>
-                                <span class="time">18:00 - 02:00</span>
+                            <div class="hours-item main-hours">
+                                <span class="day">อังคาร - อาทิตย์</span>
+                                <span class="time">11:00 - 21:00</span>
+                                <span class="duration">(10 ชั่วโมง)</span>
                             </div>
-                            <div class="hours-item">
-                                <span class="day">ศุกร์ - เสาร์</span>
-                                <span class="time">18:00 - 03:00</span>
+                            <div class="hours-item closed-day">
+                                <span class="day">จันทร์</span>
+                                <span class="time">ปิด</span>
+                                <span class="note">(วันหยุดประจำ)</span>
                             </div>
-                            <div class="hours-item">
-                                <span class="day">อาทิตย์</span>
-                                <span class="time">18:00 - 01:00</span>
-                            </div>
-                            <div class="hours-item highlight">
-                                <span class="day">วันหยุดนักขัตฤกษ์</span>
-                                <span class="time">18:00 - 02:00</span>
-                            </div>
+                        </div>
+                        
+                        <!-- Additional Info -->
+                        <div class="hours-note">
+                            <i class="fas fa-info-circle"></i>
+                            <p>เวลาอาจเปลี่ยนแปลงในวันหยุดนักขัตฤกษ์</p>
                         </div>
                     </div>
                 </div>
@@ -265,6 +297,151 @@
     </section>
 
     <!-- JavaScript -->
+    <script>
+        // Store Hours Management (Same as auth.ejs)
+        function updateStoreStatus() {
+            const now = new Date();
+            const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour + (currentMinute / 60);
+            
+            const statusElement = document.getElementById('statusText');
+            const statusMessage = document.getElementById('statusMessage');
+            const statusDot = document.getElementById('statusDot');
+            const hoursInfo = document.getElementById('storeHoursInfo');
+            
+            // Store hours: 11:00 - 21:00, Tuesday - Sunday (Closed Monday)
+            const openTime = 11; // 11:00
+            const closeTime = 21; // 21:00
+            const isMonday = currentDay === 1;
+            const isOpenDays = currentDay >= 2 || currentDay === 0; // Tuesday-Sunday
+            const isWithinHours = currentTime >= openTime && currentTime < closeTime;
+            
+            if (isMonday) {
+                // Monday - Closed
+                if (statusElement) {
+                    statusElement.textContent = '🔴 ปิด (วันหยุด)';
+                    statusElement.className = 'status-text status-closed';
+                }
+                if (statusMessage) {
+                    statusMessage.textContent = 'ปิดทำการ - วันจันทร์ (วันหยุดประจำ)';
+                    statusMessage.className = 'status-message closed';
+                }
+                if (statusDot) {
+                    statusDot.className = 'status-dot closed';
+                }
+                if (hoursInfo) {
+                    hoursInfo.classList.add('store-closed');
+                }
+            } else if (isOpenDays && isWithinHours) {
+                // Open
+                const hoursLeft = closeTime - currentTime;
+                const hoursText = hoursLeft > 1 ? `${Math.floor(hoursLeft)} ชม` : `${Math.floor(hoursLeft * 60)} นาที`;
+                
+                if (statusElement) {
+                    statusElement.textContent = `🟢 เปิด (อีก ${hoursText})`;
+                    statusElement.className = 'status-text status-open';
+                }
+                if (statusMessage) {
+                    statusMessage.textContent = `เปิดให้บริการ - ปิดในอีก ${hoursText}`;
+                    statusMessage.className = 'status-message open';
+                }
+                if (statusDot) {
+                    statusDot.className = 'status-dot open';
+                }
+                if (hoursInfo) {
+                    hoursInfo.classList.remove('store-closed');
+                }
+            } else {
+                // Closed
+                if (statusElement) {
+                    statusElement.className = 'status-text status-closed';
+                }
+                if (statusDot) {
+                    statusDot.className = 'status-dot closed';
+                }
+                if (hoursInfo) {
+                    hoursInfo.classList.add('store-closed');
+                }
+                
+                // Check if tomorrow is open
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowDay = tomorrow.getDay();
+                
+                if (tomorrowDay === 1) {
+                    if (statusElement) {
+                        statusElement.textContent = '🔴 ปิด (เปิดวันอังคาร 11:00)';
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = 'ปิดทำการ - เปิดวันอังคาร เวลา 11:00';
+                        statusMessage.className = 'status-message closed';
+                    }
+                } else if (currentTime < openTime) {
+                    const hoursUntilOpen = openTime - currentTime;
+                    const timeText = hoursUntilOpen > 1 ? `${Math.floor(hoursUntilOpen)} ชม` : `${Math.floor(hoursUntilOpen * 60)} นาที`;
+                    if (statusElement) {
+                        statusElement.textContent = `🟡 ปิด (เปิดอีก ${timeText})`;
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = `ปิดทำการ - เปิดในอีก ${timeText}`;
+                        statusMessage.className = 'status-message waiting';
+                    }
+                } else {
+                    if (statusElement) {
+                        statusElement.textContent = '🔴 ปิด (เปิดพรุ่งนี้ 11:00)';
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = 'ปิดทำการแล้ว - เปิดพรุ่งนี้ เวลา 11:00';
+                        statusMessage.className = 'status-message closed';
+                    }
+                }
+            }
+        }
+
+        // Mobile Navigation Toggle
+        function toggleMobileNav() {
+            const navMenu = document.getElementById('navMenu');
+            const navToggle = document.getElementById('navToggle');
+            
+            if (navMenu && navToggle) {
+                navToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                    navToggle.classList.toggle('active');
+                });
+            }
+        }
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                document.getElementById('authLink').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('bookingsLink').style.display = 'block';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStoreStatus();
+            toggleMobileNav();
+            checkAuth();
+            
+            // Update store status every minute
+            setInterval(updateStoreStatus, 60000);
+        });
+    </script>
     <script src="/stylesheets/contact.js"></script>
 </body>
 </html>

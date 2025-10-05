@@ -12,19 +12,40 @@
   <!-- Navigation -->
   <nav class="navbar">
     <div class="container">
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="navbar-content">
         <a href="/" class="navbar-brand">
           <i class="fas fa-microphone-alt"></i>
           Junrai Karaoke
         </a>
-        <ul class="navbar-nav">
-          <li><a href="/" class="nav-link active">หน้าหลัก</a></li>
-          <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-          <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
-          <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-          <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-          <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
-        </ul>
+        
+        <div class="navbar-main">
+          <ul class="navbar-nav">
+            <li><a href="/" class="nav-link active">หน้าหลัก</a></li>
+            <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+            <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
+            <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+            <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+            <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+          </ul>
+          
+          <!-- Store Hours Info -->
+          <div class="store-hours-info" id="storeHoursInfo">
+            <div class="hours-display">
+              <i class="fas fa-clock"></i>
+              <div class="hours-text">
+                <span class="hours-time">11.00 - 21.00</span>
+                <span class="hours-duration">10 ชม</span>
+              </div>
+            </div>
+            <div class="days-display">
+              <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
+              <span class="closed-day">(หยุด) จันทร์</span>
+            </div>
+            <div class="store-status" id="storeStatus">
+              <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -122,34 +143,109 @@
   <!-- Contact Section -->
   <section class="contact-section">
     <div class="container">
+      <div class="section-header">
+        <h2>ติดต่อเรา</h2>
+        <p>พร้อมให้บริการและตอบคำถามทุกเรื่อง</p>
+      </div>
+      
       <div class="contact-content">
         <div class="contact-info">
-          <h3>ติดต่อเรา</h3>
-          <div class="contact-item">
-            <i class="fas fa-phone"></i>
-            <span>02-123-4567</span>
-          </div>
-          <div class="contact-item">
-            <i class="fas fa-envelope"></i>
-            <span>info@junraikaraoke.com</span>
-          </div>
-          <div class="contact-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <span>123 ถนนสุขุมวิท กรุงเทพฯ 10110</span>
+          <div class="contact-card">
+            <div class="contact-header">
+              <i class="fas fa-info-circle"></i>
+              <h3>ข้อมูลติดต่อ</h3>
+            </div>
+            <div class="contact-body">
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-phone"></i>
+                </div>
+                <div class="contact-details">
+                  <strong>โทรศัพท์</strong>
+                  <span>02-xxx-xxxx</span>
+                  <span>081-xxx-xxxx</span>
+                </div>
+              </div>
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div class="contact-details">
+                  <strong>อีเมล</strong>
+                  <span>info@junraikaraoke.com</span>
+                </div>
+              </div>
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="contact-details">
+                  <strong>ที่อยู่</strong>
+                  <span>123 ถนนสุขุมวิท แขวงคลองเตย</span>
+                  <span>เขตคลองเตย กรุงเทพฯ 10110</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
         <div class="contact-hours">
-          <h3>เวลาเปิด-ปิด</h3>
-          <div class="hours-item">
-            <span>วันจันทร์ - วันศุกร์</span>
-            <span>10:00 - 02:00</span>
-          </div>
-          <div class="hours-item">
-            <span>วันเสาร์ - วันอาทิตย์</span>
-            <span>10:00 - 03:00</span>
+          <div class="hours-card">
+            <div class="contact-header">
+              <i class="fas fa-clock"></i>
+              <h3>เวลาทำการ</h3>
+            </div>
+            
+            <!-- Current Status -->
+            <div class="current-status-mini" id="currentStatusMini">
+              <div class="status-indicator-mini">
+                <span class="status-dot-mini" id="statusDotMini"></span>
+                <span class="status-message-mini" id="statusMessageMini">กำลังตรวจสอบสถานะ...</span>
+              </div>
+            </div>
+            
+            <div class="contact-body">
+              <div class="hours-list-mini">
+                <div class="hours-item main">
+                  <div class="hours-day">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>อังคาร - อาทิตย์</span>
+                  </div>
+                  <div class="hours-time">
+                    <strong>11:00 - 21:00</strong>
+                    <small>(10 ชั่วโมง)</small>
+                  </div>
+                </div>
+                <div class="hours-item closed">
+                  <div class="hours-day">
+                    <i class="fas fa-calendar-times"></i>
+                    <span>จันทร์</span>
+                  </div>
+                  <div class="hours-time">
+                    <strong>ปิด</strong>
+                    <small>(วันหยุดประจำ)</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="hours-note-mini">
+                <i class="fas fa-info-circle"></i>
+                <p>เวลาอาจเปลี่ยนแปลงในวันหยุดนักขัตฤกษ์</p>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+      
+      <div class="contact-actions">
+        <a href="/contact" class="btn btn-primary btn-lg">
+          <i class="fas fa-paper-plane"></i>
+          ส่งข้อความถึงเรา
+        </a>
+        <a href="tel:02-xxx-xxxx" class="btn btn-outline btn-lg">
+          <i class="fas fa-phone"></i>
+          โทรหาเรา
+        </a>
       </div>
     </div>
   </section>
@@ -159,10 +255,116 @@
     let currentUser = null;
     const API_BASE = '/api';
 
+    // Store Hours Management
+    function updateStoreStatus() {
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTime = currentHour + (currentMinute / 60);
+      
+      const statusElement = document.getElementById('statusText');
+      const statusMessageMini = document.getElementById('statusMessageMini');
+      const statusDotMini = document.getElementById('statusDotMini');
+      const hoursInfo = document.getElementById('storeHoursInfo');
+      
+      // Store hours: 11:00 - 21:00, Tuesday - Sunday (Closed Monday)
+      const openTime = 11; // 11:00
+      const closeTime = 21; // 21:00
+      const isMonday = currentDay === 1;
+      const isOpenDays = currentDay >= 2 || currentDay === 0; // Tuesday-Sunday
+      const isWithinHours = currentTime >= openTime && currentTime < closeTime;
+      
+      if (isMonday) {
+        // Monday - Closed
+        if (statusElement) {
+          statusElement.textContent = '🔴 ปิด (วันหยุด)';
+          statusElement.className = 'status-text status-closed';
+        }
+        if (statusMessageMini) {
+          statusMessageMini.textContent = 'ปิดทำการ - วันหยุดประจำ';
+          statusMessageMini.className = 'status-message-mini closed';
+        }
+        if (statusDotMini) {
+          statusDotMini.className = 'status-dot-mini closed';
+        }
+        if (hoursInfo) {
+          hoursInfo.classList.add('store-closed');
+        }
+      } else if (isOpenDays && isWithinHours) {
+        // Open
+        const hoursLeft = closeTime - currentTime;
+        const hoursText = hoursLeft > 1 ? `${Math.floor(hoursLeft)} ชม` : `${Math.floor(hoursLeft * 60)} นาที`;
+        
+        if (statusElement) {
+          statusElement.textContent = `🟢 เปิด (อีก ${hoursText})`;
+          statusElement.className = 'status-text status-open';
+        }
+        if (statusMessageMini) {
+          statusMessageMini.textContent = `เปิดให้บริการ - ปิดในอีก ${hoursText}`;
+          statusMessageMini.className = 'status-message-mini open';
+        }
+        if (statusDotMini) {
+          statusDotMini.className = 'status-dot-mini open';
+        }
+        if (hoursInfo) {
+          hoursInfo.classList.remove('store-closed');
+        }
+      } else {
+        // Closed
+        if (statusElement) {
+          statusElement.className = 'status-text status-closed';
+        }
+        if (statusDotMini) {
+          statusDotMini.className = 'status-dot-mini closed';
+        }
+        if (hoursInfo) {
+          hoursInfo.classList.add('store-closed');
+        }
+        
+        // Check if tomorrow is open
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowDay = tomorrow.getDay();
+        
+        if (tomorrowDay === 1) {
+          if (statusElement) {
+            statusElement.textContent = '🔴 ปิด (เปิดวันอังคาร 11:00)';
+          }
+          if (statusMessageMini) {
+            statusMessageMini.textContent = 'ปิดทำการ - เปิดวันอังคาร 11:00';
+            statusMessageMini.className = 'status-message-mini closed';
+          }
+        } else if (currentTime < openTime) {
+          const hoursUntilOpen = openTime - currentTime;
+          const timeText = hoursUntilOpen > 1 ? `${Math.floor(hoursUntilOpen)} ชม` : `${Math.floor(hoursUntilOpen * 60)} นาที`;
+          if (statusElement) {
+            statusElement.textContent = `🟡 ปิด (เปิดอีก ${timeText})`;
+          }
+          if (statusMessageMini) {
+            statusMessageMini.textContent = `ปิดทำการ - เปิดในอีก ${timeText}`;
+            statusMessageMini.className = 'status-message-mini waiting';
+          }
+        } else {
+          if (statusElement) {
+            statusElement.textContent = '🔴 ปิด (เปิดพรุ่งนี้ 11:00)';
+          }
+          if (statusMessageMini) {
+            statusMessageMini.textContent = 'ปิดทำการ - เปิดพรุ่งนี้ 11:00';
+            statusMessageMini.className = 'status-message-mini closed';
+          }
+        }
+      }
+    }
+
     // Initialize page
     document.addEventListener('DOMContentLoaded', () => {
       checkAuth();
       loadPopularRooms();
+      updateStoreStatus();
+      
+      // Update store status every minute
+      setInterval(updateStoreStatus, 60000);
     });
 
     // Check authentication
