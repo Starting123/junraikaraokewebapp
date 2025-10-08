@@ -4,7 +4,11 @@ const db = require('../db');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { 
+    title: 'Junrai Karaoke - ระบบจองห้องคาราโอเกะออนไลน์',
+    user: req.user || null,
+    message: null 
+  });
 });
 
 router.get('/roomForm', async function(req, res, next) {
@@ -17,7 +21,10 @@ router.get('/roomForm', async function(req, res, next) {
 }); 
 
 router.get('/contact', function(req, res, next) {
-  res.render('contact',);
+  res.render('contact', { 
+    title: 'ติดต่อเรา - Junrai Karaoke',
+    user: req.user || null 
+  });
 });
 
 router.get('/loginform', function(req, res, next) {
