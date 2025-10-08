@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/admin-unified.css">
+</head>
+<body>
+    <%- include('../partials/admin-navbar') %>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../partials/admin-sidebar') %>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-user-shield me-2"></i>Admin Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#adminModal">
+                                <i class="fas fa-plus"></i> Add Admin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form class="row g-3" method="GET">
+                            <div class="col-md-8">
+                                <label for="search" class="form-label">Search Admins</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       value="<%= search %>" placeholder="Search by name, email, or username">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Admins Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Admin Users</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (admins && admins.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Profile</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% admins.forEach(admin => { %>
+                                    <tr data-admin-id="<%= admin.id %>">
+                                        <td><%= admin.id %></td>
+                                        <td>
+                                            <% if (admin.profile_picture) { %>
+                                            <img src="/uploads/<%= admin.profile_picture %>" alt="Profile" 
+                                                 class="rounded-circle" width="40" height="40">
+                                            <% } else { %>
+                                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user-shield text-white"></i>
+                                            </div>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <strong><%= admin.first_name %> <%= admin.last_name %></strong>
+                                        </td>
+                                        <td><%= admin.username %></td>
+                                        <td><%= admin.email %></td>
+                                        <td><%= admin.phone_number || 'N/A' %></td>
+                                        <td>
+                                            <span class="badge bg-<%= admin.status === 'active' ? 'success' : admin.status === 'inactive' ? 'secondary' : 'danger' %>">
+                                                <%= admin.status.charAt(0).toUpperCase() + admin.status.slice(1) %>
+                                            </span>
+                                        </td>
+                                        <td><%= new Date(admin.created_at).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary edit-admin-btn" 
+                                                        data-admin-id="<%= admin.id %>" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <% if (admin.id != currentAdmin.id) { %>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-admin-btn" 
+                                                        data-admin-id="<%= admin.id %>" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <% if (totalPages > 1) { %>
+                        <nav aria-label="Admins pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                <% } %>
+                                
+                                <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&search=<%= search %>">
+                                        <%= i %>
+                                    </a>
+                                </li>
+                                <% } %>
+                                
+                                <% if (currentPage < totalPages) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <% } %>
+                            </ul>
+                        </nav>
+                        <% } %>
+
+                        <% } else { %>
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No admin users found</h4>
+                            <p class="text-muted">Try adjusting your search criteria or add a new admin.</p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="modal fade" id="adminModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminModalTitle">Add New Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="adminForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="adminId" name="id">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="firstName" name="first_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="lastName" name="last_name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">Username *</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="phoneNumber" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phoneNumber" name="phone_number">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="adminStatus" class="form-label">Status</label>
+                                <select class="form-select" id="adminStatus" name="status">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3" id="passwordSection">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmPassword" class="form-label">Confirm Password *</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <strong>Security Notice:</strong> Admin users have full access to the system. Only create admin accounts for trusted personnel.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Admin
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+        <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Admin Management JS -->
+    <script src="/javascripts/admin/admin-admins.js"></script>
+</body>
+</html>
+    <script src="/javascripts/admin/admin-admins.js"></script>
+</body>
+</html>

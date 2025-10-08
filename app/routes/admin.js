@@ -5,9 +5,38 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 
-// Middleware to verify admin authentication
-const verifyAdminAuth = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
+// Middleware to verify admin authentication for web pages
+const verifyAdminAuth = async (req, res, next) => {
+    try {
+        // Check for JWT token in cookies or authorization header
+        let token = req.cookies?.adminToken || req.headers.authorization?.split(' ')[1];
+        
+        if (!token) {
+            return res.redirect('/admin/login');
+        }
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'change_this_in_production');
+        
+        // Verify user exists and is admin
+        const [users] = await db.query('SELECT * FROM users WHERE id = ? AND role_id = 1', [decoded.id]);
+        
+        if (users.length === 0) {
+            res.clearCookie('adminToken');
+            return res.redirect('/admin/login');
+        }
+        
+        req.admin = users[0];
+        next();
+    } catch (error) {
+        console.error('Admin auth error:', error);
+        res.clearCookie('adminToken');
+        res.redirect('/admin/login');
+    }
+};
+
+// Middleware for API endpoints (JSON responses)
+const verifyAdminAPI = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.adminToken;
     
     if (!token) {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
@@ -27,6 +56,113 @@ const verifyAdminAuth = (req, res, next) => {
         res.status(400).json({ error: 'Invalid token.' });
     }
 };
+
+// ==========================================
+// ADMIN AUTHENTICATION
+// ==========================================
+
+// GET /admin - Redirect to dashboard or login
+router.get('/', (req, res) => {
+    const token = req.cookies?.adminToken;
+    if (token) {
+        try {
+            jwt.verify(token, process.env.JWT_SECRET || 'change_this_in_production');
+            res.redirect('/admin/dashboard');
+        } catch (error) {
+            res.clearCookie('adminToken');
+            res.redirect('/admin/login');
+        }
+    } else {
+        res.redirect('/admin/login');
+    }
+});
+
+// GET /admin/login - Admin login page
+router.get('/login', (req, res) => {
+    res.render('admin/login', {
+        title: 'Admin Login - JunRai Karaoke',
+        error: req.query.error || null
+    });
+});
+
+// POST /admin/login - Handle admin login
+router.post('/login', [
+    body('username').notEmpty().withMessage('Username is required'),
+    body('password').notEmpty().withMessage('Password is required')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.render('admin/login', {
+                title: 'Admin Login - JunRai Karaoke',
+                error: 'Please fill in all fields'
+            });
+        }
+
+        const { username, password } = req.body;
+
+        // Find admin user
+        const [users] = await db.query(
+            'SELECT * FROM users WHERE username = ? AND role_id = 1',
+            [username]
+        );
+
+        if (users.length === 0) {
+            return res.render('admin/login', {
+                title: 'Admin Login - JunRai Karaoke',
+                error: 'Invalid username or password'
+            });
+        }
+
+        const user = users[0];
+
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.render('admin/login', {
+                title: 'Admin Login - JunRai Karaoke',
+                error: 'Invalid username or password'
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user.id, username: user.username, role_id: user.role_id },
+            process.env.JWT_SECRET || 'change_this_in_production',
+            { expiresIn: '8h' }
+        );
+
+        // Set secure cookie
+        res.cookie('admin_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 8 * 60 * 60 * 1000, // 8 hours
+            sameSite: 'strict',
+            path: '/admin'
+        });
+
+        res.redirect('/admin/dashboard');
+
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.render('admin/login', {
+            title: 'Admin Login - JunRai Karaoke',
+            error: 'Login failed. Please try again.'
+        });
+    }
+});
+
+// POST /admin/logout - Handle admin logout
+router.post('/logout', (req, res) => {
+    res.clearCookie('adminToken');
+    res.redirect('/admin/login');
+});
+
+// GET /admin/logout - Handle admin logout (GET for convenience)
+router.get('/logout', (req, res) => {
+    res.clearCookie('adminToken');
+    res.redirect('/admin/login');
+});
 
 // ==========================================
 // ADMIN DASHBOARD - MAIN OVERVIEW
@@ -51,10 +187,11 @@ router.get('/dashboard', verifyAdminAuth, async (req, res) => {
 });
 
 // API endpoint for dashboard statistics
-router.get('/api/stats', verifyAdminAuth, async (req, res) => {
+router.get('/api/dashboard-stats', verifyAdminAPI, async (req, res) => {
     try {
         const stats = await getDashboardStats();
-        res.json(stats);
+        const recent = await getRecentActivities();
+        res.json({ success: true, stats, recent });
     } catch (error) {
         console.error('Stats API error:', error);
         res.status(500).json({ error: 'Failed to fetch statistics' });
@@ -62,15 +199,53 @@ router.get('/api/stats', verifyAdminAuth, async (req, res) => {
 });
 
 // API endpoint for charts data
-router.get('/api/charts', verifyAdminAuth, async (req, res) => {
+router.get('/api/charts-data', verifyAdminAPI, async (req, res) => {
     try {
         const chartsData = await getChartsData();
-        res.json(chartsData);
+        res.json({ success: true, ...chartsData });
     } catch (error) {
         console.error('Charts API error:', error);
         res.status(500).json({ error: 'Failed to fetch charts data' });
     }
 });
+
+// Helper function to get recent activities
+async function getRecentActivities() {
+    try {
+        // Recent bookings
+        const [recentBookings] = await db.query(`
+            SELECT 
+                b.id, b.status, b.booking_date,
+                CONCAT(u.first_name, ' ', u.last_name) as customer_name,
+                r.room_name
+            FROM bookings b
+            LEFT JOIN users u ON b.user_id = u.id
+            LEFT JOIN rooms r ON b.room_id = r.id
+            ORDER BY b.created_at DESC
+            LIMIT 5
+        `);
+
+        // Recent payments
+        const [recentPayments] = await db.query(`
+            SELECT 
+                p.id, p.status, p.amount, p.payment_method,
+                CONCAT(u.first_name, ' ', u.last_name) as customer_name
+            FROM slip_payments p
+            LEFT JOIN bookings b ON p.booking_id = b.id
+            LEFT JOIN users u ON b.user_id = u.id
+            ORDER BY p.created_at DESC
+            LIMIT 5
+        `);
+
+        return {
+            bookings: recentBookings,
+            payments: recentPayments
+        };
+    } catch (error) {
+        console.error('Recent activities error:', error);
+        return { bookings: [], payments: [] };
+    }
+}
 
 // Helper function to get dashboard statistics
 async function getDashboardStats() {
@@ -947,7 +1122,7 @@ router.delete('/payments/:id', verifyAdminAuth, async (req, res) => {
 });
 
 // API endpoint to get users for booking form
-router.get('/api/users', verifyAdminAuth, async (req, res) => {
+router.get('/api/users', verifyAdminAPI, async (req, res) => {
     try {
         const [users] = await db.query(`
             SELECT id, username, first_name, last_name, email 
@@ -963,7 +1138,7 @@ router.get('/api/users', verifyAdminAuth, async (req, res) => {
 });
 
 // API endpoint to get rooms for booking form
-router.get('/api/rooms', verifyAdminAuth, async (req, res) => {
+router.get('/api/rooms', verifyAdminAPI, async (req, res) => {
     try {
         const [rooms] = await db.query(`
             SELECT id, room_name, room_type, hourly_rate, capacity, status 
@@ -975,6 +1150,239 @@ router.get('/api/rooms', verifyAdminAuth, async (req, res) => {
     } catch (error) {
         console.error('Get rooms API error:', error);
         res.status(500).json({ error: 'Failed to fetch rooms' });
+    }
+});
+
+// ======================
+// ADMIN USERS MANAGEMENT - API ENDPOINTS
+// ======================
+
+// Get single admin (API endpoint)
+router.get('/admins/:id', verifyAdminAPI, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const [admins] = await db.query(
+            'SELECT id, first_name, last_name, username, email, phone_number, status, created_at FROM users WHERE id = ? AND role_id = 1',
+            [id]
+        );
+        
+        if (admins.length === 0) {
+            return res.json({ success: false, error: 'Admin not found' });
+        }
+        
+        res.json({ success: true, admin: admins[0] });
+    } catch (error) {
+        console.error('Error fetching admin:', error);
+        res.json({ success: false, error: 'Failed to fetch admin' });
+    }
+});
+
+// Create admin (API endpoint)
+router.post('/admins', verifyAdminAPI, async (req, res) => {
+    try {
+        const { 
+            first_name, 
+            last_name, 
+            username, 
+            email, 
+            phone_number, 
+            password,
+            status = 'active'
+        } = req.body;
+        
+        // Validate required fields
+        if (!first_name || !last_name || !username || !email || !password) {
+            return res.json({ 
+                success: false, 
+                error: 'Please fill in all required fields' 
+            });
+        }
+        
+        // Check if username or email already exists
+        const [existingUsers] = await db.query(
+            'SELECT id FROM users WHERE username = ? OR email = ?',
+            [username, email]
+        );
+        
+        if (existingUsers.length > 0) {
+            return res.json({ 
+                success: false, 
+                error: 'Username or email already exists' 
+            });
+        }
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Insert new admin
+        const [result] = await db.query(
+            `INSERT INTO users (first_name, last_name, username, email, phone_number, password, role_id, status, created_at) 
+             VALUES (?, ?, ?, ?, ?, ?, 1, ?, NOW())`,
+            [first_name, last_name, username, email, phone_number, hashedPassword, status]
+        );
+        
+        res.json({ 
+            success: true, 
+            message: 'Admin created successfully',
+            adminId: result.insertId
+        });
+        
+    } catch (error) {
+        console.error('Error creating admin:', error);
+        res.json({ success: false, error: 'Failed to create admin' });
+    }
+});
+
+// Update admin (API endpoint)
+router.put('/admins/:id', verifyAdminAPI, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { 
+            first_name, 
+            last_name, 
+            username, 
+            email, 
+            phone_number, 
+            password,
+            status
+        } = req.body;
+        
+        // Build update query dynamically
+        let updateFields = [];
+        let updateValues = [];
+        
+        if (first_name) {
+            updateFields.push('first_name = ?');
+            updateValues.push(first_name);
+        }
+        
+        if (last_name) {
+            updateFields.push('last_name = ?');
+            updateValues.push(last_name);
+        }
+        
+        if (username) {
+            updateFields.push('username = ?');
+            updateValues.push(username);
+        }
+        
+        if (email) {
+            updateFields.push('email = ?');
+            updateValues.push(email);
+        }
+        
+        if (phone_number !== undefined) {
+            updateFields.push('phone_number = ?');
+            updateValues.push(phone_number);
+        }
+        
+        if (status) {
+            updateFields.push('status = ?');
+            updateValues.push(status);
+        }
+        
+        // Handle password update if provided
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updateFields.push('password = ?');
+            updateValues.push(hashedPassword);
+        }
+        
+        if (updateFields.length === 0) {
+            return res.json({ 
+                success: false, 
+                error: 'No valid fields to update' 
+            });
+        }
+        
+        updateFields.push('updated_at = NOW()');
+        updateValues.push(id);
+        
+        // Check for duplicate username/email (excluding current admin)
+        if (username || email) {
+            let checkQuery = 'SELECT id FROM users WHERE (';
+            let checkParams = [];
+            let conditions = [];
+            
+            if (username) {
+                conditions.push('username = ?');
+                checkParams.push(username);
+            }
+            
+            if (email) {
+                conditions.push('email = ?');
+                checkParams.push(email);
+            }
+            
+            checkQuery += conditions.join(' OR ') + ') AND id != ?';
+            checkParams.push(id);
+            
+            const [existingUsers] = await db.query(checkQuery, checkParams);
+            
+            if (existingUsers.length > 0) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Username or email already exists' 
+                });
+            }
+        }
+        
+        // Update admin
+        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ? AND role_id = 1`;
+        await db.query(query, updateValues);
+        
+        res.json({ 
+            success: true, 
+            message: 'Admin updated successfully' 
+        });
+        
+    } catch (error) {
+        console.error('Error updating admin:', error);
+        res.json({ success: false, error: 'Failed to update admin' });
+    }
+});
+
+// Delete admin (API endpoint)
+router.delete('/admins/:id', verifyAdminAPI, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Prevent deleting the current admin
+        if (parseInt(id) === req.admin.id) {
+            return res.json({ 
+                success: false, 
+                error: 'Cannot delete your own admin account' 
+            });
+        }
+        
+        // Check if admin exists
+        const [existingAdmins] = await db.query(
+            'SELECT id FROM users WHERE id = ? AND role_id = 1',
+            [id]
+        );
+        
+        if (existingAdmins.length === 0) {
+            return res.json({ 
+                success: false, 
+                error: 'Admin not found' 
+            });
+        }
+        
+        // Delete admin
+        await db.query(
+            'DELETE FROM users WHERE id = ? AND role_id = 1',
+            [id]
+        );
+        
+        res.json({ 
+            success: true, 
+            message: 'Admin deleted successfully' 
+        });
+        
+    } catch (error) {
+        console.error('Error deleting admin:', error);
+        res.json({ success: false, error: 'Failed to delete admin' });
     }
 });
 

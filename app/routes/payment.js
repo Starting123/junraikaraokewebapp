@@ -6,8 +6,25 @@ const fs = require('fs-extra');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 const { body, validationResult } = require('express-validator');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const db = require('../db');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const ThaiPDFGenerator = require('../services/ThaiPDFGenerator');
+
+// Initialize Thai PDF generator
+const pdfGenerator = new ThaiPDFGenerator();
+
+// Rate limiting for payment endpoints
+const paymentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 payment attempts per windowMs
+  message: {
+    error: 'Too many payment attempts, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 // Middleware to check if user is authenticated (optional for slip payments)
 function optionalAuth(req, res, next) {

@@ -1,0 +1,273 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # Security and dependency audit
+  security-audit:
+    runs-on: ubuntu-latest
+    name: Security Audit
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'app/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./app
+      run: npm ci
+      
+    - name: Run security audit
+      working-directory: ./app
+      run: npm audit --audit-level=moderate
+      
+    - name: Check for vulnerabilities
+      working-directory: ./app
+      run: |
+        npm audit --json > audit-results.json
+        VULNS=$(cat audit-results.json | jq '.vulnerabilities | length')
+        if [ "$VULNS" -gt 0 ]; then
+          echo "❌ Found $VULNS vulnerabilities"
+          cat audit-results.json | jq '.vulnerabilities'
+          exit 1
+        else
+          echo "✅ No vulnerabilities found"
+        fi
+
+  # Linting and code quality
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Quality Check
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'app/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./app
+      run: npm ci
+      
+    - name: Run ESLint
+      working-directory: ./app
+      run: npm run lint:check
+      
+    - name: Check code formatting
+      working-directory: ./app
+      run: |
+        # Check if any files would be changed by prettier
+        npx prettier --check . || {
+          echo "❌ Code formatting issues found. Run 'npm run lint' to fix."
+          exit 1
+        }
+
+  # Unit and Integration Tests
+  test:
+    runs-on: ubuntu-latest
+    name: Tests
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: junraikaraoketest
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'app/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./app
+      run: npm ci
+      
+    - name: Setup test database
+      run: |
+        mysql -h 127.0.0.1 -u root -ptestpassword junraikaraoketest < ./app/database/test-schema.sql
+      
+    - name: Create logs directory
+      working-directory: ./app
+      run: mkdir -p logs
+      
+    - name: Run unit tests
+      working-directory: ./app
+      env:
+        NODE_ENV: test
+        DB_HOST: 127.0.0.1
+        DB_USER: root
+        DB_PASSWORD: testpassword
+        DB_NAME: junraikaraoketest
+        JWT_SECRET: test-jwt-secret-for-ci
+        BCRYPT_ROUNDS: 4
+      run: npm run test:unit
+      
+    - name: Run integration tests
+      working-directory: ./app
+      env:
+        NODE_ENV: test
+        DB_HOST: 127.0.0.1
+        DB_USER: root
+        DB_PASSWORD: testpassword
+        DB_NAME: junraikaraoketest
+        JWT_SECRET: test-jwt-secret-for-ci
+        BCRYPT_ROUNDS: 4
+      run: npm run test:integration
+      
+    - name: Generate coverage report
+      working-directory: ./app
+      env:
+        NODE_ENV: test
+        DB_HOST: 127.0.0.1
+        DB_USER: root
+        DB_PASSWORD: testpassword
+        DB_NAME: junraikaraoketest
+        JWT_SECRET: test-jwt-secret-for-ci
+      run: npm run test:coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./app/coverage
+        fail_ci_if_error: true
+        
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: |
+          app/coverage/
+          app/logs/
+
+  # Build and deployment readiness check
+  build:
+    runs-on: ubuntu-latest
+    name: Build Check
+    needs: [security-audit, lint, test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'app/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./app
+      run: npm ci
+      
+    - name: Run production build check
+      working-directory: ./app
+      run: npm run build:prod
+      
+    - name: Check for production readiness
+      working-directory: ./app
+      run: |
+        echo "✅ Checking production readiness..."
+        
+        # Check required environment variables are documented
+        if [ ! -f ".env.example" ]; then
+          echo "❌ Missing .env.example file"
+          exit 1
+        fi
+        
+        # Check for sensitive data in code
+        if grep -r "password.*=" . --include="*.js" --exclude-dir=node_modules --exclude-dir=tests; then
+          echo "❌ Found hardcoded passwords in code"
+          exit 1
+        fi
+        
+        echo "✅ Production readiness check passed"
+
+  # Notify on success/failure
+  notify:
+    runs-on: ubuntu-latest
+    name: Notification
+    needs: [security-audit, lint, test, build]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: ${{ needs.security-audit.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
+      run: |
+        echo "🎉 All checks passed! Ready for deployment."
+        
+    - name: Notify failure
+      if: ${{ needs.security-audit.result == 'failure' || needs.lint.result == 'failure' || needs.test.result == 'failure' || needs.build.result == 'failure' }}
+      run: |
+        echo "❌ Some checks failed. Please review the logs."
+        exit 1
+
+  # Deploy to staging (only on main branch)
+  deploy-staging:
+    runs-on: ubuntu-latest
+    name: Deploy to Staging
+    needs: [security-audit, lint, test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to staging server
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        # Add your deployment commands here
+        # Example: scp, rsync, docker deploy, etc.
+        echo "✅ Staging deployment completed"
+
+  # Performance and Security Testing
+  security-test:
+    runs-on: ubuntu-latest
+    name: Security Tests
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run OWASP ZAP Security Scan
+      uses: zaproxy/action-full-scan@v0.4.0
+      with:
+        target: 'http://localhost:3000'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
