@@ -62,20 +62,33 @@
                     <p>ยินดีต้อนรับกลับสู่ Junrai Karaoke</p>
                 </div>
                 
-                <form id="loginForm" class="auth-form">
-                    <div class="form-group">
+                <form id="loginForm" class="auth-form" data-validate data-rules='{}'>
+                    <div class="form-field">
                         <label class="form-label">
                             <i class="fas fa-envelope"></i> อีเมล
                         </label>
-                        <input type="email" class="form-control" id="loginEmail" placeholder="กรุณาใส่อีเมลของคุณ" required>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="loginEmail" 
+                            name="email"
+                            placeholder="กรุณาใส่อีเมลของคุณ" 
+                            required>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-field">
                         <label class="form-label">
                             <i class="fas fa-lock"></i> รหัสผ่าน
                         </label>
                         <div class="password-input">
-                            <input type="password" class="form-control" id="loginPassword" placeholder="กรุณาใส่รหัสผ่าน" required>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="loginPassword" 
+                                name="password"
+                                placeholder="กรุณาใส่รหัสผ่าน" 
+                                required
+                                minlength="6">
                             <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -115,27 +128,51 @@
                     <p>เริ่มต้นการใช้งาน Junrai Karaoke</p>
                 </div>
                 
-                <form id="registerForm" class="auth-form">
-                    <div class="form-group">
+                <form id="registerForm" class="auth-form" data-validate data-rules='{}'>
+                    <div class="form-field">
                         <label class="form-label">
                             <i class="fas fa-user"></i> ชื่อ-นามสกุล
                         </label>
-                        <input type="text" class="form-control" id="registerName" placeholder="กรุณาใส่ชื่อ-นามสกุล" required>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="registerName" 
+                            name="name"
+                            placeholder="กรุณาใส่ชื่อ-นามสกุล" 
+                            required
+                            minlength="2"
+                            maxlength="100">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-field">
                         <label class="form-label">
                             <i class="fas fa-envelope"></i> อีเมล
                         </label>
-                        <input type="email" class="form-control" id="registerEmail" placeholder="กรุณาใส่อีเมลของคุณ" required>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="registerEmail" 
+                            name="email"
+                            placeholder="กรุณาใส่อีเมลของคุณ" 
+                            required
+                            data-validator="unique"
+                            data-unique-endpoint="/api/auth/check-email">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-field">
                         <label class="form-label">
                             <i class="fas fa-lock"></i> รหัสผ่าน
                         </label>
                         <div class="password-input">
-                            <input type="password" class="form-control" id="registerPassword" placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)" required>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="registerPassword" 
+                                name="password"
+                                placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)" 
+                                required
+                                minlength="8"
+                                data-validator="strongPassword">
                             <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -150,12 +187,19 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-field">
                         <label class="form-label">
                             <i class="fas fa-lock"></i> ยืนยันรหัสผ่าน
                         </label>
                         <div class="password-input">
-                            <input type="password" class="form-control" id="registerConfirmPassword" placeholder="กรุณายืนยันรหัสผ่าน" required>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="registerConfirmPassword" 
+                                name="confirmPassword"
+                                placeholder="กรุณายืนยันรหัสผ่าน" 
+                                required
+                                data-match="registerPassword">
                             <button type="button" class="password-toggle" onclick="togglePassword('registerConfirmPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -558,8 +602,92 @@
             
             // Update store status every minute
             setInterval(updateStoreStatus, 60000);
+            
+            // Initialize form validation
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (loginForm) {
+                junraiFormValidator.registerForm(loginForm, {
+                    email: [
+                        { type: 'required' },
+                        { type: 'email' }
+                    ],
+                    password: [
+                        { type: 'required' },
+                        { type: 'minLength', min: 6 }
+                    ]
+                });
+            }
+
+            if (registerForm) {
+                junraiFormValidator.registerForm(registerForm, {
+                    name: [
+                        { type: 'required' },
+                        { type: 'minLength', min: 2 },
+                        { type: 'maxLength', max: 100 }
+                    ],
+                    email: [
+                        { type: 'required' },
+                        { type: 'email' },
+                        { type: 'unique', endpoint: '/api/auth/check-email', field: 'email' }
+                    ],
+                    password: [
+                        { type: 'required' },
+                        { type: 'minLength', min: 8 },
+                        { type: 'strongPassword' }
+                    ],
+                    confirmPassword: [
+                        { type: 'required' },
+                        { type: 'match', match: 'registerPassword' }
+                    ]
+                });
+
+                // Enhanced password strength indicator
+                const passwordField = document.getElementById('registerPassword');
+                const strengthMeter = document.getElementById('registerPasswordStrength');
+                const strengthBar = document.getElementById('registerStrengthBar');
+                const strengthText = document.getElementById('registerStrengthText');
+
+                if (passwordField && strengthMeter) {
+                    passwordField.addEventListener('input', function() {
+                        const password = this.value;
+                        const strength = calculatePasswordStrength(password);
+                        
+                        strengthMeter.style.display = password.length > 0 ? 'block' : 'none';
+                        strengthBar.className = `strength-bar strength-${strength.level}`;
+                        strengthBar.style.width = `${strength.score}%`;
+                        strengthText.textContent = strength.text;
+                    });
+                }
+            }
         });
+
+        // Password strength calculation
+        function calculatePasswordStrength(password) {
+            let score = 0;
+            let level = 'weak';
+            let text = 'รหัสผ่านอ่อน';
+
+            if (password.length >= 8) score += 20;
+            if (password.length >= 12) score += 10;
+            if (/[a-z]/.test(password)) score += 15;
+            if (/[A-Z]/.test(password)) score += 15;
+            if (/[0-9]/.test(password)) score += 15;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 25;
+
+            if (score >= 80) {
+                level = 'strong';
+                text = 'รหัสผ่านแข็งแรง';
+            } else if (score >= 60) {
+                level = 'medium';
+                text = 'รหัสผ่านปานกลาง';
+            }
+
+            return { score: Math.min(100, score), level, text };
+        }
     </script>
+    <script src="/javascripts/modules/form-validator.js"></script>
     <script src="/javascripts/shared/auth-nav.js"></script>
 </body>
 </html>

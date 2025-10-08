@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'th' %>" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <!-- Performance Hints -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- SEO Meta Tags -->
+    <title><%= typeof title !== 'undefined' ? title + ' | จันทร์ใส คาราโอเกะ' : 'จันทร์ใส คาราโอเกะ - ประสบการณ์คาราโอเกะระดับพรีเมียม' %></title>
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'สัมผัสประสบการณ์คาราโอเกะระดับพรีเมียมที่จันทร์ใส - ห้องทันสมัย เพลงล่าสุด ระบบเสียงคุณภาพสูง จองห้องของคุณวันนี้!' %>">
+    <meta name="keywords" content="karaoke, จันทร์ใส, คาราโอเกะ, ร้องเพลง, บันเทิง, ดนตรี, ห้องพัก, จองห้อง, premium karaoke bangkok">
+    <meta name="author" content="Junrai Karaoke">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | จันทร์ใส คาราโอเกะ' : 'จันทร์ใส คาราโอเกะ - ประสบการณ์คาราโอเกะระดับพรีเมียม' %>">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' ? description : 'สัมผัสประสบการณ์คาราโอเกะระดับพรีเมียมที่จันทร์ใส - ห้องทันสมัย เพลงล่าสุด ระบบเสียงคุณภาพสูง' %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= typeof url !== 'undefined' ? url : 'https://junraikaraoke.com' %>">
+    <meta property="og:image" content="/images/og-image-junrai.jpg">
+    <meta property="og:locale" content="th_TH">
+    <meta property="og:site_name" content="จันทร์ใส คาราโอเกะ">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title + ' | จันทร์ใส คาราโอเกะ' : 'จันทร์ใส คาราโอเกะ - ประสบการณ์คาราโอเกะระดับพรีเมียม' %>">
+    <meta name="twitter:description" content="<%= typeof description !== 'undefined' ? description : 'สัมผัสประสบการณ์คาราโอเกะระดับพรีเมียมที่จันทร์ใส - ห้องทันสมัย เพลงล่าสุด ระบบเสียงคุณภาพสูง' %>">
+    <meta name="twitter:image" content="/images/twitter-card-junrai.jpg">
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/apple-touch-icon-120x120.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#FF6B35">
+    <meta name="msapplication-TileColor" content="#FF6B35">
+    
+    <!-- Theme CSS (Unified Design System with Junrai Branding) -->
+    <link rel="stylesheet" href="/stylesheets/theme.css">
+    
+    <!-- Page-specific CSS (only load if needed) -->
+    <% if (typeof pageCSS !== 'undefined' && pageCSS.length > 0) { %>
+        <% pageCSS.forEach(function(css) { %>
+            <link rel="stylesheet" href="/stylesheets/<%= css %>.css">
+        <% }); %>
+    <% } %>
+    
+    <!-- Critical Theme Initialization (inline for zero flash) -->
+    <script>
+        (function() {
+            // Get saved theme or detect system preference
+            const savedTheme = localStorage.getItem('junrai-theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+            
+            // Apply theme immediately to prevent flash
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Store the preference
+            localStorage.setItem('junrai-theme', theme);
+        })();
+    </script>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+        <span id="themeIcon">🌙</span>
+    </button>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-container">
+            <!-- Brand Logo -->
+            <a href="/" class="navbar-brand" aria-label="จันทร์ใส คาราโอเกะ หน้าหลัก">
+                <div class="brand-logo">
+                    <i class="fas fa-microphone" aria-hidden="true"></i>
+                    <span class="brand-text">จันทร์ใส</span>
+                    <span class="brand-subtitle">คาราโอเกะ</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <ul class="navbar-nav" id="navbarNav" role="menubar">
+                <li role="none">
+                    <a href="/" 
+                       class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'home' ? 'active' : '' %>" 
+                       role="menuitem"
+                       <%= typeof currentPage !== 'undefined' && currentPage === 'home' ? 'aria-current="page"' : '' %>>
+                        <i class="fas fa-home" aria-hidden="true"></i>
+                        <span>หน้าหลัก</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="/rooms" 
+                       class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'rooms' ? 'active' : '' %>" 
+                       role="menuitem"
+                       <%= typeof currentPage !== 'undefined' && currentPage === 'rooms' ? 'aria-current="page"' : '' %>>
+                        <i class="fas fa-door-open" aria-hidden="true"></i>
+                        <span>ห้องพัก</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="/bookings" 
+                       class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'bookings' ? 'active' : '' %>" 
+                       role="menuitem"
+                       <%= typeof currentPage !== 'undefined' && currentPage === 'bookings' ? 'aria-current="page"' : '' %>>
+                        <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                        <span>จองห้อง</span>
+                    </a>
+                </li>
+                <li role="none">
+                    <a href="/contact" 
+                       class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'contact' ? 'active' : '' %>" 
+                       role="menuitem"
+                       <%= typeof currentPage !== 'undefined' && currentPage === 'contact' ? 'aria-current="page"' : '' %>>
+                        <i class="fas fa-phone" aria-hidden="true"></i>
+                        <span>ติดต่อเรา</span>
+                    </a>
+                </li>
+                
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <!-- Authenticated User Menu -->
+                    <li class="user-menu" role="none">
+                        <div class="navbar-user">
+                            <div class="user-avatar" title="<%= user.firstName || user.username || 'ผู้ใช้' %>">
+                                <%= (user.firstName ? user.firstName.charAt(0) : (user.username ? user.username.charAt(0) : 'U')).toUpperCase() %>
+                            </div>
+                            <button class="user-dropdown-toggle" 
+                                    id="userMenuToggle" 
+                                    aria-haspopup="true" 
+                                    aria-expanded="false"
+                                    aria-label="เมนูผู้ใช้">
+                                <span><%= user.firstName || user.username || 'ผู้ใช้' %></span>
+                                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                            </button>
+                            <div class="user-dropdown" id="userDropdown" role="menu">
+                                <a href="/dashboard" 
+                                   class="user-dropdown-item" 
+                                   role="menuitem">
+                                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                                    แดชบอร์ด
+                                </a>
+                                <a href="/profile" 
+                                   class="user-dropdown-item" 
+                                   role="menuitem">
+                                    <i class="fas fa-user" aria-hidden="true"></i>
+                                    โปรไฟล์
+                                </a>
+                                <a href="/bookings/history" 
+                                   class="user-dropdown-item" 
+                                   role="menuitem">
+                                    <i class="fas fa-history" aria-hidden="true"></i>
+                                    ประวัติการจอง
+                                </a>
+                                <div class="user-dropdown-divider" role="separator"></div>
+                                <a href="/auth/logout" 
+                                   class="user-dropdown-item" 
+                                   role="menuitem">
+                                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                                    ออกจากระบบ
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                <% } else { %>
+                    <!-- Guest Menu -->
+                    <li role="none">
+                        <a href="/auth/login" 
+                           class="nav-link" 
+                           role="menuitem">
+                            <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                            <span>เข้าสู่ระบบ</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="/auth/register" 
+                           class="btn btn-primary btn-sm" 
+                           role="menuitem">
+                            <i class="fas fa-user-plus" aria-hidden="true"></i>
+                            <span>สมัครสมาชิก</span>
+                        </a>
+                    </li>
+                <% } %>
+            </ul>
+
+            <!-- Theme Toggle & Mobile Menu -->
+            <div class="navbar-actions">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle" 
+                        id="themeToggle" 
+                        aria-label="เปลี่ยนธีมแสง/มืด"
+                        title="เปลี่ยนธีมแสง/มืด">
+                    <span id="themeIcon" aria-hidden="true">🌙</span>
+                </button>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="navbar-toggle" 
+                        id="navbarToggle" 
+                        aria-label="เปิด/ปิดเมนูมือถือ"
+                        aria-expanded="false"
+                        aria-controls="navbarNav">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-label="Notifications"></div>
+
+    <!-- Alert Messages (Server-side) -->
+    <% if (typeof messages !== 'undefined' && messages) { %>
+        <div class="container" style="padding-top: var(--space-4);">
+            <% if (messages.success) { %>
+                <div class="alert alert-success fade-in" role="alert">
+                    <div class="alert-icon">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">สำเร็จ!</div>
+                        <div class="alert-message"><%= messages.success %></div>
+                    </div>
+                    <button type="button" class="alert-close" aria-label="ปิดข้อความแจ้งเตือน">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+            <% } %>
+            <% if (messages.error) { %>
+                <div class="alert alert-error fade-in" role="alert">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">เกิดข้อผิดพลาด!</div>
+                        <div class="alert-message"><%= messages.error %></div>
+                    </div>
+                    <button type="button" class="alert-close" aria-label="ปิดข้อความแจ้งเตือน">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+            <% } %>
+            <% if (messages.warning) { %>
+                <div class="alert alert-warning fade-in" role="alert">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">คำเตือน!</div>
+                        <div class="alert-message"><%= messages.warning %></div>
+                    </div>
+                    <button type="button" class="alert-close" aria-label="ปิดข้อความแจ้งเตือน">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+            <% } %>
+            <% if (messages.info) { %>
+                <div class="alert alert-info fade-in" role="alert">
+                    <div class="alert-icon">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">ข้อมูล</div>
+                        <div class="alert-message"><%= messages.info %></div>
+                    </div>
+                    <button type="button" class="alert-close" aria-label="ปิดข้อความแจ้งเตือน">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <div class="brand-logo">
+                            <i class="fas fa-microphone" aria-hidden="true"></i>
+                            <h4 class="heading-4">จันทร์ใส คาราโอเกะ</h4>
+                        </div>
+                        <p class="text-small">ประสบการณ์คาราโอเกะระดับพรีเมียม พร้อมระบบเสียงที่ทันสมัย เพลงล่าสุด และบรรยากาศที่อบอุ่น</p>
+                        
+                        <!-- Social Links -->
+                        <div class="social-links">
+                            <a href="https://facebook.com/junraikaraoke" 
+                               class="social-link facebook" 
+                               aria-label="ติดตามเราบน Facebook"
+                               target="_blank" 
+                               rel="noopener noreferrer">
+                                <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                            </a>
+                            <a href="https://instagram.com/junraikaraoke" 
+                               class="social-link instagram" 
+                               aria-label="ติดตามเราบน Instagram"
+                               target="_blank" 
+                               rel="noopener noreferrer">
+                                <i class="fab fa-instagram" aria-hidden="true"></i>
+                            </a>
+                            <a href="https://line.me/ti/p/@junraikaraoke" 
+                               class="social-link line" 
+                               aria-label="ติดต่อเราผ่าน LINE"
+                               target="_blank" 
+                               rel="noopener noreferrer">
+                                <i class="fab fa-line" aria-hidden="true"></i>
+                            </a>
+                            <a href="https://tiktok.com/@junraikaraoke" 
+                               class="social-link tiktok" 
+                               aria-label="ติดตามเราบน TikTok"
+                               target="_blank" 
+                               rel="noopener noreferrer">
+                                <i class="fab fa-tiktok" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h5 class="heading-5">เมนูหลัก</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">หน้าหลัก</a></li>
+                        <li><a href="/rooms">ห้องพัก</a></li>
+                        <li><a href="/bookings">จองห้อง</a></li>
+                        <li><a href="/contact">ติดต่อเรา</a></li>
+                        <li><a href="/about">เกี่ยวกับเรา</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h5 class="heading-5">บริการของเรา</h5>
+                    <ul class="footer-links">
+                        <li><a href="/rooms?type=standard">ห้องมาตรฐาน</a></li>
+                        <li><a href="/rooms?type=premium">ห้องพรีเมียม</a></li>
+                        <li><a href="/rooms?type=vip">ห้อง VIP Suite</a></li>
+                        <li><a href="/rooms?type=party">ห้องปาร์ตี้</a></li>
+                        <li><a href="/events">จัดงานเลี้ยง</a></li>
+                        <li><a href="/catering">บริการอาหาร</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h5 class="heading-5">ติดต่อเรา</h5>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                            <span>123 ถนนสุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone" aria-hidden="true"></i>
+                            <a href="tel:+6621234567">02-123-4567</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-mobile-alt" aria-hidden="true"></i>
+                            <a href="tel:+66812345678">081-234-5678</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            <a href="mailto:info@junraikaraoke.com">info@junraikaraoke.com</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            <span>เปิดทุกวัน 18:00 - 02:00 น.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p class="copyright">
+                        © <%= new Date().getFullYear() %> จันทร์ใส คาราโอเกะ. สงวนลิขสิทธิ์ทุกประการ
+                    </p>
+                    <div class="footer-legal">
+                        <a href="/privacy" rel="nofollow">นโยบายความเป็นส่วนตัว</a>
+                        <span class="separator">•</span>
+                        <a href="/terms" rel="nofollow">เงื่อนไขการใช้บริการ</a>
+                        <span class="separator">•</span>
+                        <a href="/sitemap" rel="nofollow">แผนผังเว็บไซต์</a>
+                    </div>
+                </div>
+                
+                <!-- Back to Top Button -->
+                <button class="back-to-top" 
+                        id="backToTop" 
+                        aria-label="กลับไปด้านบน"
+                        title="กลับไปด้านบน">
+                    <i class="fas fa-chevron-up" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Junrai Core JavaScript Library -->
+    <script>
+        // ================================================================
+        // JUNRAI KARAOKE - CORE FRONTEND LIBRARY
+        // Modern JavaScript for enhanced user experience
+        // ================================================================
+        
+        class JunraiApp {
+            constructor() {
+                this.init();
+                this.bindEvents();
+                this.setupEnhancements();
+            }
+
+            init() {
+                this.themeToggle = document.getElementById('themeToggle');
+                this.themeIcon = document.getElementById('themeIcon');
+                this.navbarToggle = document.getElementById('navbarToggle');
+                this.navbarNav = document.getElementById('navbarNav');
+                this.userMenuToggle = document.getElementById('userMenuToggle');
+                this.userDropdown = document.getElementById('userDropdown');
+                this.loadingOverlay = document.getElementById('loadingOverlay');
+                this.backToTop = document.getElementById('backToTop');
+                this.toastContainer = document.getElementById('toastContainer');
+                
+                // Initialize theme
+                this.initializeTheme();
+                
+                // Initialize accessibility
+                this.initializeA11y();
+            }
+
+            initializeTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                this.updateThemeIcon(currentTheme);
+                
+                // Listen for system theme changes
+                if (window.matchMedia) {
+                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                        if (!localStorage.getItem('junrai-theme')) {
+                            const newTheme = e.matches ? 'dark' : 'light';
+                            document.documentElement.setAttribute('data-theme', newTheme);
+                            this.updateThemeIcon(newTheme);
+                        }
+                    });
+                }
+            }
+
+            initializeA11y() {
+                // Skip to content link for keyboard navigation
+                if (!document.querySelector('.skip-to-content')) {
+                    const skipLink = document.createElement('a');
+                    skipLink.className = 'skip-to-content';
+                    skipLink.href = '#main-content';
+                    skipLink.textContent = 'ข้ามไปยังเนื้อหาหลัก';
+                    document.body.insertBefore(skipLink, document.body.firstChild);
+                }
+
+                // Add main content ID if not exists
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent && !mainContent.id) {
+                    mainContent.id = 'main-content';
+                }
+            }
+
+            bindEvents() {
+                // Theme toggle
+                if (this.themeToggle) {
+                    this.themeToggle.addEventListener('click', this.toggleTheme.bind(this));
+                }
+
+                // Mobile navigation
+                if (this.navbarToggle) {
+                    this.navbarToggle.addEventListener('click', this.toggleMobileNav.bind(this));
+                }
+
+                // User dropdown menu
+                if (this.userMenuToggle) {
+                    this.userMenuToggle.addEventListener('click', this.toggleUserMenu.bind(this));
+                }
+
+                // Back to top button
+                if (this.backToTop) {
+                    this.backToTop.addEventListener('click', this.scrollToTop.bind(this));
+                    window.addEventListener('scroll', this.handleScroll.bind(this));
+                }
+
+                // Global click handler for dropdowns
+                document.addEventListener('click', this.handleGlobalClick.bind(this));
+
+                // Keyboard navigation
+                document.addEventListener('keydown', this.handleKeyboardNav.bind(this));
+
+                // Alert close buttons
+                document.querySelectorAll('.alert-close').forEach(btn => {
+                    btn.addEventListener('click', this.closeAlert.bind(this));
+                });
+            }
+
+            setupEnhancements() {
+                // Auto-hide server alerts
+                this.setupAutoHideAlerts();
+                
+                // Enhanced form interactions
+                this.enhanceForms();
+                
+                // Loading states for forms
+                this.setupFormLoading();
+                
+                // Smooth scrolling for anchor links
+                this.setupSmoothScrolling();
+                
+                // Image lazy loading
+                this.setupLazyLoading();
+                
+                // Performance monitoring
+                this.setupPerformanceMonitoring();
+            }
+
+            // ================================================================
+            // THEME MANAGEMENT
+            // ================================================================
+            
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('junrai-theme', newTheme);
+                this.updateThemeIcon(newTheme);
+                
+                // Announce theme change for screen readers
+                this.announce(`เปลี่ยนเป็นธีม${newTheme === 'dark' ? 'มืด' : 'สว่าง'}แล้ว`);
+            }
+
+            updateThemeIcon(theme) {
+                if (this.themeIcon) {
+                    this.themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+                    this.themeToggle.title = `เปลี่ยนเป็นธีม${theme === 'dark' ? 'สว่าง' : 'มืด'}`;
+                }
+            }
+
+            // ================================================================
+            // NAVIGATION MANAGEMENT
+            // ================================================================
+            
+            toggleMobileNav() {
+                const isExpanded = this.navbarNav.classList.toggle('active');
+                this.navbarToggle.setAttribute('aria-expanded', isExpanded.toString());
+                
+                if (isExpanded) {
+                    this.navbarToggle.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Prevent scroll
+                } else {
+                    this.navbarToggle.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            toggleUserMenu() {
+                const isExpanded = this.userDropdown.classList.toggle('show');
+                this.userMenuToggle.setAttribute('aria-expanded', isExpanded.toString());
+            }
+
+            handleGlobalClick(e) {
+                // Close mobile nav when clicking outside
+                if (this.navbarNav && 
+                    !this.navbarToggle.contains(e.target) && 
+                    !this.navbarNav.contains(e.target)) {
+                    this.navbarNav.classList.remove('active');
+                    this.navbarToggle.classList.remove('active');
+                    this.navbarToggle.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                }
+
+                // Close user dropdown when clicking outside
+                if (this.userDropdown && 
+                    !this.userMenuToggle.contains(e.target) && 
+                    !this.userDropdown.contains(e.target)) {
+                    this.userDropdown.classList.remove('show');
+                    this.userMenuToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+
+            // ================================================================
+            // SCROLL MANAGEMENT
+            // ================================================================
+            
+            handleScroll() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Show/hide back to top button
+                if (this.backToTop) {
+                    if (scrollTop > 300) {
+                        this.backToTop.classList.add('visible');
+                    } else {
+                        this.backToTop.classList.remove('visible');
+                    }
+                }
+                
+                // Navbar scroll effect
+                if (this.navbarNav) {
+                    if (scrollTop > 100) {
+                        document.querySelector('.navbar').classList.add('scrolled');
+                    } else {
+                        document.querySelector('.navbar').classList.remove('scrolled');
+                    }
+                }
+            }
+
+            scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+
+            setupSmoothScrolling() {
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            }
+
+            // ================================================================
+            // FORM ENHANCEMENTS
+            // ================================================================
+            
+            enhanceForms() {
+                // Add floating labels and validation
+                document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
+                    // Handle input events
+                    input.addEventListener('input', this.handleFormInput.bind(this));
+                    input.addEventListener('blur', this.handleFormBlur.bind(this));
+                    input.addEventListener('focus', this.handleFormFocus.bind(this));
+                    
+                    // Initialize state
+                    if (input.value.trim()) {
+                        input.classList.add('has-value');
+                    }
+                });
+            }
+
+            handleFormInput(e) {
+                const input = e.target;
+                if (input.value.trim()) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+                
+                // Real-time validation
+                this.validateField(input);
+            }
+
+            handleFormBlur(e) {
+                const input = e.target;
+                input.classList.add('touched');
+                this.validateField(input);
+            }
+
+            handleFormFocus(e) {
+                const input = e.target;
+                const field = input.closest('.form-field');
+                if (field) {
+                    field.classList.remove('has-error');
+                }
+            }
+
+            validateField(input) {
+                const field = input.closest('.form-field');
+                if (!field) return;
+
+                let isValid = true;
+                let errorMessage = '';
+
+                // Required validation
+                if (input.hasAttribute('required') && !input.value.trim()) {
+                    isValid = false;
+                    errorMessage = 'กรุณากรอกข้อมูลในช่องนี้';
+                }
+
+                // Email validation
+                if (input.type === 'email' && input.value.trim()) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(input.value)) {
+                        isValid = false;
+                        errorMessage = 'กรุณากรอกอีเมลให้ถูกต้อง';
+                    }
+                }
+
+                // Phone validation
+                if (input.type === 'tel' && input.value.trim()) {
+                    const phoneRegex = /^[0-9+\-\s()]{8,15}$/;
+                    if (!phoneRegex.test(input.value)) {
+                        isValid = false;
+                        errorMessage = 'กรุณากรอกหมายเลขโทรศัพท์ให้ถูกต้อง';
+                    }
+                }
+
+                // Update field state
+                field.classList.toggle('has-error', !isValid);
+                field.classList.toggle('has-success', isValid && input.value.trim());
+
+                // Update error message
+                let errorElement = field.querySelector('.form-error');
+                if (!isValid && errorMessage) {
+                    if (!errorElement) {
+                        errorElement = document.createElement('div');
+                        errorElement.className = 'form-error';
+                        field.appendChild(errorElement);
+                    }
+                    errorElement.textContent = errorMessage;
+                } else if (errorElement) {
+                    errorElement.remove();
+                }
+            }
+
+            setupFormLoading() {
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', (e) => {
+                        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+                        if (submitBtn && !submitBtn.disabled) {
+                            submitBtn.classList.add('btn-loading');
+                            submitBtn.disabled = true;
+                            
+                            // Show loading overlay for important forms
+                            if (form.dataset.showOverlay !== 'false') {
+                                this.showLoading();
+                            }
+                        }
+                    });
+                });
+            }
+
+            // ================================================================
+            // ALERT & TOAST SYSTEM
+            // ================================================================
+            
+            setupAutoHideAlerts() {
+                document.querySelectorAll('.alert:not([data-persist])').forEach(alert => {
+                    setTimeout(() => {
+                        this.fadeOutElement(alert);
+                    }, 5000);
+                });
+            }
+
+            closeAlert(e) {
+                const alert = e.target.closest('.alert');
+                if (alert) {
+                    this.fadeOutElement(alert);
+                }
+            }
+
+            showToast(message, type = 'info', duration = 4000) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                    <div class="toast-icon">
+                        <i class="fas fa-${this.getToastIcon(type)}" aria-hidden="true"></i>
+                    </div>
+                    <div class="toast-content">
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <button class="toast-close" aria-label="ปิด">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                `;
+
+                this.toastContainer.appendChild(toast);
+
+                // Add close event
+                toast.querySelector('.toast-close').addEventListener('click', () => {
+                    this.fadeOutElement(toast);
+                });
+
+                // Show toast
+                setTimeout(() => toast.classList.add('show'), 100);
+
+                // Auto remove
+                if (duration > 0) {
+                    setTimeout(() => this.fadeOutElement(toast), duration);
+                }
+
+                return toast;
+            }
+
+            getToastIcon(type) {
+                const icons = {
+                    success: 'check-circle',
+                    error: 'exclamation-triangle',
+                    warning: 'exclamation-circle',
+                    info: 'info-circle'
+                };
+                return icons[type] || icons.info;
+            }
+
+            // ================================================================
+            // UTILITY FUNCTIONS
+            // ================================================================
+            
+            showLoading() {
+                if (this.loadingOverlay) {
+                    this.loadingOverlay.classList.add('show');
+                }
+            }
+
+            hideLoading() {
+                if (this.loadingOverlay) {
+                    this.loadingOverlay.classList.remove('show');
+                }
+            }
+
+            fadeOutElement(element) {
+                element.style.transition = 'all 0.3s ease';
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    if (element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                }, 300);
+            }
+
+            announce(message) {
+                const announcement = document.createElement('div');
+                announcement.setAttribute('aria-live', 'polite');
+                announcement.setAttribute('aria-atomic', 'true');
+                announcement.className = 'sr-only';
+                announcement.textContent = message;
+                document.body.appendChild(announcement);
+                setTimeout(() => document.body.removeChild(announcement), 1000);
+            }
+
+            handleKeyboardNav(e) {
+                // Escape key handling
+                if (e.key === 'Escape') {
+                    // Close mobile menu
+                    if (this.navbarNav && this.navbarNav.classList.contains('active')) {
+                        this.toggleMobileNav();
+                    }
+                    
+                    // Close user dropdown
+                    if (this.userDropdown && this.userDropdown.classList.contains('show')) {
+                        this.toggleUserMenu();
+                    }
+                }
+            }
+
+            setupLazyLoading() {
+                if ('IntersectionObserver' in window) {
+                    const imageObserver = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                img.src = img.dataset.src;
+                                img.classList.remove('lazy');
+                                observer.unobserve(img);
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('img[data-src]').forEach(img => {
+                        imageObserver.observe(img);
+                    });
+                }
+            }
+
+            setupPerformanceMonitoring() {
+                // Monitor performance and report issues
+                if ('PerformanceObserver' in window) {
+                    try {
+                        const observer = new PerformanceObserver((list) => {
+                            list.getEntries().forEach((entry) => {
+                                if (entry.entryType === 'largest-contentful-paint') {
+                                    console.log('LCP:', entry.startTime);
+                                }
+                            });
+                        });
+                        observer.observe({entryTypes: ['largest-contentful-paint']});
+                    } catch (e) {
+                        // Ignore errors in performance monitoring
+                    }
+                }
+            }
+        }
+
+        // ================================================================
+        // INITIALIZE APPLICATION
+        // ================================================================
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.junraiApp = new JunraiApp();
+            });
+        } else {
+            window.junraiApp = new JunraiApp();
+        }
+
+        // Global utility functions for external use
+        window.JunraiUtils = {
+            showToast: (message, type, duration) => window.junraiApp?.showToast(message, type, duration),
+            showLoading: () => window.junraiApp?.showLoading(),
+            hideLoading: () => window.junraiApp?.hideLoading(),
+            announce: (message) => window.junraiApp?.announce(message)
+        };
+    </script>
+
+    <!-- Page-specific JavaScript -->
+    <% if (typeof pageJS !== 'undefined') { %>
+        <% pageJS.forEach(function(js) { %>
+            <script src="/javascripts/<%= js %>.js"></script>
+        <% }); %>
+    <% } %>
+
+    <!-- Analytics (if needed) -->
+    <% if (typeof analyticsId !== 'undefined' && analyticsId) { %>
+        <!-- Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=<%= analyticsId %>"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '<%= analyticsId %>');
+        </script>
+    <% } %>
+</body>
+</html>

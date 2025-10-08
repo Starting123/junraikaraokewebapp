@@ -41,6 +41,11 @@ const paymentRouter = require('./routes/payment');
 
 var app = express();
 
+// Production optimizations
+const ProductionConfig = require('./config/production');
+const productionConfig = new ProductionConfig(app);
+productionConfig.init();
+
 // Trust proxy for accurate client IP (important for rate limiting)
 app.set('trust proxy', 1);
 

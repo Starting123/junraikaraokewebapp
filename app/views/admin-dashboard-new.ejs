@@ -1,0 +1,431 @@
+<!-- Page Header -->
+<div class="container">
+  <div class="page-hero" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-info) 100%); margin-bottom: 0;">
+    <div class="hero-content">
+      <h1 class="heading-1">แดชบอร์ดผู้ดูแลระบบ</h1>
+      <p class="text-body-large">จัดการระบบคาราโอเกะ ตรวจสอบการจอง และดูรายงานสถิติ</p>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Navigation Tabs -->
+<div class="container mt-6">
+  <div class="card">
+    <div class="card-header">
+      <nav class="flex gap-4">
+        <button class="btn btn-ghost admin-tab active" data-tab="dashboard">ภาพรวม</button>
+        <button class="btn btn-ghost admin-tab" data-tab="bookings">การจอง</button>
+        <button class="btn btn-ghost admin-tab" data-tab="rooms">จัดการห้อง</button>
+        <button class="btn btn-ghost admin-tab" data-tab="users">สมาชิก</button>
+        <button class="btn btn-ghost admin-tab" data-tab="reports">รายงาน</button>
+        <button class="btn btn-ghost admin-tab" data-tab="settings">ตั้งค่า</button>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Overview Tab -->
+<div id="dashboard-tab" class="tab-content active">
+  <div class="container mt-6">
+    <!-- Stats Cards -->
+    <div class="grid grid-4 mb-8">
+      <div class="card">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <span style="font-size: 2rem; color: var(--color-primary);">📊</span>
+          </div>
+          <h3 class="heading-3 text-primary">125</h3>
+          <p class="text-small text-secondary">การจองวันนี้</p>
+          <div class="mt-2">
+            <span class="text-tiny text-success">+12% จากเมื่อวาน</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <span style="font-size: 2rem; color: var(--color-success);">💰</span>
+          </div>
+          <h3 class="heading-3 text-success">฿45,650</h3>
+          <p class="text-small text-secondary">รายได้วันนี้</p>
+          <div class="mt-2">
+            <span class="text-tiny text-success">+8% จากเมื่อวาน</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <span style="font-size: 2rem; color: var(--color-warning);">🏠</span>
+          </div>
+          <h3 class="heading-3 text-warning">18/24</h3>
+          <p class="text-small text-secondary">ห้องที่ใช้งาน</p>
+          <div class="mt-2">
+            <span class="text-tiny text-warning">75% การใช้งาน</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-body text-center">
+          <div class="mb-3">
+            <span style="font-size: 2rem; color: var(--color-info);">👥</span>
+          </div>
+          <h3 class="heading-3 text-primary">1,247</h3>
+          <p class="text-small text-secondary">สมาชิกทั้งหมด</p>
+          <div class="mt-2">
+            <span class="text-tiny text-success">+5 คนใหม่วันนี้</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts and Recent Activity -->
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">รายได้รายสัปดาห์</h3>
+        </div>
+        <div class="card-body">
+          <div class="chart-placeholder" style="height: 300px; background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 100%); border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center;">
+            <p class="text-secondary">📈 Chart Area - Integration with Chart.js</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">การจองล่าสุด</h3>
+        </div>
+        <div class="card-body">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--color-gray-50);">
+              <div>
+                <p class="font-semibold">ห้อง A-101</p>
+                <p class="text-small text-secondary">คุณสมชาย ใจดี - 19:00-22:00</p>
+              </div>
+              <span class="booking-status confirmed">ยืนยันแล้ว</span>
+            </div>
+            
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--color-gray-50);">
+              <div>
+                <p class="font-semibold">ห้อง B-205</p>
+                <p class="text-small text-secondary">คุณมาลี สวยงาม - 20:30-23:30</p>
+              </div>
+              <span class="booking-status pending">รอชำระ</span>
+            </div>
+            
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: var(--color-gray-50);">
+              <div>
+                <p class="font-semibold">ห้อง VIP-301</p>
+                <p class="text-small text-secondary">บริษัท ABC จำกัด - 18:00-24:00</p>
+              </div>
+              <span class="booking-status confirmed">ยืนยันแล้ว</span>
+            </div>
+          </div>
+          
+          <div class="mt-4 text-center">
+            <a href="#" class="btn btn-outline btn-sm">ดูทั้งหมด</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bookings Management Tab -->
+<div id="bookings-tab" class="tab-content">
+  <div class="container mt-6">
+    <div class="card">
+      <div class="card-header">
+        <div class="flex justify-between items-center">
+          <h3 class="card-title">จัดการการจอง</h3>
+          <div class="flex gap-3">
+            <input type="date" class="form-input" style="width: auto;" value="<%= new Date().toISOString().split('T')[0] %>">
+            <select class="form-select" style="width: auto;">
+              <option>ทุกสถานะ</option>
+              <option>รอชำระ</option>
+              <option>ยืนยันแล้ว</option>
+              <option>เสร็จสิ้น</option>
+              <option>ยกเลิก</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>รหัสจอง</th>
+                <th>ลูกค้า</th>
+                <th>ห้อง</th>
+                <th>วันที่</th>
+                <th>เวลา</th>
+                <th>ราคา</th>
+                <th>สถานะ</th>
+                <th>การกระทำ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>#BK001</strong></td>
+                <td>คุณสมชาย ใจดี</td>
+                <td>A-101 (Standard)</td>
+                <td>วันนี้</td>
+                <td>19:00-22:00</td>
+                <td>฿900</td>
+                <td><span class="booking-status confirmed">ยืนยันแล้ว</span></td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-sm btn-ghost">ดู</button>
+                    <button class="btn btn-sm btn-warning">แก้ไข</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>#BK002</strong></td>
+                <td>คุณมาลี สวยงาม</td>
+                <td>B-205 (Premium)</td>
+                <td>วันนี้</td>
+                <td>20:30-23:30</td>
+                <td>฿1,200</td>
+                <td><span class="booking-status pending">รอชำระ</span></td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-sm btn-ghost">ดู</button>
+                    <button class="btn btn-sm btn-success">ยืนยัน</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>#BK003</strong></td>
+                <td>บริษัท ABC จำกัด</td>
+                <td>VIP-301 (VIP)</td>
+                <td>วันนี้</td>
+                <td>18:00-24:00</td>
+                <td>฿3,600</td>
+                <td><span class="booking-status confirmed">ยืนยันแล้ว</span></td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-sm btn-ghost">ดู</button>
+                    <button class="btn btn-sm btn-primary">เช็คอิน</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="flex justify-between items-center">
+          <p class="text-small text-secondary">แสดง 1-3 จาก 45 รายการ</p>
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-outline">ก่อนหน้า</button>
+            <button class="btn btn-sm btn-primary">1</button>
+            <button class="btn btn-sm btn-outline">2</button>
+            <button class="btn btn-sm btn-outline">ถัดไป</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rooms Management Tab -->
+<div id="rooms-tab" class="tab-content">
+  <div class="container mt-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="heading-2">จัดการห้องคาราโอเกะ</h2>
+      <button class="btn btn-primary">เพิ่มห้องใหม่</button>
+    </div>
+    
+    <div class="grid grid-3">
+      <div class="card room-card">
+        <div class="card-header">
+          <div class="flex justify-between items-center">
+            <h4 class="card-title">ห้อง A-101</h4>
+            <span class="booking-status confirmed">ว่าง</span>
+          </div>
+          <p class="card-subtitle">Standard Room</p>
+        </div>
+        <div class="card-body">
+          <p class="text-body mb-4">ห้องมาตรฐาน 15 ตร.ม. รองรับ 2-6 คน</p>
+          <div class="mb-4">
+            <p class="text-small"><strong>ราคา:</strong> ฿300/ชั่วโมง</p>
+            <p class="text-small"><strong>สถานะ:</strong> พร้อมใช้งาน</p>
+            <p class="text-small"><strong>อุปกรณ์:</strong> ครบถ้วน</p>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-outline">แก้ไข</button>
+            <button class="btn btn-sm btn-warning">บำรุงรักษา</button>
+            <button class="btn btn-sm btn-primary">ดูการจอง</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card room-card">
+        <div class="card-header">
+          <div class="flex justify-between items-center">
+            <h4 class="card-title">ห้อง B-205</h4>
+            <span class="booking-status pending">ใช้งาน</span>
+          </div>
+          <p class="card-subtitle">Premium Room</p>
+        </div>
+        <div class="card-body">
+          <p class="text-body mb-4">ห้องพรีเมียม 25 ตร.ม. รองรับ 6-10 คน</p>
+          <div class="mb-4">
+            <p class="text-small"><strong>ราคา:</strong> ฿500/ชั่วโมง</p>
+            <p class="text-small"><strong>สถานะ:</strong> กำลังใช้งาน</p>
+            <p class="text-small"><strong>เวลา:</strong> 20:30-23:30</p>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-outline">แก้ไข</button>
+            <button class="btn btn-sm btn-success">เช็คเอาท์</button>
+            <button class="btn btn-sm btn-primary">ดูการจอง</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card room-card">
+        <div class="card-header">
+          <div class="flex justify-between items-center">
+            <h4 class="card-title">ห้อง VIP-301</h4>
+            <span class="booking-status cancelled">บำรุงรักษา</span>
+          </div>
+          <p class="card-subtitle">VIP Room</p>
+        </div>
+        <div class="card-body">
+          <p class="text-body mb-4">ห้อง VIP 40 ตร.ม. รองรับ 10-20 คน</p>
+          <div class="mb-4">
+            <p class="text-small"><strong>ราคา:</strong> ฿800/ชั่วโมง</p>
+            <p class="text-small"><strong>สถานะ:</strong> ปิดบำรุงรักษา</p>
+            <p class="text-small"><strong>หมายเหตุ:</strong> เปลี่ยนไมโครโฟน</p>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-outline">แก้ไข</button>
+            <button class="btn btn-sm btn-success">เสร็จสิ้น</button>
+            <button class="btn btn-sm btn-primary">ดูการจอง</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions Panel -->
+<div class="container mt-8">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">การดำเนินการด่วน</h3>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-4 gap-4">
+        <button class="btn btn-outline btn-block">
+          <span class="mr-2">📋</span>
+          รายงานยอดขายวันนี้
+        </button>
+        <button class="btn btn-outline btn-block">
+          <span class="mr-2">🧹</span>
+          ตรวจสอบห้องว่าง
+        </button>
+        <button class="btn btn-outline btn-block">
+          <span class="mr-2">📊</span>
+          สถิติการใช้งาน
+        </button>
+        <button class="btn btn-outline btn-block">
+          <span class="mr-2">⚙️</span>
+          ตั้งค่าระบบ
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Admin Tab Navigation
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.admin-tab');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const targetTab = this.dataset.tab;
+        
+        // Remove active class from all tabs and contents
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked tab
+        this.classList.add('active');
+        
+        // Show corresponding content
+        const targetContent = document.getElementById(targetTab + '-tab');
+        if (targetContent) {
+          targetContent.classList.add('active');
+        }
+      });
+    });
+    
+    // Real-time updates simulation
+    setInterval(() => {
+      const randomBookings = Math.floor(Math.random() * 10) + 120;
+      document.querySelector('.card-body h3').textContent = randomBookings;
+    }, 30000);
+  });
+</script>
+
+<style>
+  .tab-content {
+    display: none;
+  }
+  
+  .tab-content.active {
+    display: block;
+  }
+  
+  .admin-tab.active {
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: var(--space-4);
+  }
+  
+  .mr-2 {
+    margin-right: var(--space-2);
+  }
+  
+  .chart-placeholder {
+    transition: all var(--transition-normal);
+  }
+  
+  .chart-placeholder:hover {
+    transform: scale(1.01);
+  }
+  
+  /* Admin specific responsive */
+  @media (max-width: 768px) {
+    .grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .flex.gap-3 {
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    
+    .table-container {
+      font-size: var(--font-size-xs);
+    }
+  }
+</style>
