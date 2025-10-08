@@ -11,8 +11,6 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: parseInt(process.env.DB_CONN_LIMIT || '20', 10),
   queueLimit: 0,
-  acquireTimeout: 60000,
-  timeout: 60000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   // Security and performance options
@@ -20,11 +18,7 @@ const pool = mysql.createPool({
     rejectUnauthorized: false
   } : false,
   timezone: '+07:00', // Thailand timezone
-  charset: 'utf8mb4',
-  // Connection validation
-  reconnect: true,
-  maxReconnects: 3,
-  reconnectDelay: 2000
+  charset: 'utf8mb4'
 });
 
 // Test connection and log status
