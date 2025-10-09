@@ -233,4 +233,147 @@ router.get('/my-bookings', authMiddleware, [
   }
 });
 
+// Generate PDF Payment Slip
+router.get('/:id/payment-slip', authMiddleware, [
+  param('id').isInt({ gt: 0 })
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const bookingId = req.params.id;
+    
+    // Get booking details with payment info
+    const [bookingRows] = await db.query(`
+      SELECT 
+        b.*,
+        u.name as customer_name,
+        u.email as customer_email,
+        u.phone,
+        r.name as room_name,
+        rt.type_name,
+        rt.price_per_hour,
+        r.capacity
+      FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.user_id  
+      LEFT JOIN rooms r ON b.room_id = r.room_id
+      LEFT JOIN room_types rt ON r.type_id = rt.type_id
+      WHERE b.booking_id = ?
+    `, [bookingId]);
+
+    console.log(`Searching for booking ID: ${bookingId}`);
+    console.log(`Found ${bookingRows.length} booking(s)`);
+    
+    if (!bookingRows.length) {
+      console.log(`Booking ID ${bookingId} not found in database`);
+      return res.status(404).json({ 
+        error: 'ไม่พบข้อมูลการจอง', 
+        message: `ไม่พบการจองหมายเลข ${bookingId}` 
+      });
+    }
+    
+    const booking = bookingRows[0];
+    
+    // Check if user can access this booking
+    if (req.user.user_id !== booking.user_id && req.user.role_id !== 1) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Check if payment is completed
+    console.log(`Booking ${bookingId} payment status: ${booking.payment_status}`);
+    if (booking.payment_status !== 'paid') {
+      return res.status(400).json({ 
+        error: 'การชำระเงินยังไม่เสร็จสิ้น', 
+        message: `การจองหมายเลข ${bookingId} ยังไม่ได้ชำระเงิน (สถานะ: ${booking.payment_status})`,
+        booking_id: bookingId,
+        payment_status: booking.payment_status
+      });
+    }
+    
+    // Generate PDF
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ 
+      size: 'A4',
+      margin: 50,
+      info: {
+        Title: `ใบเสร็จการชำระเงิน - ${booking.room_name}`,
+        Author: 'Junrai Karaoke',
+        Subject: 'Payment Receipt',
+        Keywords: 'receipt, payment, karaoke'
+      }
+    });
+    
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="payment-slip-${booking.booking_id}.pdf"`);
+    
+    // Pipe PDF to response
+    doc.pipe(res);
+    
+    // Header
+    doc.fontSize(20)
+       .font('Helvetica-Bold')
+       .text('Junrai Karaoke', 50, 50)
+       .fontSize(16)
+       .font('Helvetica')
+       .text('ใบเสร็จรับเงิน / Payment Receipt', 50, 80);
+    
+    // Receipt number and date
+    doc.fontSize(12)
+       .text(`เลขที่ใบเสร็จ / Receipt No.: ${booking.booking_id}`, 50, 120)
+       .text(`วันที่ / Date: ${new Date(booking.payment_date || booking.created_at).toLocaleDateString('th-TH')}`, 50, 140);
+    
+    // Customer information
+    doc.fontSize(14)
+       .font('Helvetica-Bold')
+       .text('ข้อมูลลูกค้า / Customer Information', 50, 180)
+       .font('Helvetica')
+       .fontSize(12)
+       .text(`ชื่อ / Name: ${booking.customer_name}`, 50, 200)
+       .text(`อีเมล / Email: ${booking.customer_email}`, 50, 220);
+    
+    if (booking.phone) {
+      doc.text(`เบอร์โทร / Phone: ${booking.phone}`, 50, 240);
+    }
+    
+    // Booking details
+    doc.fontSize(14)
+       .font('Helvetica-Bold')
+       .text('รายละเอียดการจอง / Booking Details', 50, 280)
+       .font('Helvetica')
+       .fontSize(12)
+       .text(`ห้อง / Room: ${booking.room_name}`, 50, 300)
+       .text(`ประเภท / Type: ${booking.type_name || 'ห้องธรรมดา'}`, 50, 320)
+       .text(`ความจุ / Capacity: ${booking.capacity} คน`, 50, 340)
+       .text(`วันที่จอง / Booking Date: ${new Date(booking.start_time).toLocaleDateString('th-TH')}`, 50, 360)
+       .text(`เวลา / Time: ${new Date(booking.start_time).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} - ${new Date(booking.end_time).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}`, 50, 380)
+       .text(`ระยะเวลา / Duration: ${booking.duration_hours} ชั่วโมง`, 50, 400);
+    
+    // Payment details
+    doc.fontSize(14)
+       .font('Helvetica-Bold')
+       .text('รายละเอียดการชำระเงิน / Payment Details', 50, 440)
+       .font('Helvetica')
+       .fontSize(12)
+       .text(`ราคาต่อชั่วโมง / Price per Hour: ฿${booking.price_per_hour}`, 50, 460)
+       .text(`จำนวนชั่วโมง / Total Hours: ${booking.duration_hours}`, 50, 480)
+       .text(`ยอดรวม / Total Amount: ฿${booking.total_price}`, 50, 500)
+       .text(`วิธีการชำระ / Payment Method: ${booking.payment_method || 'ไม่ระบุ'}`, 50, 520)
+       .text(`สถานะ / Status: ชำระเงินแล้ว / Paid`, 50, 540);
+    
+    // Footer
+    doc.fontSize(10)
+       .text('ขอบคุณที่ใช้บริการ Junrai Karaoke', 50, 700)
+       .text('Thank you for choosing Junrai Karaoke', 50, 715)
+       .text('โทรศัพท์ / Phone: 02-xxx-xxxx', 50, 735)
+       .text('อีเมล / Email: info@junraikaraoke.com', 50, 750);
+    
+    // Finalize PDF
+    doc.end();
+    
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

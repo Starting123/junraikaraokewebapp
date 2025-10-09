@@ -665,6 +665,10 @@
                             <i class="fas fa-check-circle"></i>
                             ชำระแล้ว
                         </span>
+                        <button class="btn btn-info btn-sm" onclick="event.stopPropagation(); downloadPaymentSlip(${booking.booking_id})" title="ดาวน์โหลดใบเสร็จ">
+                            <i class="fas fa-download"></i>
+                            ใบเสร็จ PDF
+                        </button>
                         ` : booking.payment_status === 'pending' ? `
                         <span class="payment-status pending">
                             <i class="fas fa-clock"></i>
@@ -1140,6 +1144,59 @@
             } catch (error) {
                 console.error('Error processing traditional payment:', error);
                 showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+            }
+        }
+
+        // Download Payment Slip PDF
+        async function downloadPaymentSlip(bookingId) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showToast('กรุณาเข้าสู่ระบบ', 'error');
+                    return;
+                }
+
+                // Show loading toast
+                showToast('กำลังสร้างไฟล์ PDF...', 'info');
+
+                const response = await fetch(`${API_BASE}/bookings/${bookingId}/payment-slip`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Get the PDF as blob
+                    const blob = await response.blob();
+                    
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `payment-slip-${bookingId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Cleanup
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showToast('ดาวน์โหลดใบเสร็จสำเร็จ', 'success');
+                    
+                } else if (response.status === 400) {
+                    const error = await response.json();
+                    showToast(error.error || 'ไม่สามารถสร้างใบเสร็จได้', 'error');
+                } else if (response.status === 404) {
+                    showToast('ไม่พบข้อมูลการจอง', 'error');
+                } else if (response.status === 403) {
+                    showToast('ไม่มีสิทธิ์เข้าถึงข้อมูลนี้', 'error');
+                } else {
+                    throw new Error('Failed to download payment slip');
+                }
+                
+            } catch (error) {
+                console.error('Error downloading payment slip:', error);
+                showToast('เกิดข้อผิดพลาดในการดาวน์โหลดใบเสร็จ', 'error');
             }
         }
     </script>

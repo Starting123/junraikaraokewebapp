@@ -252,8 +252,8 @@ async function loadRooms() {
         });
         
         if (response.ok) {
-            const rooms = await response.json();
-            displayRooms(rooms);
+            const data = await response.json();
+            displayRooms(data.rooms || data);
         } else {
             throw new Error('Failed to load rooms');
         }
@@ -315,8 +315,8 @@ async function loadBookings() {
         });
         
         if (response.ok) {
-            const bookings = await response.json();
-            displayBookings(bookings);
+            const data = await response.json();
+            displayBookings(data.bookings || data);
         } else {
             throw new Error('Failed to load bookings');
         }
@@ -381,8 +381,8 @@ async function loadUsers() {
         });
         
         if (response.ok) {
-            const users = await response.json();
-            displayUsers(users);
+            const data = await response.json();
+            displayUsers(data.users || data);
         } else {
             throw new Error('Failed to load users');
         }

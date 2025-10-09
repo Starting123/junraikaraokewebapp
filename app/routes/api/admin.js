@@ -114,4 +114,96 @@ router.delete('/rooms/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (
   } catch (err) { next(err); }
 });
 
+// Admin Bookings endpoint
+router.get('/bookings', adminOnly, async (req, res, next) => {
+  try {
+    const db = require('../../db');
+    const [rows] = await db.query(`
+      SELECT 
+        b.booking_id,
+        b.booking_date,
+        b.start_time,
+        b.end_time,
+        b.status,
+        b.total_price,
+        b.created_at,
+        u.name as user_name,
+        u.email as user_email,
+        r.room_name,
+        r.room_id
+      FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.user_id
+      LEFT JOIN rooms r ON b.room_id = r.room_id
+      ORDER BY b.created_at DESC
+      LIMIT 500
+    `);
+    res.json({ bookings: rows });
+  } catch (err) { 
+    next(err); 
+  }
+});
+
+// Admin Statistics endpoint
+router.get('/stats', adminOnly, async (req, res, next) => {
+  try {
+    const db = require('../../db');
+    
+    // Get total users
+    const [usersCount] = await db.query('SELECT COUNT(*) as count FROM users');
+    const totalUsers = usersCount[0].count;
+    
+    // Get new users today
+    const [newUsersToday] = await db.query('SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = CURDATE()');
+    const usersChange = newUsersToday[0].count;
+    
+    // Get total rooms
+    const [roomsCount] = await db.query('SELECT COUNT(*) as count FROM rooms');
+    const totalRooms = roomsCount[0].count;
+    
+    // Get available rooms
+    const [availableRooms] = await db.query('SELECT COUNT(*) as count FROM rooms WHERE status = "available"');
+    const roomsAvailable = availableRooms[0].count;
+    
+    // Get bookings today
+    const [bookingsToday] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE DATE(booking_date) = CURDATE()');
+    const totalBookings = bookingsToday[0].count;
+    
+    // Get new bookings today
+    const [newBookingsToday] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE DATE(created_at) = CURDATE()');
+    const bookingsChange = newBookingsToday[0].count;
+    
+    // Get revenue today (from completed bookings)
+    const [revenueToday] = await db.query(`
+      SELECT COALESCE(SUM(total_price), 0) as revenue 
+      FROM bookings 
+      WHERE DATE(booking_date) = CURDATE() 
+      AND status IN ('completed', 'confirmed')
+    `);
+    const totalRevenue = revenueToday[0].revenue;
+    
+    // Get revenue change (today vs yesterday)
+    const [revenueYesterday] = await db.query(`
+      SELECT COALESCE(SUM(total_price), 0) as revenue 
+      FROM bookings 
+      WHERE DATE(booking_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+      AND status IN ('completed', 'confirmed')
+    `);
+    const revenueChange = totalRevenue - revenueYesterday[0].revenue;
+    
+    res.json({
+      totalUsers,
+      usersChange,
+      totalRooms,
+      roomsAvailable,
+      totalBookings,
+      bookingsChange,
+      totalRevenue,
+      revenueChange
+    });
+    
+  } catch (err) { 
+    next(err); 
+  }
+});
+
 module.exports = router;
