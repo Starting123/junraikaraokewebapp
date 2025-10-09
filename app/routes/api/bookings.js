@@ -150,7 +150,39 @@ router.post('/:id/cancel', authMiddleware, [ param('id').isInt({ gt: 0 }) ], asy
 });
 
 // สร้างการชำระเงิน
-router.post('/:id/payment', authMiddleware, [
+// Configure multer for file uploads
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../../public/uploads/payment-slips/'));
+  },
+  filename: function (req, file, cb) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const ext = path.extname(file.originalname);
+    cb(null, `payment-proof-${req.params.id}-${timestamp}${ext}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Accept only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+router.post('/:id/payment', authMiddleware, upload.single('paymentProof'), [
   param('id').isInt({ gt: 0 }),
   body('method').optional().isIn(['cash', 'credit_card', 'bank_transfer', 'qr_code']),
   body('transaction_id').optional().isString()
@@ -161,6 +193,7 @@ router.post('/:id/payment', authMiddleware, [
     
     const booking_id = req.params.id;
     const { method = 'cash', transaction_id } = req.body;
+    const uploadedFile = req.file;
     
     const booking = await bookingsModel.findById(booking_id);
     if (!booking) return res.status(404).json({ error: 'booking not found' });
@@ -171,11 +204,23 @@ router.post('/:id/payment', authMiddleware, [
     if (booking.payment_status === 'paid') return res.status(400).json({ error: 'already paid' });
     if (booking.status === 'cancelled') return res.status(400).json({ error: 'booking cancelled' });
     
+    // ตรวจสอบว่าจำเป็นต้องมีหลักฐานการโอนเงินหรือไม่
+    if ((method === 'bank_transfer' || method === 'qr_code') && !uploadedFile) {
+      return res.status(400).json({ 
+        error: 'กรุณาแนบหลักฐานการโอนเงิน', 
+        message: 'สำหรับการชำระผ่านโอนเงินหรือ QR Code กรุณาแนบหลักฐานการโอนเงิน' 
+      });
+    }
+    
+    // สร้าง path ของไฟล์หลักฐาน (ถ้ามี)
+    const proofPath = uploadedFile ? `/uploads/payment-slips/${uploadedFile.filename}` : null;
+    
     const payment = await bookingsModel.createPayment({
       booking_id,
       amount: booking.total_price,
       method,
-      transaction_id
+      transaction_id,
+      proof_path: proofPath
     });
     
     res.json({ payment, message: 'ชำระเงินสำเร็จ' });
@@ -292,6 +337,20 @@ router.get('/:id/payment-slip', authMiddleware, [
     
     // Generate PDF
     const PDFDocument = require('pdfkit');
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Create receipts directory if it doesn't exist
+    const receiptsDir = path.join(__dirname, '../../public/receipts');
+    if (!fs.existsSync(receiptsDir)) {
+      fs.mkdirSync(receiptsDir, { recursive: true });
+    }
+    
+    // Generate filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `payment-slip-${booking.booking_id}-${timestamp}.pdf`;
+    const filepath = path.join(receiptsDir, filename);
+    
     const doc = new PDFDocument({ 
       size: 'A4',
       margin: 50,
@@ -307,7 +366,9 @@ router.get('/:id/payment-slip', authMiddleware, [
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="payment-slip-${booking.booking_id}.pdf"`);
     
-    // Pipe PDF to response
+    // Create file stream and pipe to both response and file
+    const fileStream = fs.createWriteStream(filepath);
+    doc.pipe(fileStream);
     doc.pipe(res);
     
     // Header
@@ -371,7 +432,27 @@ router.get('/:id/payment-slip', authMiddleware, [
     // Finalize PDF
     doc.end();
     
+    // Update database with PDF file path (after file is written)
+    fileStream.on('finish', async () => {
+      try {
+        console.log(`PDF saved to: ${filepath}`);
+        
+        // Update booking record with PDF path
+        await db.query(`
+          UPDATE bookings 
+          SET receipt_pdf_path = ? 
+          WHERE booking_id = ?
+        `, [`/receipts/${filename}`, bookingId]);
+        
+        console.log(`Updated booking ${bookingId} with PDF path: /receipts/${filename}`);
+        
+      } catch (updateErr) {
+        console.error('Error updating booking with PDF path:', updateErr);
+      }
+    });
+    
   } catch (err) {
+    console.error('Error generating PDF:', err);
     next(err);
   }
 });

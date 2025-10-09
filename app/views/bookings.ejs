@@ -1118,33 +1118,100 @@
             try {
                 const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
                 const transactionId = document.getElementById('transactionId').value;
+                const fileInput = document.getElementById('paymentProofFile');
+                
+                // ตรวจสอบว่าจำเป็นต้องมีไฟล์หลักฐานหรือไม่
+                if ((selectedMethod === 'bank_transfer' || selectedMethod === 'qr_code') && !fileInput.files[0]) {
+                    showToast('กรุณาแนบหลักฐานการโอนเงิน', 'error');
+                    return;
+                }
+
+                // สร้าง FormData สำหรับส่งข้อมูลและไฟล์
+                const formData = new FormData();
+                formData.append('method', selectedMethod);
+                formData.append('transaction_id', transactionId);
+                
+                if (fileInput.files[0]) {
+                    formData.append('paymentProof', fileInput.files[0]);
+                }
 
                 const response = await fetch(`${API_BASE}/bookings/${currentBookingId}/payment`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        // ไม่ต้องใส่ Content-Type เมื่อใช้ FormData
                     },
-                    body: JSON.stringify({
-                        method: selectedMethod,
-                        transactionId: transactionId
-                    })
+                    body: formData
                 });
 
                 const result = await response.json();
 
-                if (result.success) {
-                    showToast('บันทึกการชำระเงินสำเร็จ!', 'success');
+                if (response.ok) {
+                    showToast(result.message || 'บันทึกการชำระเงินสำเร็จ!', 'success');
                     closeModal('paymentModal');
                     loadMyBookings();
+                    loadAllBookings();
                 } else {
-                    showToast(result.message || 'เกิดข้อผิดพลาดในการบันทึกการชำระเงิน', 'error');
+                    showToast(result.error || 'เกิดข้อผิดพลาดในการบันทึกการชำระเงิน', 'error');
                 }
 
             } catch (error) {
                 console.error('Error processing traditional payment:', error);
                 showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
             }
+        }
+
+        // Handle payment method change
+        document.addEventListener('change', function(e) {
+            if (e.target.name === 'paymentMethod') {
+                const method = e.target.value;
+                const stripeForm = document.getElementById('stripePaymentForm');
+                const traditionalForm = document.getElementById('traditionalPaymentForm');
+                const transferProofForm = document.getElementById('transferProofForm');
+                
+                if (method === 'stripe') {
+                    stripeForm.style.display = 'block';
+                    traditionalForm.style.display = 'none';
+                    transferProofForm.style.display = 'none';
+                } else {
+                    stripeForm.style.display = 'none';
+                    traditionalForm.style.display = 'block';
+                    
+                    // Show upload form for bank_transfer and qr_code
+                    if (method === 'bank_transfer' || method === 'qr_code') {
+                        transferProofForm.style.display = 'block';
+                        document.getElementById('paymentProofFile').required = true;
+                    } else {
+                        transferProofForm.style.display = 'none';
+                        document.getElementById('paymentProofFile').required = false;
+                    }
+                }
+            }
+        });
+
+        // Handle file upload preview
+        document.getElementById('paymentProofFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showToast('ขนาดไฟล์ต้องไม่เกิน 5MB', 'error');
+                    e.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('filePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Clear file preview
+        function clearFilePreview() {
+            document.getElementById('paymentProofFile').value = '';
+            document.getElementById('filePreview').style.display = 'none';
         }
 
         // Download Payment Slip PDF
@@ -1261,6 +1328,25 @@
                     <div id="traditionalPaymentForm" class="form-group" style="display: none;">
                         <label><i class="fas fa-receipt"></i> เลขอ้างอิง (ถ้ามี)</label>
                         <input type="text" id="transactionId" class="form-control" placeholder="ใส่เลขอ้างอิงการชำระเงิน">
+                    </div>
+                    
+                    <!-- File Upload for Transfer Proof -->
+                    <div id="transferProofForm" class="form-group" style="display: none;">
+                        <label><i class="fas fa-camera"></i> หลักฐานการโอนเงิน *</label>
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <input type="file" id="paymentProofFile" accept="image/*" class="file-input" required>
+                            <div class="upload-text">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>คลิกเพื่ออัปโหลดหลักฐานการโอนเงิน</p>
+                                <small>รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 5MB)</small>
+                            </div>
+                        </div>
+                        <div id="filePreview" style="display: none;">
+                            <img id="previewImage" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="clearFilePreview()" style="margin-left: 10px;">
+                                <i class="fas fa-times"></i> ลบ
+                            </button>
+                        </div>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-success" onclick="processPayment()">

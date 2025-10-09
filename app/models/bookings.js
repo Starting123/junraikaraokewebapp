@@ -77,16 +77,16 @@ async function updatePaymentStatus(booking_id, status) {
 }
 
 // สร้างการชำระเงิน
-async function createPayment({ booking_id, amount, method = 'cash', transaction_id = null }) {
+async function createPayment({ booking_id, amount, method = 'cash', transaction_id = null, proof_path = null }) {
   const [result] = await db.query(
-    'INSERT INTO booking_payments (booking_id, amount, method, status, transaction_id, payment_date) VALUES (?,?,?,?,?,NOW())',
-    [booking_id, amount, method, 'paid', transaction_id]
+    'INSERT INTO booking_payments (booking_id, amount, method, status, transaction_id, proof_of_payment_path, payment_date) VALUES (?,?,?,?,?,?,NOW())',
+    [booking_id, amount, method, 'paid', transaction_id, proof_path]
   );
   
   // อัปเดตสถานะการชำระเงินในตาราง bookings
   await updatePaymentStatus(booking_id, 'paid');
   
-  return { payment_id: result.insertId };
+  return { payment_id: result.insertId, proof_path };
 }
 
 // ดึงข้อมูลการชำระเงิน
