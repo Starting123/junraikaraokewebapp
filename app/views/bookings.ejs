@@ -8,6 +8,156 @@
     <link rel="stylesheet" href="/stylesheets/bookings.css">
     <link rel="stylesheet" href="/stylesheets/responsive-fixes.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Inline CSS for file upload area debugging -->
+    <style>
+        #transferProofForm {
+            display: none !important;
+        }
+        
+        #transferProofForm.show {
+            display: block !important;
+        }
+        
+        .file-upload-area-debug {
+            border: 4px dashed #E07B39 !important;
+            background: #FFF3E0 !important;
+            min-height: 160px !important;
+            padding: 25px !important;
+            margin: 20px 0 !important;
+            border-radius: 15px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            cursor: pointer !important;
+            position: relative !important;
+            box-shadow: 0 4px 15px rgba(224, 123, 57, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .file-upload-area-debug:hover {
+            border-color: #2ECC71 !important;
+            background: #E8F5E8 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important;
+        }
+        
+        .file-upload-area-debug .upload-text {
+            pointer-events: none !important;
+            z-index: 1 !important;
+        }
+        
+        .file-upload-area-debug .upload-text i {
+            font-size: 4rem !important;
+            color: #E07B39 !important;
+            margin-bottom: 15px !important;
+        }
+        
+        .file-upload-area-debug .upload-text p {
+            font-size: 1.2rem !important;
+            font-weight: 700 !important;
+            color: #8B4513 !important;
+            margin: 10px 0 !important;
+        }
+        
+        .file-upload-area-debug .upload-text small {
+            font-size: 1rem !important;
+            color: #666 !important;
+            line-height: 1.5 !important;
+        }
+        
+        .file-input-debug {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            opacity: 0 !important;
+            cursor: pointer !important;
+            z-index: 2 !important;
+        }
+        
+        /* Simple File Upload Styles */
+        .simple-file-upload {
+            display: flex !important;
+            align-items: center !important;
+            gap: 15px !important;
+            padding: 15px !important;
+            background: #f8f9fa !important;
+            border: 2px solid #dee2e6 !important;
+            border-radius: 8px !important;
+            margin: 10px 0 !important;
+        }
+        
+        .simple-file-upload .btn {
+            white-space: nowrap !important;
+            min-width: 160px !important;
+        }
+        
+        .file-name-display {
+            color: #6c757d !important;
+            font-size: 0.9rem !important;
+            flex: 1 !important;
+            padding: 8px !important;
+        }
+        
+        .file-name-display.has-file {
+            color: #28a745 !important;
+            font-weight: 600 !important;
+        }
+        
+        .file-preview-compact {
+            margin-top: 10px !important;
+            padding: 10px !important;
+            background: #e8f5e9 !important;
+            border: 1px solid #28a745 !important;
+            border-radius: 6px !important;
+        }
+        
+        .preview-info {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        
+        .preview-info i {
+            color: #28a745 !important;
+        }
+        
+        .preview-info span {
+            flex: 1 !important;
+            font-size: 0.9rem !important;
+            color: #155724 !important;
+        }
+        
+        .preview-thumbnail {
+            max-width: 100px !important;
+            max-height: 100px !important;
+            border-radius: 4px !important;
+            margin-top: 10px !important;
+            border: 1px solid #28a745 !important;
+        }
+        
+        @media (max-width: 768px) {
+            .simple-file-upload {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                text-align: center !important;
+            }
+            
+            .simple-file-upload .btn {
+                min-width: auto !important;
+            }
+            
+            .file-name-display {
+                text-align: center !important;
+                border-top: 1px solid #dee2e6 !important;
+                padding-top: 10px !important;
+            }
+        }
+    </style>
     <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -1163,6 +1313,8 @@
             }
         }
 
+
+
         // Handle payment method change
         document.addEventListener('change', function(e) {
             if (e.target.name === 'paymentMethod') {
@@ -1182,10 +1334,18 @@
                     // Show upload form for bank_transfer and qr_code
                     if (method === 'bank_transfer' || method === 'qr_code') {
                         transferProofForm.style.display = 'block';
+                        transferProofForm.classList.add('show');
                         document.getElementById('paymentProofFile').required = true;
+                        
+                        // Debug log
+                        console.log('Showing file upload for method:', method);
                     } else {
                         transferProofForm.style.display = 'none';
+                        transferProofForm.classList.remove('show');
                         document.getElementById('paymentProofFile').required = false;
+                        
+                        // Debug log
+                        console.log('Hiding file upload for method:', method);
                     }
                 }
             }
@@ -1194,26 +1354,59 @@
         // Handle file upload preview
         document.getElementById('paymentProofFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            const fileNameDisplay = document.getElementById('fileName');
+            const filePreview = document.getElementById('filePreview');
+            const previewImage = document.getElementById('previewImage');
+            const fileInfo = document.getElementById('fileInfo');
+            
             if (file) {
                 if (file.size > 5 * 1024 * 1024) { // 5MB limit
                     showToast('ขนาดไฟล์ต้องไม่เกิน 5MB', 'error');
                     e.target.value = '';
+                    fileNameDisplay.textContent = 'ยังไม่ได้เลือกไฟล์';
+                    fileNameDisplay.classList.remove('has-file');
+                    filePreview.style.display = 'none';
                     return;
                 }
+
+                // Update file name display
+                fileNameDisplay.textContent = file.name;
+                fileNameDisplay.classList.add('has-file');
                 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImage').src = e.target.result;
-                    document.getElementById('filePreview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+                // Update file info
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.textContent = `${file.name} (${fileSize} MB)`;
+                
+                // Show preview
+                filePreview.style.display = 'block';
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        previewImage.src = event.target.result;
+                        previewImage.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImage.style.display = 'none';
+                }
+            } else {
+                fileNameDisplay.textContent = 'ยังไม่ได้เลือกไฟล์';
+                fileNameDisplay.classList.remove('has-file');
+                filePreview.style.display = 'none';
             }
         });
 
         // Clear file preview
         function clearFilePreview() {
-            document.getElementById('paymentProofFile').value = '';
-            document.getElementById('filePreview').style.display = 'none';
+            const fileInput = document.getElementById('paymentProofFile');
+            const fileNameDisplay = document.getElementById('fileName');
+            const filePreview = document.getElementById('filePreview');
+            
+            fileInput.value = '';
+            fileNameDisplay.textContent = 'ยังไม่ได้เลือกไฟล์';
+            fileNameDisplay.classList.remove('has-file');
+            filePreview.style.display = 'none';
         }
 
         // Download Payment Slip PDF
@@ -1337,20 +1530,31 @@
                     <!-- File Upload for Transfer Proof -->
                     <div id="transferProofForm" class="form-group" style="display: none;">
                         <label><i class="fas fa-camera"></i> หลักฐานการโอนเงิน *</label>
-                        <div class="file-upload-area" id="fileUploadArea">
-                            <input type="file" id="paymentProofFile" accept="image/*,.pdf" class="file-input" required>
-                            <div class="upload-text">
-                                <i class="fas fa-camera"></i>
-                                <p>อัปโหลดหลักฐานการชำระเงิน</p>
-                                <small>📷 ถ่ายรูปสลิปการโอนเงิน<br>หรือ แคปหน้าจอ QR Code Payment<br><br>รองรับไฟล์: JPG, PNG, PDF (ไม่เกิน 5MB)</small>
-                            </div>
-                        </div>
-                        <div id="filePreview" style="display: none;">
-                            <img id="previewImage" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">
-                            <button type="button" class="btn btn-outline btn-sm" onclick="clearFilePreview()" style="margin-left: 10px;">
-                                <i class="fas fa-times"></i> ลบ
+                        
+                        <!-- Simple File Upload Button -->
+                        <div class="simple-file-upload">
+                            <input type="file" id="paymentProofFile" accept="image/*,.pdf" style="display: none;" required>
+                            <button type="button" class="btn btn-outline" onclick="document.getElementById('paymentProofFile').click()">
+                                <i class="fas fa-camera"></i> เลือกไฟล์หลักฐาน
                             </button>
+                            <span id="fileName" class="file-name-display">ยังไม่ได้เลือกไฟล์</span>
                         </div>
+                        
+                        <!-- File Preview -->
+                        <div id="filePreview" class="file-preview-compact" style="display: none;">
+                            <div class="preview-info">
+                                <i class="fas fa-file-image"></i>
+                                <span id="fileInfo"></span>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="clearFilePreview()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <img id="previewImage" class="preview-thumbnail" style="display: none;">
+                        </div>
+                        
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> รองรับไฟล์: JPG, PNG, PDF (ไม่เกิน 5MB)
+                        </small>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-success" onclick="processPayment()">
