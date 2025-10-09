@@ -223,4 +223,32 @@ document.addEventListener('DOMContentLoaded', function() {
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(card);
     });
+    
+    // Check authentication and update navbar
+    checkAuth();
 });
+
+// Check authentication
+function checkAuth() {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+        const currentUser = JSON.parse(user);
+        document.getElementById('authLink').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'block';
+        document.getElementById('dashboardLink').style.display = 'block';
+        
+        // Show admin link for admin users
+        if (currentUser.role_id === 1) {
+            document.getElementById('adminLink').style.display = 'block';
+        }
+    }
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+}

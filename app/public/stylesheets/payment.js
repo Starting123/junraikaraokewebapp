@@ -66,10 +66,16 @@ function updateUserNavigation(user) {
     const authLink = document.getElementById('authLink');
     const logoutBtn = document.getElementById('logoutBtn');
     const dashboardLink = document.getElementById('dashboardLink');
+    const adminLink = document.getElementById('adminLink');
     
     if (authLink) authLink.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'block';
     if (dashboardLink) dashboardLink.style.display = 'block';
+    
+    // Show admin link for admin users
+    if (user.role_id === 1 && adminLink) {
+        adminLink.style.display = 'block';
+    }
 }
 
 // Load booking data

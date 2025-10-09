@@ -96,6 +96,7 @@
                     <li><a href="/bookings" class="nav-link">การจอง</a></li>
                     <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
                     <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
+                    <li><a href="/admin" class="nav-link" id="adminLink" style="display: none;">ผู้ดูแลระบบ</a></li>
                     <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
                     <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                 </ul>
@@ -244,6 +245,34 @@
                 window.location.href = '/bookings';
             }
         }, 30000);
+        
+        // Check authentication and update navbar
+        checkAuth();
+        
+        // Check authentication function
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                const currentUser = JSON.parse(user);
+                document.getElementById('authLink').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('dashboardLink').style.display = 'block';
+                
+                // Show admin link for admin users
+                if (currentUser.role_id === 1) {
+                    document.getElementById('adminLink').style.display = 'block';
+                }
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
     </script>
 </body>
 </html>

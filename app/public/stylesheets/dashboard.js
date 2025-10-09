@@ -79,6 +79,7 @@ async function checkAuth() {
 function updateUserInfo(user) {
     const userName = document.getElementById('userName');
     const welcomeMessage = document.getElementById('welcomeMessage');
+    const adminLink = document.getElementById('adminLink');
     
     if (userName) {
         userName.textContent = user.name;
@@ -86,6 +87,11 @@ function updateUserInfo(user) {
     
     if (welcomeMessage) {
         welcomeMessage.textContent = `สวัสดี ${user.name}! ยินดีต้อนรับกลับมา`;
+    }
+    
+    // Show admin link for admin users
+    if (user.role_id === 1 && adminLink) {
+        adminLink.style.display = 'block';
     }
 }
 
