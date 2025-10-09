@@ -16,23 +16,23 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div class="nav-brand">
-                <i class="fas fa-microphone-alt"></i>
-                <span>Junrai Karaoke</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
+                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                    <li><a href="/dashboard" class="nav-link" id="dashboardLink">แดชบอร์ด</a></li>
+                    <li><a href="/admin" class="nav-link active">ผู้ดูแลระบบ</a></li>
+                    <li><a href="/auth" class="nav-link" id="authLink" style="display: none;">เข้าสู่ระบบ</a></li>
+                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn">ออกจากระบบ</button></li>
+                </ul>
             </div>
-            
-            <div class="nav-menu" id="navMenu">
-                <a href="/" class="nav-link">หน้าหลัก</a>
-                <a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a>
-                <a href="/admin" class="nav-link active">ผู้ดูแลระบบ</a>
-                <div class="nav-user" id="navUser">
-                    <span class="user-name" id="userName">กำลังโหลด...</span>
-                    <button class="btn-logout" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        ออกจากระบบ
-                    </button>
-                </div>
-            </div>
+        </div>
             
             <div class="nav-toggle" id="navToggle">
                 <span></span>
