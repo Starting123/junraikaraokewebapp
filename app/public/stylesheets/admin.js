@@ -459,33 +459,586 @@ function formatDate(dateString) {
     return date.toLocaleDateString('th-TH');
 }
 
-// Placeholder functions for admin actions
+// ===========================================
+// ROOM MANAGEMENT FUNCTIONS
+// ===========================================
+
+// Show add room form
 function showAddRoomForm() {
-    alert('ฟีเจอร์เพิ่มห้องจะพร้อมใช้งานเร็วๆ นี้');
+    clearRoomForm();
+    document.getElementById('roomModalTitle').textContent = 'เพิ่มห้องใหม่';
+    document.getElementById('roomModal').style.display = 'flex';
 }
 
-function editRoom(roomId) {
-    alert(`แก้ไขห้อง ID: ${roomId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+// Edit room
+async function editRoom(roomId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        showLoading();
+        const response = await fetch(`/api/admin/rooms/${roomId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const room = await response.json();
+            populateRoomForm(room);
+            document.getElementById('roomModalTitle').textContent = 'แก้ไขห้อง';
+            document.getElementById('roomModal').style.display = 'flex';
+        } else {
+            showToast('ไม่สามารถโหลดข้อมูลห้องได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading room:', error);
+        showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+    } finally {
+        hideLoading();
+    }
 }
 
+// Delete room
 function deleteRoom(roomId) {
-    if (confirm('คุณต้องการลบห้องนี้หรือไม่?')) {
-        alert(`ลบห้อง ID: ${roomId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+    showConfirmModal(
+        'ลบห้อง',
+        'คุณต้องการลบห้องนี้หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้',
+        () => performDeleteRoom(roomId)
+    );
+}
+
+async function performDeleteRoom(roomId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        showLoading();
+        const response = await fetch(`/api/admin/rooms/${roomId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast('ลบห้องสำเร็จ', 'success');
+            loadRooms();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'ไม่สามารถลบห้องได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        showToast('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
+    } finally {
+        hideLoading();
+        closeConfirmModal();
     }
 }
 
-function viewBooking(bookingId) {
-    alert(`ดูการจอง ID: ${bookingId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+// Room form functions
+function clearRoomForm() {
+    document.getElementById('roomForm').reset();
+    document.getElementById('roomId').value = '';
+    
+    // Clear checkboxes
+    const checkboxes = document.querySelectorAll('#roomForm input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
 }
 
-function confirmBooking(bookingId) {
-    if (confirm('คุณต้องการยืนยันการจองนี้หรือไม่?')) {
-        alert(`ยืนยันการจอง ID: ${bookingId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+function populateRoomForm(room) {
+    document.getElementById('roomId').value = room.room_id;
+    document.getElementById('roomName').value = room.room_name;
+    document.getElementById('roomType').value = room.type_id;
+    document.getElementById('roomCapacity').value = room.capacity;
+    document.getElementById('roomPrice').value = room.price_per_hour;
+    document.getElementById('roomStatus').value = room.status;
+    document.getElementById('roomDescription').value = room.description || '';
+    
+    // Set features checkboxes
+    if (room.features) {
+        const features = Array.isArray(room.features) ? room.features : room.features.split(',');
+        features.forEach(feature => {
+            const checkbox = document.querySelector(`input[name="features"][value="${feature.trim()}"]`);
+            if (checkbox) checkbox.checked = true;
+        });
     }
 }
 
+function closeRoomModal() {
+    document.getElementById('roomModal').style.display = 'none';
+    clearRoomForm();
+}
+
+// Handle room form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const roomForm = document.getElementById('roomForm');
+    if (roomForm) {
+        roomForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveRoom();
+        });
+    }
+});
+
+async function saveRoom() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const formData = new FormData(document.getElementById('roomForm'));
+    const roomId = formData.get('roomId');
+    
+    // Get selected features
+    const features = Array.from(document.querySelectorAll('input[name="features"]:checked'))
+        .map(cb => cb.value);
+    
+    const roomData = {
+        name: formData.get('name'),
+        type_id: parseInt(formData.get('type_id')),
+        capacity: parseInt(formData.get('capacity')),
+        hourly_price: parseFloat(formData.get('hourly_price')),
+        status: formData.get('status'),
+        description: formData.get('description'),
+        features: features.join(',')
+    };
+    
+    try {
+        showLoading();
+        const url = roomId ? `/api/admin/rooms/${roomId}` : '/api/admin/rooms';
+        const method = roomId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(roomData)
+        });
+        
+        if (response.ok) {
+            showToast(roomId ? 'อัปเดตห้องสำเร็จ' : 'เพิ่มห้องสำเร็จ', 'success');
+            closeRoomModal();
+            loadRooms();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving room:', error);
+        showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ===========================================
+// USER MANAGEMENT FUNCTIONS
+// ===========================================
+
+// Show add user form
+function showAddUserForm() {
+    clearUserForm();
+    document.getElementById('userModalTitle').textContent = 'เพิ่มผู้ใช้ใหม่';
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('userPassword').required = true;
+    document.getElementById('userModal').style.display = 'flex';
+}
+
+// Edit user
+async function editUser(userId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        showLoading();
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            populateUserForm(user);
+            document.getElementById('userModalTitle').textContent = 'แก้ไขผู้ใช้';
+            document.getElementById('passwordGroup').style.display = 'none';
+            document.getElementById('userPassword').required = false;
+            document.getElementById('userModal').style.display = 'flex';
+        } else {
+            showToast('ไม่สามารถโหลดข้อมูลผู้ใช้ได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading user:', error);
+        showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// View user details
 function viewUser(userId) {
-    alert(`ดูผู้ใช้ ID: ${userId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+    editUser(userId); // For now, just use edit form as view
+}
+
+// User form functions
+function clearUserForm() {
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+}
+
+function populateUserForm(user) {
+    document.getElementById('userId').value = user.user_id;
+    document.getElementById('userName').value = user.name;
+    document.getElementById('userEmail').value = user.email;
+    document.getElementById('userPhone').value = user.phone || '';
+    document.getElementById('userRole').value = user.role_id;
+    document.getElementById('userStatus').value = user.status || 'active';
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').style.display = 'none';
+    clearUserForm();
+}
+
+// Handle user form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const userForm = document.getElementById('userForm');
+    if (userForm) {
+        userForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveUser();
+        });
+    }
+});
+
+async function saveUser() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const formData = new FormData(document.getElementById('userForm'));
+    const userId = formData.get('userId');
+    
+    const userData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        role_id: parseInt(formData.get('role_id')),
+        status: formData.get('status')
+    };
+    
+    // Add password for new users
+    if (!userId && formData.get('password')) {
+        userData.password = formData.get('password');
+    }
+    
+    try {
+        showLoading();
+        const url = userId ? `/api/admin/users/${userId}` : '/api/admin/users';
+        const method = userId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        if (response.ok) {
+            showToast(userId ? 'อัปเดตผู้ใช้สำเร็จ' : 'เพิ่มผู้ใช้สำเร็จ', 'success');
+            closeUserModal();
+            loadUsers();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving user:', error);
+        showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ===========================================
+// BOOKING MANAGEMENT FUNCTIONS
+// ===========================================
+
+// View booking details
+async function viewBooking(bookingId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        showLoading();
+        const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const booking = await response.json();
+            showBookingDetails(booking);
+        } else {
+            showToast('ไม่สามารถโหลดรายละเอียดการจองได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading booking:', error);
+        showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function showBookingDetails(booking) {
+    const detailsContainer = document.getElementById('bookingDetails');
+    detailsContainer.innerHTML = `
+        <div class="booking-info-grid">
+            <div class="booking-info-item">
+                <label>รหัสการจอง:</label>
+                <span>${booking.booking_id}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>ลูกค้า:</label>
+                <span>${booking.user_name}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>อีเมล:</label>
+                <span>${booking.user_email}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>เบอร์โทร:</label>
+                <span>${booking.user_phone || 'ไม่ระบุ'}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>ห้อง:</label>
+                <span>${booking.room_name}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>วันที่จอง:</label>
+                <span>${formatDate(booking.booking_date)}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>เวลา:</label>
+                <span>${booking.start_time} - ${booking.end_time}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>ระยะเวลา:</label>
+                <span>${booking.duration} ชั่วโมง</span>
+            </div>
+            <div class="booking-info-item">
+                <label>ราคา:</label>
+                <span>฿${booking.total_amount}</span>
+            </div>
+            <div class="booking-info-item">
+                <label>สถานะ:</label>
+                <span class="status-badge ${booking.status}">${getBookingStatusText(booking.status)}</span>
+            </div>
+            <div class="booking-info-item full-width">
+                <label>หมายเหตุ:</label>
+                <span>${booking.notes || 'ไม่มี'}</span>
+            </div>
+        </div>
+    `;
+    
+    // Set current status in dropdown
+    document.getElementById('bookingStatusUpdate').value = booking.status;
+    document.getElementById('adminNotes').value = booking.admin_notes || '';
+    
+    // Store current booking ID
+    window.currentBookingId = booking.booking_id;
+    
+    document.getElementById('bookingModal').style.display = 'flex';
+}
+
+function closeBookingModal() {
+    document.getElementById('bookingModal').style.display = 'none';
+    window.currentBookingId = null;
+}
+
+// Confirm booking
+function confirmBooking(bookingId) {
+    showConfirmModal(
+        'ยืนยันการจอง',
+        'คุณต้องการยืนยันการจองนี้หรือไม่?',
+        () => updateBookingStatusDirect(bookingId, 'confirmed')
+    );
+}
+
+// Update booking status
+async function updateBookingStatus() {
+    if (!window.currentBookingId) return;
+    
+    const newStatus = document.getElementById('bookingStatusUpdate').value;
+    const adminNotes = document.getElementById('adminNotes').value;
+    
+    await updateBookingStatusWithNotes(window.currentBookingId, newStatus, adminNotes);
+}
+
+async function updateBookingStatusDirect(bookingId, status) {
+    await updateBookingStatusWithNotes(bookingId, status, '');
+}
+
+async function updateBookingStatusWithNotes(bookingId, status, notes) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        showLoading();
+        const response = await fetch(`/api/admin/bookings/${bookingId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                status: status,
+                admin_notes: notes
+            })
+        });
+        
+        if (response.ok) {
+            showToast('อัปเดตสถานะการจองสำเร็จ', 'success');
+            closeBookingModal();
+            closeConfirmModal();
+            loadBookings();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'ไม่สามารถอัปเดตสถานะได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating booking status:', error);
+        showToast('เกิดข้อผิดพลาดในการอัปเดต', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Delete booking
+function deleteBooking() {
+    if (!window.currentBookingId) return;
+    
+    showConfirmModal(
+        'ลบการจอง',
+        'คุณต้องการลบการจองนี้หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้',
+        () => performDeleteBooking(window.currentBookingId)
+    );
+}
+
+async function performDeleteBooking(bookingId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        showLoading();
+        const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast('ลบการจองสำเร็จ', 'success');
+            closeBookingModal();
+            closeConfirmModal();
+            loadBookings();
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'ไม่สามารถลบการจองได้', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        showToast('เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ===========================================
+// FILTER FUNCTIONS
+// ===========================================
+
+// Filter bookings
+function filterBookings() {
+    const statusFilter = document.getElementById('bookingStatusFilter').value;
+    const dateFilter = document.getElementById('bookingDateFilter').value;
+    
+    // Implement filtering logic here
+    loadBookings(); // For now, just reload
+}
+
+// Filter users
+function filterUsers() {
+    const roleFilter = document.getElementById('userRoleFilter').value;
+    const searchFilter = document.getElementById('userSearchInput').value;
+    
+    // Implement filtering logic here
+    loadUsers(); // For now, just reload
+}
+
+// ===========================================
+// UTILITY FUNCTIONS
+// ===========================================
+
+// Show loading overlay
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+// Hide loading overlay
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// Show confirmation modal
+function showConfirmModal(title, message, onConfirm) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    
+    const confirmBtn = document.getElementById('confirmButton');
+    confirmBtn.onclick = onConfirm;
+    
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+// Close confirmation modal
+function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    const container = document.getElementById('toastContainer');
+    container.appendChild(toast);
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => container.removeChild(toast), 300);
+    }, 5000);
+}
+
+// Load reports (placeholder)
+function loadReports() {
+    // Implement reports loading here
+    console.log('Loading reports...');
 }
 
 function editUser(userId) {
