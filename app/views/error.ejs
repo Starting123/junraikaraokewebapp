@@ -1,3 +1,84 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Junrai Karaoke - ข้อผิดพลาด</title>
+    <style>
+        body {
+            font-family: 'Prompt', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+        .error-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .error-code { font-size: 6em; margin: 0; opacity: 0.8; }
+        .error-message { font-size: 1.5em; margin: 20px 0; }
+        .error-description { font-size: 1.1em; margin: 20px 0; opacity: 0.9; }
+        .action-buttons a {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            margin: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .action-buttons a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .debug-info {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 30px;
+            font-size: 0.9em;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-code"><%= error.status || 500 %></div>
+        
+        <% if (error.status === 404) { %>
+            <div class="error-message">🎵 ขออภัย ไม่พบหน้าที่คุณกำลังมองหา</div>
+            <div class="error-description">
+                หน้าที่คุณต้องการอาจถูกย้าย ลบ หรือใส่ URL ผิด<br>
+                ลองตรวจสอบ URL อีกครั้งหรือกลับไปหน้าแรก
+            </div>
+        <% } else { %>
+            <div class="error-message">🔧 เกิดข้อผิดพลาดในระบบ</div>
+            <div class="error-description">
+                <%= message || 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' %><br>
+                กรุณาลองใหม่อีกครั้งในภายหลัง
+            </div>
+        <% } %>
+        
+        <div class="action-buttons">
+            <a href="/">🏠 หน้าแรก</a>
+            <a href="/rooms">🎤 ห้องคาราโอเกะ</a>
+            <a href="/contact">📞 ติดต่อเรา</a>
+        </div>
+        
+        <% if (process.env.NODE_ENV === 'development' && error.stack) { %>
+        <div class="debug-info">
+            <strong>🐛 Debug Information:</strong><br>
+            <pre><%= error.stack %></pre>
+        </div>
+        <% } %>
+    </div>
+</body>
+</html>

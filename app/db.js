@@ -14,9 +14,7 @@ const pool = mysql.createPool({
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   // Security and performance options
-  ssl: process.env.NODE_ENV === 'production' ? {
-    rejectUnauthorized: false
-  } : false,
+  ssl: false, // Disable SSL for local development
   timezone: '+07:00', // Thailand timezone
   charset: 'utf8mb4'
 });

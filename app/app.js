@@ -113,7 +113,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
   etag: true
 }));
 
+console.log('🔄 Registering routes...');
 app.use('/', indexRouter);
+console.log('✅ Index router registered');
 app.use('/api/users', usersRouter);
 app.use('/api/rooms', roomsRouter);
 app.use('/api/auth', apiAuth);
@@ -123,6 +125,7 @@ app.use('/api/orders', apiOrders);
 app.use('/api/payments', require('./routes/api/payments'));
 app.use('/payment', paymentRouter);
 app.use('/admin', require('./routes/admin'));
+console.log('✅ All routes registered successfully');
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
