@@ -24,7 +24,12 @@
   
   /* Status Colors */
   --success: #689F38;
+  --success-green: #2ECC71;
+  --success-green-hover: #27AE60;
+  --light-success: #E8F5E8;
   --warning: #FF8F00;
+  --light-orange: #FFF3E0;
+  --dark-orange: #E65100;
   --error: #D32F2F;
   --info: #0288D1;
   

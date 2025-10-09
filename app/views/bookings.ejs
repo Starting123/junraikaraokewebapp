@@ -2,10 +2,11 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>ระบบจองห้อง - Junrai Karaoke</title>
     <link rel="stylesheet" href="/stylesheets/global.css">
     <link rel="stylesheet" href="/stylesheets/bookings.css">
+    <link rel="stylesheet" href="/stylesheets/responsive-fixes.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
 </head>
@@ -792,8 +793,9 @@
         // Show payment modal
         function showPaymentModal(bookingId) {
             currentBookingId = bookingId;
-            const modal = document.getElementById('paymentModal');
-            modal.style.display = 'block';
+            
+            // Use the enhanced mobile-friendly modal function
+            openPaymentModal(bookingId);
             
             // Load booking amount
             loadBookingAmount(bookingId);
@@ -1286,7 +1288,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-credit-card"></i> ชำระเงิน</h3>
-                <span class="close" onclick="closeModal('paymentModal')">&times;</span>
+                <button class="modal-close" onclick="closePaymentModal()" aria-label="ปิด">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="payment-form">
@@ -1327,18 +1331,18 @@
                     <!-- Traditional Payment Form -->
                     <div id="traditionalPaymentForm" class="form-group" style="display: none;">
                         <label><i class="fas fa-receipt"></i> เลขอ้างอิง (ถ้ามี)</label>
-                        <input type="text" id="transactionId" class="form-control" placeholder="ใส่เลขอ้างอิงการชำระเงิน">
+                        <input type="text" id="transactionId" class="form-control" placeholder="เช่น: 1234567890 (หากไม่มีเว้นไว้ได้)">
                     </div>
                     
                     <!-- File Upload for Transfer Proof -->
                     <div id="transferProofForm" class="form-group" style="display: none;">
                         <label><i class="fas fa-camera"></i> หลักฐานการโอนเงิน *</label>
                         <div class="file-upload-area" id="fileUploadArea">
-                            <input type="file" id="paymentProofFile" accept="image/*" class="file-input" required>
+                            <input type="file" id="paymentProofFile" accept="image/*,.pdf" class="file-input" required>
                             <div class="upload-text">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>คลิกเพื่ออัปโหลดหลักฐานการโอนเงิน</p>
-                                <small>รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 5MB)</small>
+                                <i class="fas fa-camera"></i>
+                                <p>อัปโหลดหลักฐานการชำระเงิน</p>
+                                <small>📷 ถ่ายรูปสลิปการโอนเงิน<br>หรือ แคปหน้าจอ QR Code Payment<br><br>รองรับไฟล์: JPG, PNG, PDF (ไม่เกิน 5MB)</small>
                             </div>
                         </div>
                         <div id="filePreview" style="display: none;">
@@ -1352,7 +1356,7 @@
                         <button type="button" class="btn btn-success" onclick="processPayment()">
                             <i class="fas fa-check"></i> ชำระเงิน
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal('paymentModal')">
+                        <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">
                             <i class="fas fa-times"></i> ยกเลิก
                         </button>
                     </div>
@@ -1360,5 +1364,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Mobile Enhancements Script -->
+    <script src="/stylesheets/mobile-enhancements.js"></script>
 </body>
 </html>
