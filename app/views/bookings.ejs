@@ -79,82 +79,153 @@
             z-index: 2 !important;
         }
         
-        /* Simple File Upload Styles */
-        .simple-file-upload {
-            display: flex !important;
-            align-items: center !important;
-            gap: 15px !important;
-            padding: 15px !important;
-            background: #f8f9fa !important;
-            border: 2px solid #dee2e6 !important;
-            border-radius: 8px !important;
-            margin: 10px 0 !important;
+        /* Enhanced File Upload Styles */
+        .enhanced-file-upload {
+            margin: 20px 0 !important;
         }
         
-        .simple-file-upload .btn {
-            white-space: nowrap !important;
-            min-width: 160px !important;
+        .upload-container {
+            display: flex !important;
+            align-items: stretch !important;
+            gap: 0 !important;
+            border: 3px solid #E07B39 !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            background: white !important;
+            box-shadow: 0 4px 12px rgba(224, 123, 57, 0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .upload-container:hover {
+            border-color: #2ECC71 !important;
+            box-shadow: 0 6px 16px rgba(46, 204, 113, 0.3) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        .upload-btn {
+            background: #E07B39 !important;
+            color: white !important;
+            border: none !important;
+            padding: 20px 25px !important;
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+            border-radius: 0 !important;
+            min-width: 180px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .upload-btn:hover {
+            background: #2ECC71 !important;
+            transform: scale(1.02) !important;
+        }
+        
+        .upload-info {
+            flex: 1 !important;
+            padding: 15px 20px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            background: #FFF3E0 !important;
         }
         
         .file-name-display {
-            color: #6c757d !important;
-            font-size: 0.9rem !important;
-            flex: 1 !important;
-            padding: 8px !important;
+            color: #666 !important;
+            font-size: 1rem !important;
+            margin-bottom: 5px !important;
+            font-weight: 500 !important;
         }
         
         .file-name-display.has-file {
-            color: #28a745 !important;
+            color: #2ECC71 !important;
             font-weight: 600 !important;
         }
         
-        .file-preview-compact {
-            margin-top: 10px !important;
-            padding: 10px !important;
-            background: #e8f5e9 !important;
-            border: 1px solid #28a745 !important;
-            border-radius: 6px !important;
+        .upload-hint {
+            color: #8B4513 !important;
+            font-size: 0.85rem !important;
+            margin: 0 !important;
         }
         
-        .preview-info {
+        /* Enhanced File Preview */
+        .file-preview-enhanced {
+            margin-top: 15px !important;
+            border: 2px solid #2ECC71 !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+            background: white !important;
+            box-shadow: 0 3px 10px rgba(46, 204, 113, 0.2) !important;
+        }
+        
+        .preview-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px 20px !important;
+            background: #E8F5E8 !important;
+            border-bottom: 1px solid #2ECC71 !important;
+        }
+        
+        .file-details {
             display: flex !important;
             align-items: center !important;
             gap: 10px !important;
-        }
-        
-        .preview-info i {
-            color: #28a745 !important;
-        }
-        
-        .preview-info span {
             flex: 1 !important;
-            font-size: 0.9rem !important;
+        }
+        
+        .file-info-text {
             color: #155724 !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
         }
         
-        .preview-thumbnail {
-            max-width: 100px !important;
-            max-height: 100px !important;
-            border-radius: 4px !important;
+        .preview-content {
+            padding: 15px !important;
+            text-align: center !important;
+        }
+        
+        .preview-image {
+            max-width: 100% !important;
+            max-height: 200px !important;
+            border-radius: 8px !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+        
+        .upload-tips {
             margin-top: 10px !important;
-            border: 1px solid #28a745 !important;
+            text-align: center !important;
         }
         
+        .upload-tips small {
+            color: #666 !important;
+            font-size: 0.85rem !important;
+        }
+        
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .simple-file-upload {
+            .upload-container {
                 flex-direction: column !important;
-                align-items: stretch !important;
-                text-align: center !important;
             }
             
-            .simple-file-upload .btn {
+            .upload-btn {
                 min-width: auto !important;
+                padding: 18px !important;
+                border-radius: 0 !important;
             }
             
-            .file-name-display {
+            .upload-info {
                 text-align: center !important;
-                border-top: 1px solid #dee2e6 !important;
-                padding-top: 10px !important;
+                padding: 20px !important;
+            }
+            
+            .preview-header {
+                flex-direction: column !important;
+                gap: 10px !important;
+                text-align: center !important;
+            }
+            
+            .file-details {
+                justify-content: center !important;
             }
         }
     </style>
@@ -975,36 +1046,42 @@
             if (!currentBookingId) return;
             
             const method = document.querySelector('input[name="paymentMethod"]:checked').value;
-            const transactionId = document.getElementById('transactionId').value;
             
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${API_BASE}/bookings/${currentBookingId}/payment`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        method,
-                        transaction_id: transactionId || null
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    showToast(data.message || 'ชำระเงินสำเร็จ', 'success');
-                    closeModal('paymentModal');
-                    loadMyBookings();
-                    loadAllBookings();
-                } else {
-                    const data = await response.json();
-                    showToast(data.error || 'เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+            // For cash payment, use simple JSON request
+            if (method === 'cash') {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/bookings/${currentBookingId}/payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            method,
+                            transaction_id: null
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        showToast(data.message || 'ชำระเงินสำเร็จ', 'success');
+                        closeModal('paymentModal');
+                        loadMyBookings();
+                        loadAllBookings();
+                    } else {
+                        const error = await response.json();
+                        showToast(error.error || 'เกิดข้อผิดพลาด', 'error');
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
                 }
-            } catch (error) {
-                console.error('Payment error:', error);
-                showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+                return;
             }
+            
+            // For bank_transfer and qr_code, process with file upload
+            processTraditionalPayment();
         }
 
         // Close modal
@@ -1015,10 +1092,11 @@
                 
                 // Reset form data when closing specific modals
                 if (modalId === 'paymentModal') {
-                    const transactionInput = document.getElementById('transactionId');
                     const cashRadio = document.querySelector('input[name="paymentMethod"][value="cash"]');
-                    if (transactionInput) transactionInput.value = '';
                     if (cashRadio) cashRadio.checked = true;
+                    
+                    // Reset file upload
+                    clearFilePreview();
                 } else if (modalId === 'bookingModal') {
                     // Reset booking form if needed
                     document.getElementById('modalBody').innerHTML = '';
@@ -1265,33 +1343,34 @@
             }
         }
 
-        // Process traditional payment (existing logic)
+        // Process traditional payment with file upload
         async function processTraditionalPayment() {
             try {
                 const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                const transactionId = document.getElementById('transactionId').value;
                 const fileInput = document.getElementById('paymentProofFile');
                 
                 // ตรวจสอบว่าจำเป็นต้องมีไฟล์หลักฐานหรือไม่
-                if ((selectedMethod === 'bank_transfer' || selectedMethod === 'qr_code') && !fileInput.files[0]) {
-                    showToast('กรุณาแนบหลักฐานการโอนเงิน', 'error');
+                if (!fileInput.files[0]) {
+                    showToast('กรุณาแนบหลักฐานการชำระเงิน', 'error');
                     return;
                 }
+
+                // แสดง loading state
+                const paymentButton = document.querySelector('.btn-success');
+                const originalText = paymentButton.innerHTML;
+                paymentButton.disabled = true;
+                paymentButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลด...';
 
                 // สร้าง FormData สำหรับส่งข้อมูลและไฟล์
                 const formData = new FormData();
                 formData.append('method', selectedMethod);
-                formData.append('transaction_id', transactionId);
-                
-                if (fileInput.files[0]) {
-                    formData.append('paymentProof', fileInput.files[0]);
-                }
+                formData.append('transaction_id', null); // ไม่ใช้เลขอ้างอิงแล้ว
+                formData.append('paymentProof', fileInput.files[0]);
 
                 const response = await fetch(`${API_BASE}/bookings/${currentBookingId}/payment`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        // ไม่ต้องใส่ Content-Type เมื่อใช้ FormData
                     },
                     body: formData
                 });
@@ -1299,17 +1378,26 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    showToast(result.message || 'บันทึกการชำระเงินสำเร็จ!', 'success');
+                    showToast(result.message || 'อัปโหลดหลักฐานสำเร็จ! รอการตรวจสอบ', 'success');
                     closeModal('paymentModal');
                     loadMyBookings();
                     loadAllBookings();
                 } else {
-                    showToast(result.error || 'เกิดข้อผิดพลาดในการบันทึกการชำระเงิน', 'error');
+                    showToast(result.error || 'เกิดข้อผิดพลาดในการอัปโหลด', 'error');
                 }
 
+                // Reset button state
+                paymentButton.disabled = false;
+                paymentButton.innerHTML = originalText;
+
             } catch (error) {
-                console.error('Error processing traditional payment:', error);
+                console.error('Error processing payment:', error);
                 showToast('เกิดข้อผิดพลาดในการชำระเงิน', 'error');
+                
+                // Reset button state
+                const paymentButton = document.querySelector('.btn-success');
+                paymentButton.disabled = false;
+                paymentButton.innerHTML = '<i class="fas fa-check"></i> ชำระเงิน';
             }
         }
 
@@ -1329,22 +1417,28 @@
                     transferProofForm.style.display = 'none';
                 } else {
                     stripeForm.style.display = 'none';
-                    traditionalForm.style.display = 'block';
                     
-                    // Show upload form for bank_transfer and qr_code
+                    // Show upload form for bank_transfer and qr_code (ไม่ต้องแสดง traditionalForm แล้ว)
                     if (method === 'bank_transfer' || method === 'qr_code') {
                         transferProofForm.style.display = 'block';
                         transferProofForm.classList.add('show');
                         document.getElementById('paymentProofFile').required = true;
                         
-                        // Debug log
+                        // Update button text based on method
+                        const uploadBtn = document.querySelector('.upload-btn');
+                        if (method === 'bank_transfer') {
+                            uploadBtn.innerHTML = '<i class="fas fa-university"></i> อัปโหลดสลิปโอนเงิน';
+                        } else if (method === 'qr_code') {
+                            uploadBtn.innerHTML = '<i class="fas fa-qrcode"></i> อัปโหลดหน้าจอ QR Payment';
+                        }
+                        
                         console.log('Showing file upload for method:', method);
                     } else {
+                        // For cash payment, hide upload form
                         transferProofForm.style.display = 'none';
                         transferProofForm.classList.remove('show');
                         document.getElementById('paymentProofFile').required = false;
                         
-                        // Debug log
                         console.log('Hiding file upload for method:', method);
                     }
                 }
@@ -1521,40 +1615,47 @@
                         <div id="card-errors" role="alert" class="error-message"></div>
                     </div>
                     
-                    <!-- Traditional Payment Form -->
-                    <div id="traditionalPaymentForm" class="form-group" style="display: none;">
-                        <label><i class="fas fa-receipt"></i> เลขอ้างอิง (ถ้ามี)</label>
-                        <input type="text" id="transactionId" class="form-control" placeholder="เช่น: 1234567890 (หากไม่มีเว้นไว้ได้)">
-                    </div>
-                    
                     <!-- File Upload for Transfer Proof -->
                     <div id="transferProofForm" class="form-group" style="display: none;">
-                        <label><i class="fas fa-camera"></i> หลักฐานการโอนเงิน *</label>
+                        <label><i class="fas fa-camera"></i> อัปโหลดหลักฐานการชำระเงิน *</label>
                         
-                        <!-- Simple File Upload Button -->
-                        <div class="simple-file-upload">
+                        <!-- Enhanced File Upload Area -->
+                        <div class="enhanced-file-upload">
                             <input type="file" id="paymentProofFile" accept="image/*,.pdf" style="display: none;" required>
-                            <button type="button" class="btn btn-outline" onclick="document.getElementById('paymentProofFile').click()">
-                                <i class="fas fa-camera"></i> เลือกไฟล์หลักฐาน
-                            </button>
-                            <span id="fileName" class="file-name-display">ยังไม่ได้เลือกไฟล์</span>
+                            <div class="upload-container">
+                                <button type="button" class="btn btn-primary upload-btn" onclick="document.getElementById('paymentProofFile').click()">
+                                    <i class="fas fa-camera"></i> เลือกไฟล์สลิป
+                                </button>
+                                <div class="upload-info">
+                                    <span id="fileName" class="file-name-display">ยังไม่ได้เลือกไฟล์</span>
+                                    <small class="upload-hint">
+                                        📱 ถ่ายรูปสลิป หรือ แคปหน้าจอ QR Payment
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- File Preview -->
-                        <div id="filePreview" class="file-preview-compact" style="display: none;">
-                            <div class="preview-info">
-                                <i class="fas fa-file-image"></i>
-                                <span id="fileInfo"></span>
-                                <button type="button" class="btn btn-sm btn-danger" onclick="clearFilePreview()">
-                                    <i class="fas fa-times"></i>
+                        <div id="filePreview" class="file-preview-enhanced" style="display: none;">
+                            <div class="preview-header">
+                                <div class="file-details">
+                                    <i class="fas fa-file-image text-success"></i>
+                                    <span id="fileInfo" class="file-info-text"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFilePreview()" title="ลบไฟล์">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
-                            <img id="previewImage" class="preview-thumbnail" style="display: none;">
+                            <div class="preview-content">
+                                <img id="previewImage" class="preview-image" style="display: none;">
+                            </div>
                         </div>
                         
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle"></i> รองรับไฟล์: JPG, PNG, PDF (ไม่เกิน 5MB)
-                        </small>
+                        <div class="upload-tips">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> รองรับไฟล์: JPG, PNG, PDF • ขนาดสูงสุด: 5MB
+                            </small>
+                        </div>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-success" onclick="processPayment()">
