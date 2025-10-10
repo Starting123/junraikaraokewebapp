@@ -364,14 +364,19 @@ router.get('/:id/payment-slip', authMiddleware, [
       }
     });
     
-    // Set response headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="payment-slip-${booking.booking_id}.pdf"`);
-    
-    // Create file stream and pipe to both response and file
+    // Write PDF to file first, then send to client
     const fileStream = fs.createWriteStream(filepath);
+    // Propagate PDFKit errors
+    doc.on('error', (docErr) => {
+      console.error('PDF document error:', docErr);
+      try { if (!res.headersSent) res.status(500).json({ error: 'เกิดข้อผิดพลาดในการสร้าง PDF', message: docErr.message }); } catch (e) { /* ignore */ }
+    });
+    fileStream.on('error', (fsErr) => {
+      console.error('File stream error while writing PDF:', fsErr);
+      try { if (!res.headersSent) res.status(500).json({ error: 'เกิดข้อผิดพลาดในการเขียนไฟล์ PDF', message: fsErr.message }); } catch (e) { /* ignore */ }
+    });
+
     doc.pipe(fileStream);
-    doc.pipe(res);
     
     // Header
     doc.fontSize(20)
@@ -433,29 +438,44 @@ router.get('/:id/payment-slip', authMiddleware, [
     
     // Finalize PDF
     doc.end();
-    
-    // Update database with PDF file path (after file is written)
-    fileStream.on('finish', async () => {
-      try {
-        console.log(`PDF saved to: ${filepath}`);
-        
-        // Update booking record with PDF path
-        await db.query(`
-          UPDATE bookings 
-          SET receipt_pdf_path = ? 
-          WHERE booking_id = ?
-        `, [`/receipts/${filename}`, bookingId]);
-        
-        console.log(`Updated booking ${bookingId} with PDF path: /receipts/${filename}`);
-        
-      } catch (updateErr) {
-        console.error('Error updating booking with PDF path:', updateErr);
-      }
+
+    // Wait for file to be fully written
+    await new Promise((resolve, reject) => {
+      fileStream.on('finish', resolve);
+      fileStream.on('error', reject);
+      // also fail if doc emits error
+      doc.on('error', reject);
     });
+
+    console.log(`PDF saved to: ${filepath}`);
+
+    // Update booking record with PDF path
+    try {
+      await db.query(`
+        UPDATE bookings 
+        SET receipt_pdf_path = ? 
+        WHERE booking_id = ?
+      `, [`/receipts/${filename}`, bookingId]);
+      console.log(`Updated booking ${bookingId} with PDF path: /receipts/${filename}`);
+    } catch (updateErr) {
+      console.error('Error updating booking with PDF path:', updateErr);
+      // continue to send file even if DB update fails
+    }
+
+    // Send file to client
+    if (!res.headersSent) {
+      return res.download(filepath, filename, (downloadErr) => {
+        if (downloadErr) {
+          console.error('Error sending PDF to client:', downloadErr);
+          // If headers already sent, cannot send JSON; just log
+        }
+      });
+    }
     
   } catch (err) {
     console.error('Error generating PDF:', err);
-    next(err);
+    // Return JSON so frontend can handle the error instead of receiving an HTML error page
+    return res.status(500).json({ error: 'เกิดข้อผิดพลาดในการสร้างไฟล์ PDF', message: err.message });
   }
 });
 
