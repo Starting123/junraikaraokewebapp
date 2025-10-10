@@ -357,10 +357,6 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="roomPrice">ราคาต่อชั่วโมง (บาท) *</label>
-                        <input type="number" id="roomPrice" name="hourly_price" min="0" step="0.01" required>
-                    </div>
-                    <div class="form-group">
                         <label for="roomStatus">สถานะ *</label>
                         <select id="roomStatus" name="status" required>
                             <option value="available">ว่าง</option>
@@ -368,6 +364,10 @@
                             <option value="maintenance">ซ่อมบำรุง</option>
                             <option value="inactive">ไม่ใช้งาน</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomPriceInfo">ราคาต่อชั่วโมง</label>
+                        <input type="text" id="roomPriceInfo" name="roomPriceInfo" readonly placeholder="ราคามาจากประเภทห้อง (Room Type)">
                     </div>
                 </div>
                 

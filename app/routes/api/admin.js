@@ -73,6 +73,15 @@ router.get('/rooms', adminOnly, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Get single room by id
+router.get('/rooms/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req, res, next) => {
+  try {
+    const room = await roomsModel.getById(req.params.id);
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    res.json(room);
+  } catch (err) { next(err); }
+});
+
 // Login logs viewer
 router.get('/login-logs', adminOnly, async (req, res, next) => {
   try {
@@ -121,16 +130,17 @@ router.get('/bookings', adminOnly, async (req, res, next) => {
     const [rows] = await db.query(`
       SELECT 
         b.booking_id,
-        b.booking_date,
-        b.start_time,
-        b.end_time,
+        DATE(b.start_time) as booking_date,
+        TIME(b.start_time) as start_time,
+        TIME(b.end_time) as end_time,
         b.status,
-        b.total_price,
+        b.total_price as total_amount,
         b.created_at,
         u.name as user_name,
         u.email as user_email,
-        r.room_name,
-        r.room_id
+        r.name as room_name,
+        r.room_id,
+        b.duration_hours as duration
       FROM bookings b
       LEFT JOIN users u ON b.user_id = u.user_id
       LEFT JOIN rooms r ON b.room_id = r.room_id
@@ -164,19 +174,19 @@ router.get('/stats', adminOnly, async (req, res, next) => {
     const [availableRooms] = await db.query('SELECT COUNT(*) as count FROM rooms WHERE status = "available"');
     const roomsAvailable = availableRooms[0].count;
     
-    // Get bookings today
-    const [bookingsToday] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE DATE(booking_date) = CURDATE()');
+  // Get bookings today (use start_time since bookings table stores start_time/end_time)
+  const [bookingsToday] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE DATE(start_time) = CURDATE()');
     const totalBookings = bookingsToday[0].count;
     
     // Get new bookings today
     const [newBookingsToday] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE DATE(created_at) = CURDATE()');
     const bookingsChange = newBookingsToday[0].count;
     
-    // Get revenue today (from completed bookings)
+    // Get revenue today (from completed bookings) - use start_time for booking date
     const [revenueToday] = await db.query(`
       SELECT COALESCE(SUM(total_price), 0) as revenue 
       FROM bookings 
-      WHERE DATE(booking_date) = CURDATE() 
+      WHERE DATE(start_time) = CURDATE() 
       AND status IN ('completed', 'confirmed')
     `);
     const totalRevenue = revenueToday[0].revenue;
@@ -185,7 +195,7 @@ router.get('/stats', adminOnly, async (req, res, next) => {
     const [revenueYesterday] = await db.query(`
       SELECT COALESCE(SUM(total_price), 0) as revenue 
       FROM bookings 
-      WHERE DATE(booking_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+      WHERE DATE(start_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
       AND status IN ('completed', 'confirmed')
     `);
     const revenueChange = totalRevenue - revenueYesterday[0].revenue;
@@ -203,6 +213,141 @@ router.get('/stats', adminOnly, async (req, res, next) => {
     
   } catch (err) { 
     next(err); 
+  }
+});
+
+// Get single booking details
+router.get('/bookings/:id', adminOnly, [
+  param('id').isInt({ gt: 0 })
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    
+    const bookingId = req.params.id;
+    const db = require('../../db');
+    
+    const [rows] = await db.query(`
+      SELECT 
+        b.booking_id,
+        b.user_id,
+        b.room_id,
+        DATE(b.start_time) as booking_date,
+        TIME(b.start_time) as start_time,
+        TIME(b.end_time) as end_time,
+        b.status,
+        b.total_price as total_amount,
+        b.payment_status,
+        b.duration_hours as duration,
+        b.created_at,
+        b.admin_notes,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone,
+        r.name as room_name,
+        r.price_per_hour as price_per_hour
+      FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.user_id
+      LEFT JOIN rooms r ON b.room_id = r.room_id
+      WHERE b.booking_id = ?
+    `, [bookingId]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+    
+    res.json(rows[0]);
+    
+  } catch (err) {
+    console.error('Error fetching booking:', err);
+    next(err);
+  }
+});
+
+// Update booking status
+router.put('/bookings/:id/status', adminOnly, [
+  param('id').isInt({ gt: 0 }),
+  body('status').isIn(['pending', 'confirmed', 'cancelled', 'completed']),
+  body('admin_notes').optional().isString()
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    
+    const bookingId = req.params.id;
+    const { status, admin_notes } = req.body;
+    const db = require('../../db');
+    
+    // Check if booking exists
+    const [bookingRows] = await db.query('SELECT * FROM bookings WHERE booking_id = ?', [bookingId]);
+    if (bookingRows.length === 0) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+    
+    // Update booking status and optionally admin notes
+    if (admin_notes && admin_notes.trim()) {
+      await db.query(
+        'UPDATE bookings SET status = ?, admin_notes = ?, updated_at = CURRENT_TIMESTAMP WHERE booking_id = ?',
+        [status, admin_notes, bookingId]
+      );
+    } else {
+      await db.query(
+        'UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE booking_id = ?',
+        [status, bookingId]
+      );
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Booking status updated successfully',
+      booking_id: bookingId,
+      new_status: status
+    });
+    
+  } catch (err) {
+    console.error('Error updating booking status:', err);
+    next(err);
+  }
+});
+
+// Delete booking
+router.delete('/bookings/:id', adminOnly, [
+  param('id').isInt({ gt: 0 })
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    
+    const bookingId = req.params.id;
+    const db = require('../../db');
+    
+    // Check if booking exists
+    const [bookingRows] = await db.query('SELECT * FROM bookings WHERE booking_id = ?', [bookingId]);
+    if (bookingRows.length === 0) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+    
+    // Delete related payments first
+    await db.query('DELETE FROM booking_payments WHERE booking_id = ?', [bookingId]);
+    
+    // Delete booking
+    await db.query('DELETE FROM bookings WHERE booking_id = ?', [bookingId]);
+    
+    res.json({ 
+      success: true, 
+      message: 'Booking deleted successfully',
+      booking_id: bookingId
+    });
+    
+  } catch (err) {
+    console.error('Error deleting booking:', err);
+    next(err);
   }
 });
 

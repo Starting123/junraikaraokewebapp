@@ -222,10 +222,12 @@ router.post('/:id/payment', authMiddleware, upload.single('paymentProof'), [
       transaction_id,
       proof_path: proofPath
     });
-    
-    res.json({ payment, message: 'ชำระเงินสำเร็จ' });
+
+    res.json({ success: true, payment, message: 'ชำระเงินสำเร็จ', proof_path: proofPath });
   } catch (err) {
-    next(err);
+    console.error('Error in POST /:id/payment:', err);
+    // Return JSON error so frontend doesn't try to parse HTML error pages
+    return res.status(500).json({ error: 'เกิดข้อผิดพลาดในการประมวลผลการชำระเงิน', message: err.message });
   }
 });
 
