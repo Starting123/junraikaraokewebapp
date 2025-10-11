@@ -129,7 +129,8 @@ async function loadUserBookings() {
         });
         
         if (response.ok) {
-            const bookings = await response.json();
+            // Fix: Access bookings array from response object
+            const { bookings } = await response.json();
             displayBookings(bookings);
         } else {
             throw new Error('Failed to load bookings');
@@ -467,3 +468,17 @@ function getNotificationColor(type) {
     };
     return colors[type] || colors.info;
 }
+
+// Define loadRoomsForFilter function
+function loadRoomsForFilter() {
+  console.log('Loading rooms for filter...');
+  // Add logic to fetch and display rooms for filtering
+}
+
+// Ensure loadRoomsForFilter is defined to prevent errors
+showTab = function(tabName) {
+  if (tabName === 'rooms') {
+    loadRoomsForFilter();
+  }
+  // ...existing code...
+};

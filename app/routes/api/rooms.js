@@ -194,4 +194,21 @@ router.get('/search', [
   }
 });
 
+// Add validation for GET /api/rooms
+router.get('/', [
+  query('q').optional().isString().trim(),
+  query('type_id').optional().isInt({ gt: 0 }),
+  query('status').optional().isIn(['available', 'occupied'])
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { q, type_id, status } = req.query;
+    const rooms = await list({ q, type_id, status });
+    res.json(rooms);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

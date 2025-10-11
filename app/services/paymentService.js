@@ -9,7 +9,8 @@ class PaymentService {
     static async createPaymentIntent(bookingId, userId) {
         try {
             if (!stripe) {
-                throw new Error('Stripe ไม่ได้ตั้งค่า - กรุณาเพิ่ม STRIPE_SECRET_KEY ใน environment variables');
+                console.error('Stripe configuration missing. Ensure STRIPE_SECRET_KEY is set.');
+                throw new Error('Stripe not configured');
             }
 
             // ดึงข้อมูลการจอง
@@ -72,19 +73,25 @@ class PaymentService {
             }
 
             // สร้าง Payment Intent
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: stripeConfig.currency,
-                customer: customerId,
-                payment_method_types: ['card', 'promptpay'],
-                metadata: {
-                    booking_id: bookingId.toString(),
-                    user_id: userId.toString(),
-                    room_name: booking.room_name,
-                    room_type: booking.type_name
-                },
-                description: `การจองห้อง ${booking.room_name} (${booking.type_name}) - ${booking.duration_hours || 1} ชั่วโมง`
-            });
+            let paymentIntent;
+            try {
+                paymentIntent = await stripe.paymentIntents.create({
+                    amount: amount,
+                    currency: stripeConfig.currency,
+                    customer: customerId,
+                    payment_method_types: ['card', 'promptpay'],
+                    metadata: {
+                        booking_id: bookingId.toString(),
+                        user_id: userId.toString(),
+                        room_name: booking.room_name,
+                        room_type: booking.type_name
+                    },
+                    description: `การจองห้อง ${booking.room_name} (${booking.type_name}) - ${booking.duration_hours || 1} ชั่วโมง`
+                });
+            } catch (error) {
+                console.error('Failed to create payment intent:', error);
+                throw new Error('Payment processing failed');
+            }
 
             // บันทึก payment intent ในฐานข้อมูล
             await pool.query(`

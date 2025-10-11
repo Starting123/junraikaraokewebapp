@@ -291,68 +291,53 @@
                         </div>
                     </div>
 
+                    <!-- Selected room info -->
+                    <div class="room-info-summary" id="roomInfoSummary" style="display: none;">
+                        <h3><i class="fas fa-info-circle"></i> ข้อมูลห้องที่เลือก</h3>
+                        <div id="roomDetails">
+                            <!-- Room details will be dynamically loaded here -->
+                        </div>
+                    </div>
+
                     <div class="booking-details" id="bookingForm" style="display: none;">
                         <h3><i class="fas fa-calendar-check"></i> รายละเอียดการจอง</h3>
                         
-                        <form id="newBookingForm">
-                            <input type="hidden" id="selectedRoomId">
-                            
-                            <div class="selected-room-info" id="selectedRoomInfo">
-                                <!-- Room info will be displayed here -->
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-calendar"></i>
-                                        วันที่เริ่ม
-                                    </label>
-                                    <input type="date" class="form-control" id="startDate" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-clock"></i>
-                                        เวลาเริ่ม
-                                    </label>
-                                    <input type="time" class="form-control" id="startTime" required>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-calendar"></i>
-                                        วันที่สิ้นสุด
-                                    </label>
-                                    <input type="date" class="form-control" id="endDate" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        <i class="fas fa-clock"></i>
-                                        เวลาสิ้นสุด
-                                    </label>
-                                    <input type="time" class="form-control" id="endTime" required>
-                                </div>
-                            </div>
-                            
-                            <div class="booking-summary" id="bookingSummary">
-                                <!-- Booking summary will be displayed here -->
-                            </div>
-                            
-                            <div class="form-actions">
-                                <button type="button" class="btn btn-secondary" onclick="resetBookingForm()">
-                                    <i class="fas fa-times"></i>
-                                    ยกเลิก
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-check-circle"></i>
-                                    ยืนยันการจอง
-                                </button>
-                            </div>
+                        <!-- Add fields for name, phone, and address in the booking form -->
+                        <form id="newBookingForm" method="POST" action="/api/book">
+                          <div class="form-group">
+                            <label for="name">ชื่อ-นามสกุล</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                          </div>
+            
+                          <div class="form-group">
+                            <label for="phone">เบอร์โทรศัพท์</label>
+                            <input type="text" id="phone" name="phone" class="form-control" required>
+                          </div>
+            
+                          <div class="form-group">
+                            <label for="address">ที่อยู่ (ไม่บังคับ)</label>
+                            <input type="text" id="address" name="address" class="form-control">
+                          </div>
+            
+                          
+            
+                          <div class="form-group">
+                            <label for="start_time">Start Time</label>
+                            <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+                          </div>
+            
+                          <div class="form-group">
+                            <label for="end_time">End Time</label>
+                            <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
+                          </div>
+            
+                          <button type="submit" class="btn btn-primary">จองห้อง</button>
                         </form>
-                    </div>
+                      </div>
+                      
+                      <!-- Selected room info (hidden fields) -->
+                      <div id="selectedRoomInfo" class="selected-room" style="display: none;"></div>
+                      <input type="hidden" id="selectedRoomId" name="selectedRoomId">
                 </div>
             </div>
 
@@ -425,6 +410,7 @@
             setDefaultDateTime();
             initializeStripe();
             setupPaymentMethodListeners();
+            loadRoomInfo();
         });
 
         // Authentication check
@@ -628,44 +614,73 @@
                 </div>
             `;
             
+            // Display room information
+            displayRoomInfo(room);
+            
             document.getElementById('bookingForm').style.display = 'block';
             document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
             
             updateBookingSummary();
         }
 
-        // Update booking summary
-        function updateBookingSummary() {
-            const startDate = document.getElementById('startDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endDate = document.getElementById('endDate').value;
-            const endTime = document.getElementById('endTime').value;
-            
-            if (startDate && startTime && endDate && endTime) {
-                const start = new Date(`${startDate}T${startTime}`);
-                const end = new Date(`${endDate}T${endTime}`);
-                const duration = (end - start) / (1000 * 60 * 60); // hours
-                
-                document.getElementById('bookingSummary').innerHTML = `
-                    <div class="summary-card">
-                        <h4><i class="fas fa-clock"></i> สรุปการจอง</h4>
-                        <div class="summary-details">
-                            <div class="summary-item">
-                                <span>เริ่ม:</span>
-                                <span>${formatDateTime(start)}</span>
-                            </div>
-                            <div class="summary-item">
-                                <span>สิ้นสุด:</span>
-                                <span>${formatDateTime(end)}</span>
-                            </div>
-                            <div class="summary-item">
-                                <span>ระยะเวลา:</span>
-                                <span>${duration.toFixed(1)} ชั่วโมง</span>
-                            </div>
-                        </div>
-                    </div>
+        // Display selected room information
+        function displayRoomInfo(room) {
+            const roomInfoSummary = document.getElementById('roomInfoSummary');
+            const roomDetails = document.getElementById('roomDetails');
+
+            if (room) {
+                roomDetails.innerHTML = `
+                    <p><strong>ชื่อห้อง:</strong> ${room.name}</p>
+                    <p><strong>ประเภท:</strong> ${room.type_name || 'ไม่ระบุประเภท'}</p>
+                    <p><strong>ความจุ:</strong> ${room.capacity || 'ไม่ระบุ'} คน</p>
                 `;
+                roomInfoSummary.style.display = 'block';
+            } else {
+                roomDetails.innerHTML = '';
+                roomInfoSummary.style.display = 'none';
             }
+        }
+
+        // Enhanced fix for accessing 'value' of null elements
+        function updateBookingSummary() {
+          const startDateElement = document.getElementById('startDate');
+          const startTimeElement = document.getElementById('startTime');
+          const endDateElement = document.getElementById('endDate');
+          const endTimeElement = document.getElementById('endTime');
+
+          // Ensure elements exist before accessing their values
+          if (!startDateElement || !startTimeElement || !endDateElement || !endTimeElement) {
+            console.error('One or more required elements are missing');
+            return;
+          }
+
+          const startDate = startDateElement.value || '';
+          const startTime = startTimeElement.value || '';
+          const endDate = endDateElement.value || '';
+          const endTime = endTimeElement.value || '';
+
+          if (startDate && startTime && endDate && endTime) {
+            try {
+              const start = new Date(`${startDate}T${startTime}`);
+              const end = new Date(`${endDate}T${endTime}`);
+              const duration = (end - start) / (1000 * 60 * 60); // hours
+              
+              document.getElementById('bookingSummary').innerHTML = `
+                <div class="summary-card">
+                  <h4><i class="fas fa-clock"></i> สรุปการจอง</h4>
+                  <div class="summary-details">
+                    <p><strong>เริ่ม:</strong> ${formatDateTime(start)}</p>
+                    <p><strong>สิ้นสุด:</strong> ${formatDateTime(end)}</p>
+                    <p><strong>ระยะเวลา:</strong> ${duration.toFixed(2)} ชั่วโมง</p>
+                  </div>
+                </div>
+              `;
+            } catch (error) {
+              console.error('Error calculating booking summary:', error);
+            }
+          } else {
+            console.warn('Incomplete date/time values for booking summary');
+          }
         }
 
         // Format date time
@@ -679,6 +694,60 @@
                 minute: '2-digit'
             });
         }
+
+        // Ensure time format validation in booking form submission
+function validateBookingForm() {
+  const startDateElement = document.getElementById('startDate');
+  const startTimeElement = document.getElementById('startTime');
+  const endDateElement = document.getElementById('endDate');
+  const endTimeElement = document.getElementById('endTime');
+
+  if (!startDateElement || !startTimeElement || !endDateElement || !endTimeElement) {
+    console.error('One or more required elements are missing');
+    return false;
+  }
+
+  const startDate = startDateElement.value;
+  const startTime = startTimeElement.value;
+  const endDate = endDateElement.value;
+  const endTime = endTimeElement.value;
+
+  const startDateTime = `${startDate}T${startTime}:00`;
+  const endDateTime = `${endDate}T${endTime}:00`;
+
+  // Validate ISO8601 format
+  const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
+  if (!iso8601Regex.test(startDateTime) || !iso8601Regex.test(endDateTime)) {
+    showToast('กรุณาใส่เวลาในรูปแบบที่ถูกต้อง (ISO8601)', 'error');
+    return false;
+  }
+
+  const start = new Date(startDateTime);
+  const end = new Date(endDateTime);
+  const now = new Date();
+
+  if (start <= now) {
+    showToast('เวลาเริ่มต้องเป็นในอนาคต', 'error');
+    return false;
+  }
+
+  if (end <= start) {
+    showToast('เวลาสิ้นสุดต้องหลังจากเวลาเริ่ม', 'error');
+    return false;
+  }
+
+  return true;
+}
+
+// Attach validation to form submission
+const bookingForm = document.getElementById('newBookingForm');
+if (bookingForm) {
+  bookingForm.addEventListener('submit', (e) => {
+    if (!validateBookingForm()) {
+      e.preventDefault();
+    }
+  });
+}
 
         // Handle booking form submission
         document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
@@ -969,7 +1038,7 @@
                     </div>
                     <div class="detail-row">
                         <strong><i class="fas fa-tag"></i> ประเภทห้อง:</strong>
-                        <span>${booking.type_name || 'ห้องธรรมดา'}</span>
+                        <span>${booking.type_name || 'ห้องธรรมด'}</span>
                     </div>
                     <div class="detail-row">
                         <strong><i class="fas fa-users"></i> ขนาดห้อง:</strong>
@@ -1414,7 +1483,31 @@
             }
         }
 
+        // Load room information
+        async function loadRoomInfo() {
+            const container = document.getElementById('roomInfoContainer');
+            try {
+                const response = await fetch('/api/rooms');
+                const rooms = await response.json();
 
+                if (rooms.length === 0) {
+                    container.innerHTML = '<p>ไม่มีห้องว่างในขณะนี้</p>';
+                    return;
+                }
+
+                container.innerHTML = rooms.map(room => `
+                    <div class="room-card">
+                        <h4>${room.name}</h4>
+                        <p><strong>ประเภท:</strong> ${room.type_name}</p>
+                        <p><strong>ความจุ:</strong> ${room.capacity} คน</p>
+                        <p><strong>สถานะ:</strong> ${room.status === 'available' ? 'ว่าง' : 'ไม่ว่าง'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading room info:', error);
+                container.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูลห้อง</p>';
+            }
+        }
 
         // Handle payment method change
         document.addEventListener('change', function(e) {
