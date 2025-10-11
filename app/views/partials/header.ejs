@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Junrai Karaoke' %></title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    <% if (typeof pageCSS !== 'undefined') { %>
+        <link rel="stylesheet" href="/stylesheets/<%= pageCSS %>.css">
+    <% } %>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
+                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                    <li><a href="/dashboard" class="nav-link" id="dashboardLink">แดชบอร์ด</a></li>
+                    <li><a href="/admin" class="nav-link" id="adminLink">ผู้ดูแลระบบ</a></li>
+                    <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                </ul>
+            </div>
+            
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>

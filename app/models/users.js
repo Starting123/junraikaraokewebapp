@@ -1,5 +1,5 @@
 const db = require('../db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 async function findById(user_id) {
   const [rows] = await db.query('SELECT user_id, name, email, role_id, status, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1', [user_id]);

@@ -433,3 +433,131 @@ p {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+/* ==========================================
+   Toast Notifications
+   ========================================== */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-heavy);
+  margin-bottom: var(--space-sm);
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
+  gap: var(--space-sm);
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.toast-close:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.toast-success {
+  border-left: 4px solid var(--success-green);
+}
+
+.toast-success i {
+  color: var(--success-green);
+}
+
+.toast-error {
+  border-left: 4px solid var(--error);
+}
+
+.toast-error i {
+  color: var(--error);
+}
+
+.toast-warning {
+  border-left: 4px solid var(--warning);
+}
+
+.toast-warning i {
+  color: var(--warning);
+}
+
+.toast-info {
+  border-left: 4px solid var(--info);
+}
+
+.toast-info i {
+  color: var(--info);
+}
+
+/* ==========================================
+   Loading Spinner
+   ========================================== */
+
+.global-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.loading-content {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-heavy);
+}
+
+.loading-content i {
+  font-size: 2rem;
+  color: var(--primary-orange);
+}
+
+.loading-content span {
+  color: var(--charcoal);
+  font-weight: 500;
+}

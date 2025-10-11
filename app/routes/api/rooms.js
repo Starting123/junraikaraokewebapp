@@ -26,27 +26,7 @@ router.get('/roomForm', async (req, res, next) => {
   }
 });
 
-// GET /api/rooms/:id
-router.get('/:id', [
-  param('id').isInt({ gt: 0 })
-], async (req, res, next) => {
-  try {
-    if (handleValidation(req, res)) return;
-    const id = parseInt(req.params.id, 10);
-    const [rows] = await db.query(
-      `SELECT r.room_id, r.name, r.type_id, t.type_name, t.price_per_hour, r.status, r.capacity
-       FROM rooms r
-       LEFT JOIN room_types t ON r.type_id = t.type_id
-       WHERE r.room_id = ? LIMIT 1`, [id]
-    );
-    if (rows.length === 0) return res.status(404).json({ error: 'not found' });
-    res.json(rows[0]);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// GET /api/rooms/available - ดึงห้องว่างในช่วงเวลาที่กำหนด
+// GET /api/rooms/available - ดึงห้องว่างในช่วงเวลาที่กำหนด (MUST come before /:id)
 router.get('/available', [
   query('start_time').isISO8601().withMessage('start_time must be valid ISO date'),
   query('end_time').isISO8601().withMessage('end_time must be valid ISO date')
@@ -64,6 +44,26 @@ router.get('/available', [
     const availableRooms = await roomsModel.getAvailableRooms(start_time, end_time);
     
     res.json({ rooms: availableRooms });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/rooms/:id - Get specific room details (MUST come after /available)
+router.get('/:id', [
+  param('id').isInt({ gt: 0 })
+], async (req, res, next) => {
+  try {
+    if (handleValidation(req, res)) return;
+    const id = parseInt(req.params.id, 10);
+    const [rows] = await db.query(
+      `SELECT r.room_id, r.name, r.type_id, t.type_name, t.price_per_hour, r.status, r.capacity
+       FROM rooms r
+       LEFT JOIN room_types t ON r.type_id = t.type_id
+       WHERE r.room_id = ? LIMIT 1`, [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'not found' });
+    res.json(rows[0]);
   } catch (err) {
     next(err);
   }

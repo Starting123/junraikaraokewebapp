@@ -1,0 +1,54 @@
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Global JavaScript -->
+    <script src="/javascripts/shared/auth.js"></script>
+    <script src="/javascripts/shared/utils.js"></script>
+    
+    <!-- Page-specific JavaScript -->
+    <% if (typeof pageJS !== 'undefined') { %>
+        <script src="/javascripts/<%= pageJS %>.js"></script>
+    <% } %>
+    
+    <!-- Global Auth Check -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+        });
+        
+        function checkAuthStatus() {
+            const token = localStorage.getItem('token');
+            const authLink = document.getElementById('authLink');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const dashboardLink = document.getElementById('dashboardLink');
+            const adminLink = document.getElementById('adminLink');
+            
+            if (token) {
+                authLink.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                dashboardLink.style.display = 'inline-block';
+                
+                // Check if user is admin
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.role_id === 1) {
+                        adminLink.style.display = 'inline-block';
+                    }
+                } catch (e) {
+                    console.error('Error parsing token:', e);
+                }
+            } else {
+                authLink.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                dashboardLink.style.display = 'none';
+                adminLink.style.display = 'none';
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
