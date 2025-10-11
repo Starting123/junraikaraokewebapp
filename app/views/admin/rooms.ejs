@@ -1,0 +1,167 @@
+<%- include('../partials/header') %>
+
+<div class="admin-container">
+    <div class="admin-sidebar">
+        <h3><i class="fas fa-cogs"></i> Admin Panel</h3>
+        <nav class="admin-nav">
+            <a href="/admin" class="nav-item"><i class="fas fa-chart-bar"></i> Dashboard</a>
+            <a href="/admin/users" class="nav-item"><i class="fas fa-users"></i> Users</a>
+            <a href="/admin/rooms" class="nav-item active"><i class="fas fa-door-open"></i> Rooms</a>
+            <a href="/admin/bookings" class="nav-item"><i class="fas fa-calendar-alt"></i> Bookings</a>
+            <a href="/admin/payments" class="nav-item"><i class="fas fa-credit-card"></i> Payments</a>
+            <a href="/admin/logs" class="nav-item"><i class="fas fa-list-alt"></i> Audit Logs</a>
+        </nav>
+    </div>
+
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2><i class="fas fa-door-open"></i> Room Management</h2>
+            <button class="btn btn-primary" onclick="showAddRoomModal()">
+                <i class="fas fa-plus"></i> Add Room
+            </button>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="admin-filters">
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="Search rooms..." class="form-control">
+                <select id="statusFilter" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="available">Available</option>
+                    <option value="occupied">Occupied</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+                <select id="typeFilter" class="form-control">
+                    <option value="">All Types</option>
+                    <!-- Will be populated by JS -->
+                </select>
+                <button class="btn btn-secondary" onclick="loadRooms()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Rooms Table -->
+        <div class="admin-table-container">
+            <table class="admin-table" id="roomsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Capacity</th>
+                        <th>Price/Hour</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="roomsTableBody">
+                    <!-- Will be populated by JS -->
+                </tbody>
+            </table>
+            
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-door-open"></i>
+                <h3>No rooms found</h3>
+                <p>Start by adding your first room to the system.</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo">Showing 0 of 0 rooms</span>
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPage" onclick="changePage(-1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="page-numbers" id="pageNumbers"></span>
+                <button class="btn btn-outline" id="nextPage" onclick="changePage(1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Room Modal -->
+<div id="roomModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add Room</h3>
+            <button class="modal-close" onclick="closeRoomModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="roomForm" onsubmit="submitRoomForm(event)">
+            <input type="hidden" id="roomId">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            
+            <div class="form-group">
+                <label for="roomName">Room Name *</label>
+                <input type="text" id="roomName" name="name" required class="form-control" 
+                       placeholder="e.g., VIP Room 1" maxlength="100">
+            </div>
+            
+            <div class="form-group">
+                <label for="roomTypeId">Room Type *</label>
+                <select id="roomTypeId" name="type_id" required class="form-control">
+                    <!-- Will be populated by JS -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="roomCapacity">Capacity</label>
+                <input type="number" id="roomCapacity" name="capacity" min="1" max="50" 
+                       value="1" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="roomStatus">Status</label>
+                <select id="roomStatus" name="status" class="form-control">
+                    <option value="available">Available</option>
+                    <option value="occupied">Occupied</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRoomModal()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> <span id="submitBtnText">Save Room</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="modal-close" onclick="closeDeleteModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p><i class="fas fa-exclamation-triangle text-warning"></i></p>
+            <p>Are you sure you want to delete room "<span id="deleteRoomName"></span>"?</p>
+            <p class="text-warning"><strong>Warning:</strong> This action cannot be undone. All associated bookings will be affected.</p>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteRoom()">
+                <i class="fas fa-trash"></i> Delete Room
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/javascripts/admin/rooms.js"></script>
+<%- include('../partials/footer') %>

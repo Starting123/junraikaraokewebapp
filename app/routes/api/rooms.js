@@ -194,4 +194,17 @@ router.get('/search', [
   }
 });
 
+// GET /api/room-types - get all room types for admin forms
+router.get('/types', async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT type_id, type_name, price_per_hour, description FROM room_types ORDER BY price_per_hour ASC'
+    );
+    res.json({ roomTypes: rows });
+  } catch (err) {
+    console.error('Error getting room types:', err);
+    next(err);
+  }
+});
+
 module.exports = router;
