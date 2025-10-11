@@ -7,6 +7,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
@@ -37,6 +38,13 @@ async function sendResetEmail(toEmail, token) {
 
   return transporter.sendMail(mailOptions);
 }
+
+// Add rate limiting middleware for login attempts
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 login requests per windowMs
+  message: 'Too many login attempts, please try again later.'
+});
 
 // GET /api/users - list users (basic)
 router.get('/', async (req, res, next) => {
@@ -74,7 +82,7 @@ router.post('/',
   });
 
 // POST /api/users/login
-router.post('/login',
+router.post('/login', loginLimiter,
   [ body('email').isEmail().normalizeEmail(), body('password').notEmpty() ],
   async (req, res, next) => {
     try {

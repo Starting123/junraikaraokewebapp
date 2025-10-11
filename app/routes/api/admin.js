@@ -232,16 +232,17 @@ router.get('/bookings', adminOnly, async (req, res, next) => {
     const [rows] = await db.query(`
       SELECT 
         b.booking_id,
-        b.booking_date,
-        b.start_time,
-        b.end_time,
+        DATE(b.start_time) as booking_date,
+        TIME(b.start_time) as start_time,
+        TIME(b.end_time) as end_time,
         b.status,
-        b.total_price,
+        b.total_price as total_amount,
         b.created_at,
         u.name as user_name,
         u.email as user_email,
-        r.room_name,
-        r.room_id
+        r.name as room_name,
+        r.room_id,
+        b.duration_hours as duration
       FROM bookings b
       LEFT JOIN users u ON b.user_id = u.user_id
       LEFT JOIN rooms r ON b.room_id = r.room_id

@@ -275,7 +275,7 @@ function displayRooms(rooms) {
     tbody.innerHTML = rooms.map(room => `
         <tr>
             <td>${room.room_id}</td>
-            <td>${room.room_name}</td>
+            <td>${room.name}</td>
             <td>${room.capacity} คน</td>
             <td>฿${room.price_per_hour}/ชม.</td>
             <td>
@@ -549,10 +549,12 @@ function clearRoomForm() {
 
 function populateRoomForm(room) {
     document.getElementById('roomId').value = room.room_id;
-    document.getElementById('roomName').value = room.room_name;
+    document.getElementById('roomName').value = room.name;
     document.getElementById('roomType').value = room.type_id;
     document.getElementById('roomCapacity').value = room.capacity;
-    document.getElementById('roomPrice').value = room.price_per_hour;
+    // Price per hour is derived from room type; show as read-only info
+    const priceInfoEl = document.getElementById('roomPriceInfo');
+    if (priceInfoEl) priceInfoEl.value = room.price_per_hour ? `฿${room.price_per_hour}/ชม.` : '';
     document.getElementById('roomStatus').value = room.status;
     document.getElementById('roomDescription').value = room.description || '';
     
@@ -597,7 +599,6 @@ async function saveRoom() {
         name: formData.get('name'),
         type_id: parseInt(formData.get('type_id')),
         capacity: parseInt(formData.get('capacity')),
-        hourly_price: parseFloat(formData.get('hourly_price')),
         status: formData.get('status'),
         description: formData.get('description'),
         features: features.join(',')
@@ -660,7 +661,9 @@ async function editUser(userId) {
         });
         
         if (response.ok) {
-            const user = await response.json();
+            const payload = await response.json();
+            // API may return either { user: {...} } or the user object directly
+            const user = payload.user || payload;
             populateUserForm(user);
             document.getElementById('userModalTitle').textContent = 'แก้ไขผู้ใช้';
             document.getElementById('passwordGroup').style.display = 'none';
@@ -842,12 +845,39 @@ function showBookingDetails(booking) {
                 <label>หมายเหตุ:</label>
                 <span>${booking.notes || 'ไม่มี'}</span>
             </div>
+            <div class="booking-info-item">
+                <label>สถานะการชำระเงิน:</label>
+                <span id="bookingPaymentStatus">${booking.payment_status || 'ไม่ระบุ'}</span>
+            </div>
+            <div class="booking-info-item full-width">
+                <label>หลักฐานการชำระ (สลิป / รูป):</label>
+                <div id="bookingProofContainer">
+                    ${booking.proof_of_payment_path ? `<a href="${booking.proof_of_payment_path}" target="_blank"><img src="${booking.proof_of_payment_path}" alt="proof" style="max-width:180px; display:block; margin-top:6px;"></a>` : '<span>ไม่มีหลักฐาน</span>'}
+                </div>
+            </div>
+            <div class="booking-info-item full-width">
+                <label>ใบเสร็จ (PDF):</label>
+                <div id="bookingReceiptContainer">
+                    ${booking.receipt_pdf_path ? `<a href="${booking.receipt_pdf_path}" target="_blank">ดาวน์โหลดใบเสร็จ</a>` : '<span>ไม่มีใบเสร็จ</span>'}
+                </div>
+            </div>
         </div>
     `;
     
     // Set current status in dropdown
     document.getElementById('bookingStatusUpdate').value = booking.status;
     document.getElementById('adminNotes').value = booking.admin_notes || '';
+    // Update payment info fields if present
+    const paymentStatusEl = document.getElementById('bookingPaymentStatus');
+    if (paymentStatusEl) paymentStatusEl.textContent = booking.payment_status || 'ไม่ระบุ';
+    const proofContainer = document.getElementById('bookingProofContainer');
+    if (proofContainer) {
+        proofContainer.innerHTML = booking.proof_of_payment_path ? `<a href="${booking.proof_of_payment_path}" target="_blank"><img src="${booking.proof_of_payment_path}" alt="proof" style="max-width:180px; display:block; margin-top:6px;"></a>` : '<span>ไม่มีหลักฐาน</span>';
+    }
+    const receiptContainer = document.getElementById('bookingReceiptContainer');
+    if (receiptContainer) {
+        receiptContainer.innerHTML = booking.receipt_pdf_path ? `<a href="${booking.receipt_pdf_path}" target="_blank">ดาวน์โหลดใบเสร็จ</a>` : '<span>ไม่มีใบเสร็จ</span>';
+    }
     
     // Store current booking ID
     window.currentBookingId = booking.booking_id;
@@ -885,7 +915,12 @@ async function updateBookingStatusDirect(bookingId, status) {
 
 async function updateBookingStatusWithNotes(bookingId, status, notes) {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+        showToast('ไม่พบ token การยืนยันตัวตน', 'error');
+        return;
+    }
+    
+    console.log('Updating booking status:', { bookingId, status, notes }); // Debug log
     
     try {
         showLoading();
@@ -901,18 +936,23 @@ async function updateBookingStatusWithNotes(bookingId, status, notes) {
             })
         });
         
+        console.log('Response status:', response.status); // Debug log
+        
         if (response.ok) {
+            const result = await response.json();
+            console.log('Update result:', result); // Debug log
             showToast('อัปเดตสถานะการจองสำเร็จ', 'success');
             closeBookingModal();
             closeConfirmModal();
             loadBookings();
         } else {
             const error = await response.json();
-            showToast(error.message || 'ไม่สามารถอัปเดตสถานะได้', 'error');
+            console.error('Update failed:', error); // Debug log
+            showToast(error.message || error.error || 'ไม่สามารถอัปเดตสถานะได้', 'error');
         }
     } catch (error) {
         console.error('Error updating booking status:', error);
-        showToast('เกิดข้อผิดพลาดในการอัปเดต', 'error');
+        showToast('เกิดข้อผิดพลาดในการอัปเดต: ' + error.message, 'error');
     } finally {
         hideLoading();
     }
@@ -1040,19 +1080,6 @@ function loadReports() {
     // Implement reports loading here
     console.log('Loading reports...');
 }
-
-function editUser(userId) {
-    alert(`แก้ไขผู้ใช้ ID: ${userId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
-}
-
-function filterBookings() {
-    alert('ฟีเจอร์กรองการจองจะพร้อมใช้งานเร็วๆ นี้');
-}
-
-function filterUsers() {
-    alert('ฟีเจอร์ค้นหาผู้ใช้จะพร้อมใช้งานเร็วๆ นี้');
-}
-
-function loadReports() {
-    alert('ฟีเจอร์รายงานจะพร้อมใช้งานเร็วๆ นี้');
-}
+// Note: Some functions (editUser, filterBookings, filterUsers, loadReports)
+// have real implementations earlier in this file. We removed duplicate
+// stub implementations that were overriding those functions.

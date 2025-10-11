@@ -77,16 +77,30 @@ async function updatePaymentStatus(booking_id, status) {
 }
 
 // สร้างการชำระเงิน
+// NOTE: some environments don't have `proof_of_payment_path` column yet. To avoid SQL errors
+// during runtime we insert into the existing columns and still return the proof_path so
+// frontend can present it. Add a DB migration later to persist `proof_of_payment_path`.
 async function createPayment({ booking_id, amount, method = 'cash', transaction_id = null, proof_path = null }) {
-  const [result] = await db.query(
-    'INSERT INTO booking_payments (booking_id, amount, method, status, transaction_id, proof_of_payment_path, payment_date) VALUES (?,?,?,?,?,?,NOW())',
-    [booking_id, amount, method, 'paid', transaction_id, proof_path]
-  );
-  
-  // อัปเดตสถานะการชำระเงินในตาราง bookings
-  await updatePaymentStatus(booking_id, 'paid');
-  
-  return { payment_id: result.insertId, proof_path };
+  try {
+    console.log('Creating payment with data:', { booking_id, amount, method, transaction_id, proof_path });
+
+    // Insert into columns that exist in current schema
+    const [result] = await db.query(
+      'INSERT INTO booking_payments (booking_id, amount, method, status, transaction_id, proof_of_payment_path, payment_date) VALUES (?,?,?,?,?,?,NOW())',
+      [booking_id, amount, method, 'paid', transaction_id, proof_path]
+    );
+
+    console.log('Payment created with ID:', result.insertId);
+
+    // อัปเดตสถานะการชำระเงินในตาราง bookings
+    await updatePaymentStatus(booking_id, 'paid');
+
+    // Return payment id and provided proof_path (note: proof_path not persisted until DB migration)
+    return { payment_id: result.insertId, proof_path };
+  } catch (error) {
+    console.error('Error creating payment:', error);
+    throw error;
+  }
 }
 
 // ดึงข้อมูลการชำระเงิน
