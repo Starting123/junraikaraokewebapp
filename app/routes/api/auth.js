@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
+const ApiResponse = require('../../middleware/apiResponse');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
@@ -95,10 +96,23 @@ router.get('/me', authMiddleware, async (req, res, next) => {
     const user = req.user;
     // determine is_admin by role_id --- assume role_id 1 == admin
     const isAdmin = user.role_id === 1;
-    res.json({ user, isAdmin });
+    return ApiResponse.success(res, { user, isAdmin }, 'User profile retrieved successfully');
   } catch (err) {
     next(err);
   }
+});
+
+// Global error handler for auth routes
+router.use((err, req, res, next) => {
+  console.error('Auth API Error:', {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    body: req.body
+  });
+  
+  return ApiResponse.error(res, err, 500);
 });
 
 module.exports = router;

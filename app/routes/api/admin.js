@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, param, validationResult, query } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const ApiResponse = require('../../middleware/apiResponse');
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 
 const usersModel = require('../../models/users');
@@ -352,6 +353,20 @@ router.get('/logs', adminOnly, [
       }
     });
   } catch (err) { next(err); }
+});
+
+// Global error handler for admin routes
+router.use((err, req, res, next) => {
+  console.error('Admin API Error:', {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    body: req.body,
+    user: req.user
+  });
+  
+  return ApiResponse.error(res, err, 500);
 });
 
 module.exports = router;

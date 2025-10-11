@@ -1,58 +1,48 @@
+/**
+ * ==========================================
+ * Enhanced Cache Service
+ * High-performance caching with logging and automatic invalidation
+ * ==========================================
+ */
+
 const NodeCache = require('node-cache');
 
+// Create cache instance with enhanced configuration
+const cache = new NodeCache({ 
+  stdTTL: 300, // 5-minute default TTL
+  checkperiod: 60, // Check for expired keys every minute
+  useClones: false, // Better performance - don't deep clone objects
+  maxKeys: 1000 // Limit memory usage
+});
+
 class CacheService {
-  constructor() {
-    // Initialize cache with 10 minute default TTL
-    this.cache = new NodeCache({ 
-      stdTTL: 600, // 10 minutes
-      checkperiod: 120, // Check for expired keys every 2 minutes
-      useClones: false // For better performance with objects
-    });
-    
-    this.stats = {
-      hits: 0,
-      misses: 0,
-      sets: 0
-    };
-  }
-
-  /**
-   * Get value from cache
-   * @param {string} key Cache key
-   * @returns {any|null} Cached value or null if not found
-   */
-  get(key) {
-    const value = this.cache.get(key);
+  // Generic cache methods with logging
+  static get(key) {
+    const value = cache.get(key);
     if (value !== undefined) {
-      this.stats.hits++;
-      return value;
+      console.log(`Cache HIT: ${key}`);
+    } else {
+      console.log(`Cache MISS: ${key}`);
     }
-    this.stats.misses++;
-    return null;
+    return value;
   }
 
-  /**
-   * Set value in cache
-   * @param {string} key Cache key
-   * @param {any} value Value to cache
-   * @param {number} ttl TTL in seconds (optional)
-   * @returns {boolean} Success status
-   */
-  set(key, value, ttl = null) {
-    const success = ttl ? this.cache.set(key, value, ttl) : this.cache.set(key, value);
-    if (success) {
-      this.stats.sets++;
-    }
-    return success;
+  static set(key, value, ttl = 300) {
+    const result = cache.set(key, value, ttl);
+    console.log(`Cache SET: ${key} (TTL: ${ttl}s)`);
+    return result;
   }
-
-  /**
-   * Delete value from cache
-   * @param {string} key Cache key
-   * @returns {number} Number of deleted entries
-   */
-  del(key) {
-    return this.cache.del(key);
+  
+  static del(key) {
+    const result = cache.del(key);
+    console.log(`Cache DELETE: ${key}`);
+    return result;
+  }
+  
+  static flush() {
+    cache.flushAll();
+    console.log('Cache FLUSHED: All keys cleared');
+    return true;
   }
 
   /**
@@ -174,9 +164,54 @@ class CacheService {
         this.delByPattern('admin:*');
     }
   }
+
+  // Room-specific cache methods
+  static invalidateRoomCache() {
+    this.del('rooms:list');
+    const keys = cache.keys();
+    keys.forEach(key => {
+      if (key.startsWith('room:')) {
+        this.del(key);
+      }
+    });
+    console.log('Room cache invalidated');
+  }
+  
+  // Booking-specific cache methods  
+  static invalidateAllBookings() {
+    const keys = cache.keys();
+    keys.forEach(key => {
+      if (key.startsWith('bookings:')) {
+        this.del(key);
+      }
+    });
+    console.log('All booking caches invalidated');
+  }
+  
+  // Admin statistics caching
+  static getAdminStats() {
+    return this.get('admin:stats');
+  }
+  
+  static setAdminStats(stats, ttl = 180) {
+    return this.set('admin:stats', stats, ttl);
+  }
+  
+  static invalidateAdminStats() {
+    this.del('admin:stats');
+    console.log('Admin statistics cache invalidated');
+  }
 }
 
-// Create singleton instance
-const cacheService = new CacheService();
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('Clearing cache before shutdown...');
+  cache.flushAll();
+});
 
-module.exports = cacheService;
+process.on('SIGTERM', () => {
+  console.log('Clearing cache before shutdown...');
+  cache.flushAll();
+});
+
+module.exports = CacheService;

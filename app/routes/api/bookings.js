@@ -5,19 +5,22 @@ const bookingsModel = require('../../models/bookings');
 const roomsModel = require('../../models/rooms');
 const { body, param, validationResult, query } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const ApiResponse = require('../../middleware/apiResponse');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'missing token' });
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return ApiResponse.unauthorized(res, 'Authentication token required');
+  }
   const token = auth.slice(7);
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
     return next();
   } catch (err) {
-    return res.status(401).json({ error: 'invalid token' });
+    return ApiResponse.unauthorized(res, 'Invalid or expired token');
   }
 }
 
@@ -25,7 +28,7 @@ function authMiddleware(req, res, next) {
 function handleValidation(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
+    ApiResponse.validationError(res, errors);
     return true; // Indicates validation failed
   }
   return false; // Indicates validation passed
@@ -40,17 +43,21 @@ router.post('/', authMiddleware, [
   body('customer_id').optional().isInt({ gt: 0 })
 ], async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (handleValidation(req, res)) return;
 
-  const { room_id, start_time, end_time, duration_hours = 1, customer_id } = req.body;
+    const { room_id, start_time, end_time, duration_hours = 1, customer_id } = req.body;
     const start = new Date(start_time);
     const end = new Date(end_time);
-    if (!(start < end)) return res.status(400).json({ error: 'start_time must be before end_time' });
+    
+    if (!(start < end)) {
+      return ApiResponse.error(res, 'Start time must be before end time', 400);
+    }
 
     // check room exists
     const room = await roomsModel.getById(room_id);
-    if (!room) return res.status(404).json({ error: 'room not found' });
+    if (!room) {
+      return ApiResponse.notFound(res, 'Room');
+    }
 
     // check for overlapping active bookings for the same room
     const availability = await roomsModel.checkRoomAvailability(room_id, start_time, end_time);
@@ -59,9 +66,7 @@ router.post('/', authMiddleware, [
         ? `สามารถจองได้อีกครั้งในเวลา ${new Date(availability.nextAvailable).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}` 
         : '';
       
-      return res.status(409).json({ 
-        success: false,
-        error: 'Error: Room already booked',
+      return ApiResponse.conflict(res, 'Room already booked', {
         message: availability.message,
         nextAvailable: availability.nextAvailable,
         suggestion: nextAvailableMsg,
@@ -72,7 +77,9 @@ router.post('/', authMiddleware, [
     // If customer_id is provided and requester is admin, allow creating on behalf of that customer
     let user_id = req.user.user_id;
     if (customer_id) {
-      if (req.user.role_id !== 1) return res.status(403).json({ error: 'admin required to create booking for another user' });
+      if (req.user.role_id !== 1) {
+        return ApiResponse.forbidden(res, 'Admin privileges required to create booking for another user');
+      }
       user_id = customer_id;
     }
     
@@ -81,11 +88,7 @@ router.post('/', authMiddleware, [
     // อัปเดตสถานะห้อง
     await roomsModel.updateRoomStatus();
     
-    res.status(201).json({ 
-      success: true,
-      message: 'Booking successful',
-      booking 
-    });
+    return ApiResponse.success(res, { booking }, 'Booking created successfully', 201);
   } catch (err) {
     next(err);
   }
@@ -467,12 +470,26 @@ router.get('/:id/payment-slip', authMiddleware, [
 
     fileStream.on('error', (fsErr) => {
       console.error('File stream error:', fsErr);
-      res.status(500).json({ error: 'Failed to write PDF', message: fsErr.message });
+      return ApiResponse.error(res, 'Failed to write PDF file', 500, { originalError: fsErr.message });
     });
   } catch (err) {
     console.error('Unexpected error:', err);
     next(err);
   }
+});
+
+// Global error handler for this router
+router.use((err, req, res, next) => {
+  console.error('Bookings API Error:', {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    body: req.body,
+    user: req.user
+  });
+  
+  return ApiResponse.error(res, err, 500);
 });
 
 module.exports = router;
