@@ -4,9 +4,34 @@ const db = require('../../db');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
+
+// Rate limiting for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: { 
+    error: 'Too many authentication attempts. Please try again later.',
+    retryAfter: 15 * 60 // 15 minutes in seconds
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true // Don't count successful requests
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Limit each IP to 3 registrations per hour
+  message: { 
+    error: 'Too many registration attempts. Please try again later.',
+    retryAfter: 60 * 60 // 1 hour in seconds
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
@@ -22,10 +47,11 @@ function authMiddleware(req, res, next) {
 }
 
 // POST /api/auth/register
-router.post('/register', [
-  body('name').trim().notEmpty(),
+router.post('/register', registerLimiter, [
+  body('name').trim().notEmpty().isLength({ min: 2, max: 100 }),
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 })
+  body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage('Password must contain at least 8 characters with uppercase, lowercase, number, and special character')
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -42,7 +68,10 @@ router.post('/register', [
 });
 
 // POST /api/auth/login
-router.post('/login', [ body('email').isEmail().normalizeEmail(), body('password').notEmpty() ], async (req, res, next) => {
+router.post('/login', authLimiter, [ 
+  body('email').isEmail().normalizeEmail(), 
+  body('password').notEmpty() 
+], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

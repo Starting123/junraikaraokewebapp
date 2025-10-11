@@ -95,8 +95,152 @@ function updateUserInfo(user) {
 		userName.textContent = user.name || '';
 	}
 	if (welcomeMessage) {
-		welcomeMessage.textContent = `\u0e22\u0e34\u0e19\u0e14\u0e35\u0e15\u0e49\u0e2d\u0e19\u0e23\u0e31\u0e1a\u0e1c\u0e39\u0e49\u0e14\u0e39\u0e41\u0e25\u0e23\u0e30\u0e1a\u0e1a ${user.name || ''}`;
+		welcomeMessage.textContent = `ยินดีต้อนรับผู้ดูแลระบบ ${user.name || ''}`;
 	}
+}
+
+// Load admin statistics
+async function loadAdminStats() {
+	try {
+		const token = localStorage.getItem('token');
+		if (!token) {
+			console.error('No authentication token found');
+			return;
+		}
+
+		console.log('Loading admin statistics...');
+
+		// Load basic statistics
+		const [usersResponse, roomsResponse, bookingsResponse] = await Promise.all([
+			fetch('/api/admin/users', {
+				headers: { 'Authorization': `Bearer ${token}` }
+			}),
+			fetch('/api/admin/rooms', {
+				headers: { 'Authorization': `Bearer ${token}` }
+			}),
+			fetch('/api/bookings', {
+				headers: { 'Authorization': `Bearer ${token}` }
+			})
+		]);
+
+		if (usersResponse.ok) {
+			const users = await usersResponse.json();
+			console.log('Users loaded:', users);
+			document.getElementById('totalUsers').textContent = users.length || 0;
+			document.getElementById('usersChange').textContent = `+0 ใหม่วันนี้`;
+		} else {
+			console.error('Failed to load users:', usersResponse.status);
+		}
+
+		if (roomsResponse.ok) {
+			const rooms = await roomsResponse.json();
+			console.log('Rooms loaded:', rooms);
+			const totalRooms = rooms.length || 0;
+			const availableRooms = rooms.filter(room => room.status === 'available').length || 0;
+			document.getElementById('totalRooms').textContent = totalRooms;
+			document.getElementById('roomsAvailable').textContent = `${availableRooms} ห้องว่าง`;
+		} else {
+			console.error('Failed to load rooms:', roomsResponse.status);
+		}
+
+		if (bookingsResponse.ok) {
+			const bookings = await bookingsResponse.json();
+			console.log('Bookings loaded:', bookings);
+			const todayBookings = Array.isArray(bookings) ? bookings.filter(booking => {
+				const bookingDate = new Date(booking.created_at || booking.start_time);
+				const today = new Date();
+				return bookingDate.toDateString() === today.toDateString();
+			}).length : 0;
+			
+			const totalRevenue = Array.isArray(bookings) ? bookings
+				.filter(booking => booking.payment_status === 'paid')
+				.reduce((sum, booking) => sum + parseFloat(booking.total_price || 0), 0) : 0;
+
+			document.getElementById('totalBookings').textContent = todayBookings;
+			document.getElementById('bookingsChange').textContent = `+${todayBookings} ใหม่วันนี้`;
+			document.getElementById('totalRevenue').textContent = `฿${totalRevenue.toLocaleString()}`;
+			document.getElementById('revenueChange').textContent = `฿${totalRevenue.toLocaleString()} เพิ่มขึ้น`;
+		} else {
+			console.error('Failed to load bookings:', bookingsResponse.status);
+		}
+	} catch (error) {
+		console.error('Error loading admin statistics:', error);
+		if (typeof showToast === 'function') {
+			showToast('ไม่สามารถโหลดข้อมูลสถิติได้', 'error');
+		}
+	}
+}
+
+// Show management sections
+function showManageRooms() {
+	hideAllSections();
+	document.getElementById('manageRooms').style.display = 'block';
+	loadRooms();
+}
+
+function showManageBookings() {
+	hideAllSections();
+	document.getElementById('manageBookings').style.display = 'block';
+	loadBookings();
+}
+
+function showManageUsers() {
+	hideAllSections();
+	document.getElementById('manageUsers').style.display = 'block';
+	loadUsers();
+}
+
+function showReports() {
+	hideAllSections();
+	document.getElementById('reports').style.display = 'block';
+}
+
+function hideAllSections() {
+	const sections = document.querySelectorAll('.management-section');
+	sections.forEach(section => {
+		section.style.display = 'none';
+	});
+}
+
+// Load functions for management sections
+async function loadRooms() {
+	console.log('Loading rooms table...');
+	// TODO: Implement rooms table loading
+}
+
+async function loadBookings() {
+	console.log('Loading bookings table...');
+	// TODO: Implement bookings table loading
+}
+
+async function loadUsers() {
+	console.log('Loading users table...');
+	// TODO: Implement users table loading
+}
+
+// Modal functions
+function showAddRoomForm() {
+	document.getElementById('roomModal').style.display = 'block';
+}
+
+function closeRoomModal() {
+	document.getElementById('roomModal').style.display = 'none';
+}
+
+function showAddUserForm() {
+	document.getElementById('userModal').style.display = 'block';
+}
+
+function closeUserModal() {
+	document.getElementById('userModal').style.display = 'none';
+}
+
+function closeBookingModal() {
+	document.getElementById('bookingModal').style.display = 'none';
+}
+
+function closeConfirmModal() {
+	document.getElementById('confirmModal').style.display = 'none';
 }
 
 // Logout function
