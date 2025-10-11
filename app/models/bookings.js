@@ -86,8 +86,8 @@ async function createPayment({ booking_id, amount, method = 'cash', transaction_
 
     // Insert into columns that exist in current schema
     const [result] = await db.query(
-      'INSERT INTO booking_payments (booking_id, amount, method, status, transaction_id, payment_date) VALUES (?,?,?,?,?,NOW())',
-      [booking_id, amount, method, 'paid', transaction_id]
+      'INSERT INTO booking_payments (booking_id, amount, method, status, transaction_id, proof_of_payment_path, payment_date) VALUES (?,?,?,?,?,?,NOW())',
+      [booking_id, amount, method, 'paid', transaction_id, proof_path]
     );
 
     console.log('Payment created with ID:', result.insertId);

@@ -21,6 +21,16 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// Define handleValidation function
+function handleValidation(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return true; // Indicates validation failed
+  }
+  return false; // Indicates validation passed
+}
+
 // Create a booking
 router.post('/', authMiddleware, [
   body('room_id').isInt({ gt: 0 }),
@@ -81,6 +91,54 @@ router.post('/', authMiddleware, [
   }
 });
 
+// Update booking endpoint to accept name, phone, and address
+router.post('/book', authMiddleware, [
+  body('name').isString().notEmpty().withMessage('Name is required'),
+  body('phone').isString().notEmpty().withMessage('Phone is required'),
+  body('address').optional().isString().withMessage('Address must be a string'),
+  body('room_id').isInt({ gt: 0 }).withMessage('Room ID is required'),
+  body('start_time').isISO8601().withMessage('Start time must be a valid ISO8601 date'),
+  body('end_time').isISO8601().withMessage('End time must be a valid ISO8601 date')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, phone, address, room_id, start_time, end_time } = req.body;
+
+    // Check if user already exists
+    const [existingUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [req.user.user_id]);
+
+    if (!existingUser.length) {
+      // Insert new user details
+      await db.query(
+        'UPDATE users SET name = ?, phone = ?, address = ? WHERE user_id = ?',
+        [name, phone, address || null, req.user.user_id]
+      );
+    }
+
+    // Check for room availability
+    const hasOverlap = await bookingsModel.hasOverlap(room_id, start_time, end_time);
+    if (hasOverlap) {
+      return res.status(400).json({ error: 'Room is not available for the selected time' });
+    }
+
+    // Create booking
+    const booking = await bookingsModel.create({
+      user_id: req.user.user_id,
+      room_id,
+      start_time,
+      end_time
+    });
+
+    res.status(201).json({ message: 'Booking created successfully', booking });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // List bookings (admins see all, users see their own)
 router.get('/', authMiddleware, [
   query('room_id').optional().isInt({ gt: 0 }),
@@ -90,15 +148,30 @@ router.get('/', authMiddleware, [
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (handleValidation(res, errors)) return;
 
     const { room_id, status, payment_status, customer_id } = req.query;
     const isAdmin = req.user.role_id === 1;
-    // If admin provided customer_id use that, otherwise non-admins always get their own bookings
     const listUserId = (isAdmin && customer_id) ? customer_id : req.user.user_id;
+
+    console.log('Debug - user_id:', listUserId);
+
     const rows = await bookingsModel.list({ user_id: listUserId, room_id, status, payment_status, isAdmin });
+
+    console.log('Debug - fetched bookings:', rows);
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: isAdmin
+          ? 'No bookings found for the given filters.'
+          : 'You do not have any bookings matching the criteria.',
+      });
+    }
+
     res.json({ bookings: rows });
   } catch (err) {
+    console.error('Error fetching bookings:', err.message);
     next(err);
   }
 });
@@ -267,6 +340,7 @@ router.get('/my-bookings', authMiddleware, [
   query('payment_status').optional().isIn(['pending','paid','failed'])
 ], async (req, res, next) => {
   try {
+    if (handleValidation(req, res)) return;
     const { status, payment_status } = req.query;
     const bookings = await bookingsModel.list({ 
       user_id: req.user.user_id, 
@@ -274,31 +348,38 @@ router.get('/my-bookings', authMiddleware, [
       payment_status,
       isAdmin: false 
     });
-    res.json({ bookings });
+    res.json(bookings); // Return array directly
   } catch (err) {
     next(err);
   }
 });
 
-// Generate PDF Payment Slip
+// Fix syntax errors in the `/payment-slip` endpoint
 router.get('/:id/payment-slip', authMiddleware, [
   param('id').isInt({ gt: 0 })
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (!errors.isEmpty()) {
+      console.error('Validation errors:', errors.array());
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     const bookingId = req.params.id;
-    
+    console.log(`Fetching payment slip for booking ID: ${bookingId}`);
+
     // Get booking details with payment info
     const [bookingRows] = await db.query(`
       SELECT 
-        b.*,
-        u.name as customer_name,
-        u.email as customer_email,
-        u.phone,
-        r.name as room_name,
-        rt.type_name,
+        b.booking_id,
+        b.start_time,
+        b.end_time,
+        b.total_price,
+        b.payment_status,
+        u.name AS customer_name,
+        u.email AS customer_email,
+        r.name AS room_name,
+        rt.type_name AS room_type,
         rt.price_per_hour,
         r.capacity
       FROM bookings b
@@ -308,153 +389,88 @@ router.get('/:id/payment-slip', authMiddleware, [
       WHERE b.booking_id = ?
     `, [bookingId]);
 
-    console.log(`Searching for booking ID: ${bookingId}`);
-    console.log(`Found ${bookingRows.length} booking(s)`);
-    
+    console.log(`Query executed. Rows fetched: ${bookingRows.length}`);
+
     if (!bookingRows.length) {
-      console.log(`Booking ID ${bookingId} not found in database`);
+      console.error(`Booking ID ${bookingId} not found.`);
       return res.status(404).json({ 
-        error: 'ไม่พบข้อมูลการจอง', 
-        message: `ไม่พบการจองหมายเลข ${bookingId}` 
+        error: 'Booking not found', 
+        message: `No booking found with ID ${bookingId}` 
       });
     }
-    
+
     const booking = bookingRows[0];
-    
+
     // Check if user can access this booking
     if (req.user.user_id !== booking.user_id && req.user.role_id !== 1) {
+      console.error(`Access denied for user ID ${req.user.user_id} on booking ID ${bookingId}`);
       return res.status(403).json({ error: 'Access denied' });
     }
-    
-    // Check if payment is completed
-    console.log(`Booking ${bookingId} payment status: ${booking.payment_status}`);
-    if (booking.payment_status !== 'paid') {
-      return res.status(400).json({ 
-        error: 'การชำระเงินยังไม่เสร็จสิ้น', 
-        message: `การจองหมายเลข ${bookingId} ยังไม่ได้ชำระเงิน (สถานะ: ${booking.payment_status})`,
-        booking_id: bookingId,
-        payment_status: booking.payment_status
-      });
-    }
-    
+
     // Generate PDF
     const PDFDocument = require('pdfkit');
     const fs = require('fs');
     const path = require('path');
-    
+
     // Create receipts directory if it doesn't exist
     const receiptsDir = path.join(__dirname, '../../public/receipts');
     if (!fs.existsSync(receiptsDir)) {
+      console.log(`Creating receipts directory at ${receiptsDir}`);
       fs.mkdirSync(receiptsDir, { recursive: true });
     }
-    
+
     // Generate filename
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `payment-slip-${booking.booking_id}-${timestamp}.pdf`;
     const filepath = path.join(receiptsDir, filename);
-    
+
     const doc = new PDFDocument({ 
       size: 'A4',
       margin: 50,
       info: {
-        Title: `ใบเสร็จการชำระเงิน - ${booking.room_name}`,
+        Title: `Payment Receipt - ${booking.room_name}`,
         Author: 'Junrai Karaoke',
         Subject: 'Payment Receipt',
         Keywords: 'receipt, payment, karaoke'
       }
     });
-    
-    // Set response headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="payment-slip-${booking.booking_id}.pdf"`);
-    
-    // Create file stream and pipe to both response and file
+
+    // Write PDF to file
     const fileStream = fs.createWriteStream(filepath);
     doc.pipe(fileStream);
-    doc.pipe(res);
-    
-    // Header
-    doc.fontSize(20)
-       .font('Helvetica-Bold')
-       .text('Junrai Karaoke', 50, 50)
-       .fontSize(16)
-       .font('Helvetica')
-       .text('ใบเสร็จรับเงิน / Payment Receipt', 50, 80);
-    
-    // Receipt number and date
-    doc.fontSize(12)
-       .text(`เลขที่ใบเสร็จ / Receipt No.: ${booking.booking_id}`, 50, 120)
-       .text(`วันที่ / Date: ${new Date(booking.payment_date || booking.created_at).toLocaleDateString('th-TH')}`, 50, 140);
-    
-    // Customer information
-    doc.fontSize(14)
-       .font('Helvetica-Bold')
-       .text('ข้อมูลลูกค้า / Customer Information', 50, 180)
-       .font('Helvetica')
-       .fontSize(12)
-       .text(`ชื่อ / Name: ${booking.customer_name}`, 50, 200)
-       .text(`อีเมล / Email: ${booking.customer_email}`, 50, 220);
-    
-    if (booking.phone) {
-      doc.text(`เบอร์โทร / Phone: ${booking.phone}`, 50, 240);
-    }
-    
-    // Booking details
-    doc.fontSize(14)
-       .font('Helvetica-Bold')
-       .text('รายละเอียดการจอง / Booking Details', 50, 280)
-       .font('Helvetica')
-       .fontSize(12)
-       .text(`ห้อง / Room: ${booking.room_name}`, 50, 300)
-       .text(`ประเภท / Type: ${booking.type_name || 'ห้องธรรมดา'}`, 50, 320)
-       .text(`ความจุ / Capacity: ${booking.capacity} คน`, 50, 340)
-       .text(`วันที่จอง / Booking Date: ${new Date(booking.start_time).toLocaleDateString('th-TH')}`, 50, 360)
-       .text(`เวลา / Time: ${new Date(booking.start_time).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} - ${new Date(booking.end_time).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}`, 50, 380)
-       .text(`ระยะเวลา / Duration: ${booking.duration_hours} ชั่วโมง`, 50, 400);
-    
-    // Payment details
-    doc.fontSize(14)
-       .font('Helvetica-Bold')
-       .text('รายละเอียดการชำระเงิน / Payment Details', 50, 440)
-       .font('Helvetica')
-       .fontSize(12)
-       .text(`ราคาต่อชั่วโมง / Price per Hour: ฿${booking.price_per_hour}`, 50, 460)
-       .text(`จำนวนชั่วโมง / Total Hours: ${booking.duration_hours}`, 50, 480)
-       .text(`ยอดรวม / Total Amount: ฿${booking.total_price}`, 50, 500)
-       .text(`วิธีการชำระ / Payment Method: ${booking.payment_method || 'ไม่ระบุ'}`, 50, 520)
-       .text(`สถานะ / Status: ชำระเงินแล้ว / Paid`, 50, 540);
-    
-    // Footer
-    doc.fontSize(10)
-       .text('ขอบคุณที่ใช้บริการ Junrai Karaoke', 50, 700)
-       .text('Thank you for choosing Junrai Karaoke', 50, 715)
-       .text('โทรศัพท์ / Phone: 02-xxx-xxxx', 50, 735)
-       .text('อีเมล / Email: info@junraikaraoke.com', 50, 750);
-    
-    // Finalize PDF
+
+    // Add content to the PDF
+    doc.fontSize(20).text('Payment Receipt', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(14).text(`Booking ID: ${booking.booking_id}`);
+    doc.text(`Customer Name: ${booking.customer_name}`);
+    doc.text(`Customer Email: ${booking.customer_email}`);
+    doc.text(`Room Name: ${booking.room_name}`);
+    doc.text(`Room Type: ${booking.room_type}`);
+    doc.text(`Room Capacity: ${booking.capacity}`);
+    doc.text(`Start Time: ${new Date(booking.start_time).toLocaleString()}`);
+    doc.text(`End Time: ${new Date(booking.end_time).toLocaleString()}`);
+    doc.text(`Total Price: ${booking.total_price} THB`);
+    doc.text(`Payment Status: ${booking.payment_status}`);
     doc.end();
-    
-    // Update database with PDF file path (after file is written)
-    fileStream.on('finish', async () => {
-      try {
-        console.log(`PDF saved to: ${filepath}`);
-        
-        // Update booking record with PDF path
-        await db.query(`
-          UPDATE bookings 
-          SET receipt_pdf_path = ? 
-          WHERE booking_id = ?
-        `, [`/receipts/${filename}`, bookingId]);
-        
-        console.log(`Updated booking ${bookingId} with PDF path: /receipts/${filename}`);
-        
-      } catch (updateErr) {
-        console.error('Error updating booking with PDF path:', updateErr);
-      }
+
+    // Send the PDF file to the client after writing is complete
+    fileStream.on('finish', () => {
+      console.log(`PDF generated successfully at ${filepath}`);
+      res.download(filepath, filename, (err) => {
+        if (err) {
+          console.error('Error sending file:', err);
+          res.status(500).json({ error: 'Failed to send PDF', message: err.message });
+        }
+      });
     });
-    
+
+    fileStream.on('error', (fsErr) => {
+      console.error('File stream error:', fsErr);
+      res.status(500).json({ error: 'Failed to write PDF', message: fsErr.message });
+    });
   } catch (err) {
-    console.error('Error generating PDF:', err);
+    console.error('Unexpected error:', err);
     next(err);
   }
 });
