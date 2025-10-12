@@ -420,13 +420,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Set user data from EJS
+    var userData = '<%= JSON.stringify(user || {}) %>';
+    userData = JSON.parse(userData);
+
     // Auto-fill form if user is logged in
-    <% if (typeof user !== 'undefined' && user) { %>
-        document.getElementById('firstName').value = '<%= user.first_name || "" %>';
-        document.getElementById('lastName').value = '<%= user.last_name || "" %>';
-        document.getElementById('email').value = '<%= user.email || "" %>';
-        document.getElementById('phone').value = '<%= user.phone || "" %>';
-    <% } %>
+    if (userData && userData.first_name) {
+        document.getElementById('firstName').value = userData.first_name || "";
+        document.getElementById('lastName').value = userData.last_name || "";
+        document.getElementById('email').value = userData.email || "";
+        document.getElementById('phone').value = userData.phone || "";
+    }
     
     function showMessage(type, message) {
         const messageDiv = formMessage.querySelector('.message-content');

@@ -208,6 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('startTime').addEventListener('change', calculateBookingCost);
     document.getElementById('endTime').addEventListener('change', calculateBookingCost);
     
+    // Set authentication status from EJS
+    var isAuthenticated = '<%= user ? "true" : "false" %>';
+    
     async function loadRooms() {
         if (isLoading) return;
         
@@ -441,12 +444,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function openBookingModal(roomId, roomName, pricePerHour) {
-        <% if (typeof user === 'undefined' || !user) { %>
-            // Redirect to login if not authenticated
+        if (!isAuthenticated) {
             window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
             return;
-        <% } %>
-        
+        }
         document.getElementById('modalRoomId').value = roomId;
         document.getElementById('modalRoomName').textContent = roomName;
         document.getElementById('pricePerHour').textContent = '₿' + pricePerHour;
@@ -455,7 +456,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('bookingDate').value = today;
         document.getElementById('bookingDate').min = today;
-        
         document.getElementById('bookingModal').classList.add('active');
     }
     

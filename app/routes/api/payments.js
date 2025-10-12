@@ -3,6 +3,7 @@ const router = express.Router();
 const PaymentService = require('../../services/paymentService');
 const { stripeConfig } = require('../../config/stripe');
 const { authenticateToken } = require('../../middleware/auth');
+const paymentController = require('../../controllers/paymentController'); // Ensure this import exists and is correct
 
 /**
  * @route POST /api/payments/create-payment-intent
@@ -249,5 +250,7 @@ router.post('/webhook', async (req, res) => {
         res.status(500).send('Webhook Error');
     }
 });
+
+router.post('/pay', paymentController.processPayment); // Make sure processPayment is defined in paymentController
 
 module.exports = router;

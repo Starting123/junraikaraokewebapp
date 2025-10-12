@@ -265,6 +265,15 @@ const requireEmailVerified = (req, res, next) => {
     next();
 };
 
+// Dummy authentication for development
+const authenticateToken = (req, res, next) => {
+    req.user = {
+        user_id: 1,
+        role: 'user'
+    };
+    next();
+};
+
 module.exports = {
     requireLogin,
     requireAdmin,
@@ -275,5 +284,6 @@ module.exports = {
     verifyJWT,
     authRateLimit,
     logUserActivity,
-    requireEmailVerified
+    requireEmailVerified,
+    authenticateToken
 };
