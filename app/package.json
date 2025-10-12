@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development npx nodemon ./bin/www",
-    "start": "NODE_ENV=production node ./bin/www",
-    "debug": "NODE_ENV=development node --inspect ./bin/www"
+    "dev": "cross-env NODE_ENV=development npx nodemon ./bin/www",
+    "start": "cross-env NODE_ENV=production node ./bin/www", 
+    "debug": "cross-env NODE_ENV=development node --inspect ./bin/www",
+    "win-dev": "set NODE_ENV=development && npx nodemon ./bin/www",
+    "win-start": "set NODE_ENV=production && node ./bin/www"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -31,6 +33,7 @@
     "stripe": "^19.0.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "nodemon": "^2.0.22"
   }
 }

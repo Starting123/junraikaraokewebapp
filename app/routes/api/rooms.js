@@ -10,7 +10,23 @@ function handleValidation(req, res) {
   return null;
 }
 
-// GET /api/rooms - list rooms
+// GET /api/rooms - list all rooms (public)
+router.get('/', async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.room_id, r.name, r.type_id, t.type_name, t.price_per_hour, r.status, r.capacity
+       FROM rooms r
+       LEFT JOIN room_types t ON r.type_id = t.type_id
+       ORDER BY t.price_per_hour ASC, r.name ASC`
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    res.status(500).json({ error: 'Failed to fetch rooms' });
+  }
+});
+
+// GET /api/rooms/roomForm - legacy route for admin form
 router.get('/roomForm', async (req, res, next) => {
   try {
     const [rows] = await db.query(

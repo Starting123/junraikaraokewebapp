@@ -24,7 +24,7 @@ router.get('/', async function(req, res, next) {
     const [featuredRooms] = await db.query(`
       SELECT r.room_id, r.name, r.capacity, r.status, rt.type_name, rt.price_per_hour
       FROM rooms r 
-      LEFT JOIN room_types rt ON r.room_type_id = rt.type_id 
+      LEFT JOIN room_types rt ON r.type_id = rt.type_id 
       WHERE r.status = 'available' 
       ORDER BY r.room_id 
       LIMIT 3

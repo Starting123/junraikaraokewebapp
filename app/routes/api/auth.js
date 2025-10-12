@@ -161,9 +161,21 @@ router.post('/login', authLimiter, [
           return res.status(500).json({ error: 'Internal server error' });
         }
 
+        // Generate JWT token for API access
+        const token = jwt.sign(
+          { 
+            user_id: user.user_id, 
+            email: user.email, 
+            role_id: user.role_id 
+          },
+          JWT_SECRET,
+          { expiresIn: process.env.JWT_EXPIRES || '24h' }
+        );
+
         res.json({
           message: 'เข้าสู่ระบบสำเร็จ',
-          user: req.session.user
+          user: req.session.user,
+          token
         });
       });
     });
