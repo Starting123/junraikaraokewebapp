@@ -7,7 +7,11 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const ApiResponse = require('../../middleware/apiResponse');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
+// Enforce JWT_SECRET environment variable
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET environment variable is required and must be at least 32 characters');
+}
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
 
 // Rate limiting for authentication endpoints
@@ -20,7 +24,11 @@ const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true // Don't count successful requests
+  skipSuccessfulRequests: true, // Don't count successful requests
+  handler: (req, res, next, options) => {
+    console.warn(`Auth rate limit exceeded for IP: ${req.ip}`);
+    res.status(options.statusCode).json(options.message);
+  }
 });
 
 const registerLimiter = rateLimit({
@@ -32,6 +40,10 @@ const registerLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    console.warn(`Registration rate limit exceeded for IP: ${req.ip}`);
+    res.status(options.statusCode).json(options.message);
+  }
 });
 
 function authMiddleware(req, res, next) {
@@ -51,8 +63,11 @@ function authMiddleware(req, res, next) {
 router.post('/register', registerLimiter, [
   body('name').trim().notEmpty().isLength({ min: 2, max: 100 }),
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long')
+  body('password')
+    .isLength({ min: 12 })
+    .withMessage('Password must be at least 12 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character (@$!%*?&)')
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -67,12 +82,12 @@ router.post('/register', registerLimiter, [
     // Hash password
     const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
     
-    // Create user with role_id 2 (customer)
-    const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, hashed, 2]);
+    // Create user with role_id 3 (customer)
+    const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, hashed, 3]);
     
     // Generate JWT token
     const token = jwt.sign(
-      { user_id: result.insertId, email, role_id: 2 },
+      { user_id: result.insertId, email, role_id: 3 },
       JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES || '24h' }
     );
@@ -83,7 +98,7 @@ router.post('/register', registerLimiter, [
         user_id: result.insertId, 
         name, 
         email,
-        role_id: 2
+        role_id: 3
       },
       token
     });
@@ -93,61 +108,96 @@ router.post('/register', registerLimiter, [
 });
 
 // POST /api/auth/login
-router.post('/login', authLimiter, [ 
-  body('email').isEmail().normalizeEmail(), 
-  body('password').notEmpty() 
+// Session-based login
+router.post('/login', authLimiter, [
+  body('email').isEmail().normalizeEmail(),
+  body('password').notEmpty()
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    
+
     const { email, password } = req.body;
     const [rows] = await db.query('SELECT user_id, name, email, password, role_id, status FROM users WHERE email = ? LIMIT 1', [email]);
-    
+
     if (rows.length === 0) {
       return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
-    
+
     const user = rows[0];
-    
+
     // Check if account is active
     if (user.status === 'inactive') {
       return res.status(403).json({ error: 'บัญชีผู้ใช้ถูกปิดการใช้งาน' });
     }
-    
+
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
-    
+
     // Update last login
     await db.query('UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', [user.user_id]);
-    
-    const payload = { user_id: user.user_id, email: user.email, role_id: user.role_id };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || '24h' });
-    
-    res.json({ 
-      message: 'เข้าสู่ระบบสำเร็จ',
-      token, 
-      user: { 
-        user_id: user.user_id, 
-        name: user.name, 
-        email: user.email, 
-        role_id: user.role_id 
-      } 
+
+    // Regenerate session ID to prevent session fixation attacks
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration failed:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      // Set session data
+      req.session.user = {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        role_id: user.role_id
+      };
+
+      // Save session
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save failed:', err);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        res.json({
+          message: 'เข้าสู่ระบบสำเร็จ',
+          user: req.session.user
+        });
+      });
     });
   } catch (err) {
     next(err);
   }
 });
 
-// GET /api/auth/me - returns user info and admin flag
-router.get('/me', authMiddleware, async (req, res, next) => {
+// Logout route
+router.post('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.json({ message: 'Logged out' });
+  });
+});
+
+// Import middleware from auth.js instead of redefining
+const { requireLogin } = require('../../middleware/auth');
+
+// GET /api/auth/me - returns user info with admin flag (session-based)
+router.get('/me', requireLogin, async (req, res, next) => {
   try {
-    const user = req.user;
-    // determine is_admin by role_id --- assume role_id 1 == admin
+    const user = req.session.user;
+    // Determine is_admin by role_id (role_id 1 == admin)
     const isAdmin = user.role_id === 1;
-    return ApiResponse.success(res, { user, isAdmin }, 'User profile retrieved successfully');
+    
+    return ApiResponse.success(res, { 
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        role_id: user.role_id
+      },
+      isAdmin 
+    }, 'User profile retrieved successfully');
   } catch (err) {
     next(err);
   }

@@ -24,8 +24,8 @@
                     <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
                     <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
                     <li><a href="/admin" class="nav-link" id="adminLink" style="display: none;">ผู้ดูแลระบบ</a></li>
-                    <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                    <li><a href="/auth" class="nav-link" id="authLink" style="display: none;">เข้าสู่ระบบ</a></li>
+                    <li><button class="btn btn-outline" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                 </ul>
             </div>
         </div>
@@ -43,23 +43,23 @@
             <div class="search-filters">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="ค้นหาห้อง..." onkeyup="searchRooms()">
+                    <input type="text" id="searchInput" placeholder="ค้นหาห้อง...">
                 </div>
                 
                 <div class="filter-group">
-                    <select id="statusFilter" onchange="filterRooms()" class="form-select">
+                    <select id="statusFilter" class="form-select">
                         <option value="">สถานะทั้งหมด</option>
                         <option value="available">ว่าง</option>
                         <option value="occupied">ไม่ว่าง</option>
                     </select>
                     
-                    <select id="typeFilter" onchange="filterRooms()" class="form-select">
+                    <select id="typeFilter" class="form-select">
                         <option value="">ประเภททั้งหมด</option>
                     </select>
                 </div>
             </div>
             
-            <button class="btn btn-primary" onclick="showAddRoomModal()" id="addRoomBtn" style="display: none;">
+            <button class="btn btn-primary" id="addRoomBtn" style="display: none;">
                 <i class="fas fa-plus"></i>
                 เพิ่มห้องใหม่
             </button>

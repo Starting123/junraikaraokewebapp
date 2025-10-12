@@ -36,12 +36,12 @@ class AuthController {
                 name,
                 email,
                 password: hashedPassword,
-                role_id: 2 // Default to customer role
+                role_id: 3 // Default to customer role
             });
 
             // Generate JWT token
             const token = jwt.sign(
-                { user_id: userId, email, role_id: 2 },
+                { user_id: userId, email, role_id: 3 },
                 JWT_SECRET,
                 { expiresIn: '7d' }
             );
@@ -51,7 +51,7 @@ class AuthController {
                     user_id: userId,
                     name,
                     email,
-                    role_id: 2
+                    role_id: 3
                 },
                 token
             }, 'Registration successful', 201);

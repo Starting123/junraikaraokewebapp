@@ -10,7 +10,7 @@ async function findByEmail(email) {
   return rows.length ? rows[0] : null;
 }
 
-async function create({ name, email, password, role_id = 2 }) {
+async function create({ name, email, password, role_id = 3 }) {
   // Password should already be hashed by the controller
   const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, password, role_id]);
   return result.insertId;

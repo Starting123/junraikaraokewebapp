@@ -25,7 +25,7 @@
                     <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
                     <li><a href="/admin" class="nav-link" id="adminLink" style="display: none;">ผู้ดูแลระบบ</a></li>
                     <li><a href="/auth" class="nav-link active" id="authLink">เข้าสู่ระบบ</a></li>
-                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                    <li><button class="btn btn-outline" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
                 </ul>
             </div>
         </div>
@@ -45,7 +45,7 @@
                         <label class="form-label">
                             <i class="fas fa-envelope"></i> อีเมล
                         </label>
-                        <input type="email" class="form-control" id="loginEmail" placeholder="กรุณาใส่อีเมลของคุณ" required>
+                        <input type="email" class="form-control" id="loginEmail" name="email" placeholder="กรุณาใส่อีเมลของคุณ" required>
                     </div>
                     
                     <div class="form-group">
@@ -53,8 +53,8 @@
                             <i class="fas fa-lock"></i> รหัสผ่าน
                         </label>
                         <div class="password-input">
-                            <input type="password" class="form-control" id="loginPassword" placeholder="กรุณาใส่รหัสผ่าน" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                            <input type="password" class="form-control" id="loginPassword" name="password" placeholder="กรุณาใส่รหัสผ่าน" required>
+                            <button type="button" class="password-toggle" data-target="loginPassword">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -69,7 +69,7 @@
                         <span>หรือ</span>
                     </div>
                     
-                    <button type="button" class="btn btn-outline auth-btn" onclick="showRegister()">
+                    <button type="button" class="btn btn-outline auth-btn" id="showRegisterBtn">
                         <i class="fas fa-user-plus"></i>
                         สมัครสมาชิกใหม่
                     </button>
@@ -106,7 +106,7 @@
                         </label>
                         <div class="password-input">
                             <input type="password" class="form-control" id="registerPassword" placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)" required minlength="6">
-                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                            <button type="button" class="password-toggle" data-target="registerPassword">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -118,7 +118,7 @@
                         </label>
                         <div class="password-input">
                             <input type="password" class="form-control" id="confirmPassword" placeholder="กรุณายืนยันรหัสผ่าน" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <button type="button" class="password-toggle" data-target="confirmPassword">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -133,7 +133,7 @@
                         <span>หรือ</span>
                     </div>
                     
-                    <button type="button" class="btn btn-outline auth-btn" onclick="showLogin()">
+                    <button type="button" class="btn btn-outline auth-btn" id="showLoginBtn">
                         <i class="fas fa-sign-in-alt"></i>
                         เข้าสู่ระบบ
                     </button>
@@ -182,6 +182,43 @@
                 input.type = 'password';
                 icon.className = 'fas fa-eye';
             }
+        }
+
+        // Setup event listeners for password toggle buttons
+        function setupPasswordToggles() {
+            const toggleButtons = document.querySelectorAll('.password-toggle');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    togglePassword(targetId);
+                });
+            });
+        }
+
+        // Setup event listeners for form switches
+        function setupFormSwitches() {
+            const showRegisterBtn = document.getElementById('showRegisterBtn');
+            const showLoginBtn = document.getElementById('showLoginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (showRegisterBtn) {
+                showRegisterBtn.addEventListener('click', showRegister);
+            }
+            
+            if (showLoginBtn) {
+                showLoginBtn.addEventListener('click', showLogin);
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.reload();
         }
 
         // Show/Hide loading
@@ -347,6 +384,8 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
+            setupPasswordToggles();
+            setupFormSwitches();
         });
     </script>
 </body>

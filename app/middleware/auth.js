@@ -1,109 +1,99 @@
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
+// Enforce JWT_SECRET environment variable
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET environment variable is required and must be at least 32 characters');
+}
 
 /**
- * Middleware ตรวจสอบ JWT token
+ * Session-based authentication middleware
  */
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-        return res.status(401).json({ 
-            success: false,
-            message: 'Access token is required' 
-        });
+function requireLogin(req, res, next) {
+    // Check session first
+    if (req.session && req.session.user) {
+        req.user = req.session.user;
+        return next();
     }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            console.error('JWT verification failed:', err);
-            return res.status(403).json({ 
-                success: false,
-                message: 'Invalid or expired token' 
-            });
+    
+    // Fallback to JWT token
+    const auth = req.headers.authorization;
+    if (auth && auth.startsWith('Bearer ')) {
+        const token = auth.slice(7);
+        try {
+            const payload = jwt.verify(token, JWT_SECRET);
+            req.user = payload;
+            return next();
+        } catch (err) {
+            // Token invalid, continue to rejection
         }
+    }
+    
+    return res.status(401).json({ error: 'Login required' });
+}
 
-        req.user = user;
+/**
+ * Admin role requirement middleware - ALWAYS enforced
+ */
+function requireAdmin(req, res, next) {
+    requireLogin(req, res, () => {
+        if (!req.user || req.user.role_id !== 1) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
         next();
     });
 }
 
 /**
- * Middleware ตรวจสอบสิทธิ์ admin
+ * Async error handler wrapper
  */
-function requireAdmin(req, res, next) {
-    if (!req.user) {
-        return res.status(401).json({ 
-            success: false,
-            message: 'Authentication required' 
-        });
-    }
-
-    // ตรวจสอบว่าเป็น admin (role_id = 1 หรือ role = 'admin')
-    if (req.user.role_id !== 1 && req.user.role !== 'admin') {
-        return res.status(403).json({ 
-            success: false,
-            message: 'Admin access required' 
-        });
-    }
-
-    next();
-}
-
-/**
- * Middleware ตรวจสอบว่าเป็นเจ้าของ resource หรือ admin
- */
-function requireOwnerOrAdmin(userIdField = 'user_id') {
+function asyncHandler(fn) {
     return (req, res, next) => {
-        if (!req.user) {
-            return res.status(401).json({ 
-                success: false,
-                message: 'Authentication required' 
-            });
-        }
-
-        const resourceUserId = req.params[userIdField] || req.body[userIdField];
-        const currentUserId = req.user.user_id;
-        const isAdmin = req.user.role_id === 1 || req.user.role === 'admin';
-
-        if (!isAdmin && currentUserId != resourceUserId) {
-            return res.status(403).json({ 
-                success: false,
-                message: 'Access denied. You can only access your own resources.' 
-            });
-        }
-
-        next();
+        Promise.resolve(fn(req, res, next)).catch(next);
     };
 }
 
 /**
- * Optional authentication - ไม่บังคับต้องมี token
+ * Enhanced rate limiting for authentication endpoints
  */
-function optionalAuth(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        req.user = null;
-        return next();
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 requests per windowMs
+    message: {
+        error: 'Too many authentication attempts, try again later',
+        retryAfter: 15 * 60,
+        type: 'rate_limit_exceeded'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // Don't count successful requests
+    handler: (req, res, next, options) => {
+        console.warn(`Rate limit exceeded for IP: ${req.ip}, endpoint: ${req.path}`);
+        res.status(options.statusCode).json(options.message);
     }
+});
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            req.user = null;
-        } else {
-            req.user = user;
-        }
-        next();
-    });
+/**
+ * Legacy compatibility
+ */
+const authenticateToken = requireLogin;
+function requireOwnerOrAdmin(userIdField = 'user_id') {
+    return requireLogin;
+}
+function optionalAuth(req, res, next) {
+    if (req.session && req.session.user) {
+        req.user = req.session.user;
+    }
+    next();
 }
 
 module.exports = {
-    authenticateToken,
+    requireLogin,
     requireAdmin,
-    requireOwnerOrAdmin,
-    optionalAuth
+    asyncHandler,
+    authLimiter,
+    authenticateToken, // legacy
+    requireOwnerOrAdmin, // legacy
+    optionalAuth // legacy
 };

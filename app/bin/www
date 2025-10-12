@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
+
+// Load .env in development mode
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+  console.log('==============================');
+  console.log('=         DEV MODE            =');
+  console.log('==============================');
+  console.log('[dev] dotenv loaded, NODE_ENV:', process.env.NODE_ENV);
+}
 
 var app = require('../app');
 var debug = require('debug')('app:server');

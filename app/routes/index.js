@@ -2,6 +2,11 @@ var express = require('express');
 var router = express.Router();
 const db = require('../db');
 
+// Health check route
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', time: new Date().toISOString() });
+});
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
