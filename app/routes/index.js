@@ -8,9 +8,46 @@ router.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', time: new Date().toISOString() });
 });
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+/* GET home page with dynamic data. */
+router.get('/', async function(req, res, next) {
+  try {
+    // Load room statistics for homepage
+    const [roomStats] = await db.query(`
+      SELECT 
+        COUNT(*) as total_rooms,
+        COUNT(CASE WHEN status = 'available' THEN 1 END) as available_rooms,
+        COUNT(CASE WHEN status = 'occupied' THEN 1 END) as occupied_rooms
+      FROM rooms
+    `);
+    
+    // Load featured/popular rooms (up to 3)
+    const [featuredRooms] = await db.query(`
+      SELECT r.room_id, r.name, r.capacity, r.status, rt.type_name, rt.price_per_hour
+      FROM rooms r 
+      LEFT JOIN room_types rt ON r.room_type_id = rt.type_id 
+      WHERE r.status = 'available' 
+      ORDER BY r.room_id 
+      LIMIT 3
+    `);
+    
+    const stats = roomStats[0] || { total_rooms: 0, available_rooms: 0, occupied_rooms: 0 };
+    
+    res.render('index', { 
+      title: 'Junrai Karaoke - ระบบจองห้องคาราโอเกะออนไลน์',
+      roomStats: stats,
+      featuredRooms: featuredRooms || [],
+      user: req.session?.user || null
+    });
+  } catch (err) {
+    console.error('Homepage error:', err);
+    // Fallback to basic render on database error
+    res.render('index', { 
+      title: 'Junrai Karaoke',
+      roomStats: { total_rooms: 0, available_rooms: 0, occupied_rooms: 0 },
+      featuredRooms: [],
+      user: req.session?.user || null
+    });
+  }
 });
 
 router.get('/roomForm', async function(req, res, next) {

@@ -196,7 +196,7 @@
     // Load popular rooms
     async function loadPopularRooms() {
       try {
-        const response = await fetch(`${API_BASE}/rooms/roomForm`);
+        const response = await fetch(`${API_BASE}/rooms`);
         if (response.ok) {
           const rooms = await response.json();
           const availableRooms = rooms.filter(room => room.status === 'available').slice(0, 3);

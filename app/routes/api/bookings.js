@@ -39,13 +39,16 @@ router.post('/', authMiddleware, [
   body('room_id').isInt({ gt: 0 }),
   body('start_time').isISO8601(),
   body('end_time').isISO8601(),
+  body('fullname').trim().isLength({ min: 2, max: 100 }).withMessage('ชื่อต้องมีความยาว 2-100 ตัวอักษร'),
+  body('phone').trim().matches(/^[0-9\-\+\(\)\s]+$/).isLength({ min: 9, max: 15 }).withMessage('เบอร์โทรไม่ถูกต้อง'),
+  body('address').optional().trim().isLength({ max: 200 }).withMessage('ที่อยู่ต้องไม่เกิน 200 ตัวอักษร'),
   body('duration_hours').optional().isInt({ min: 1, max: 24 }),
   body('customer_id').optional().isInt({ gt: 0 })
 ], async (req, res, next) => {
   try {
     if (handleValidation(req, res)) return;
 
-    const { room_id, start_time, end_time, duration_hours = 1, customer_id } = req.body;
+    const { room_id, start_time, end_time, fullname, phone, address = '', duration_hours = 1, customer_id } = req.body;
     const start = new Date(start_time);
     const end = new Date(end_time);
     
@@ -83,7 +86,21 @@ router.post('/', authMiddleware, [
       user_id = customer_id;
     }
     
-    const booking = await bookingsModel.create({ user_id, room_id, start_time, end_time, duration_hours });
+    // Store customer details in notes field for guest bookings
+    const customerDetails = {
+      fullname: fullname,
+      phone: phone,
+      address: address
+    };
+    
+    const booking = await bookingsModel.create({ 
+      user_id, 
+      room_id, 
+      start_time, 
+      end_time, 
+      duration_hours, 
+      notes: JSON.stringify(customerDetails) 
+    });
     
     // อัปเดตสถานะห้อง
     await roomsModel.updateRoomStatus();

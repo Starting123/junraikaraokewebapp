@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="/stylesheets/responsive-fixes.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Include booking module -->
+    <script src="/javascripts/modules/booking.js"></script>
+    
     <!-- Inline CSS for file upload area debugging -->
     <style>
         #transferProofForm {
@@ -305,8 +308,8 @@
                         <!-- Add fields for name, phone, and address in the booking form -->
                         <form id="newBookingForm" method="POST" action="/api/book">
                           <div class="form-group">
-                            <label for="name">ชื่อ-นามสกุล</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
+                            <label for="fullname">ชื่อ-นามสกุล</label>
+                            <input type="text" id="fullname" name="fullname" class="form-control" required>
                           </div>
             
                           <div class="form-group">
@@ -753,16 +756,33 @@ if (bookingForm) {
         document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const roomId = document.getElementById('selectedRoomId').value;
-            const startDate = document.getElementById('startDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endDate = document.getElementById('endDate').value;
-            const endTime = document.getElementById('endTime').value;
+            // Get form elements with null checks
+            const fullnameEl = document.getElementById('fullname');
+            const phoneEl = document.getElementById('phone');
+            const addressEl = document.getElementById('address');
+            const roomIdEl = document.getElementById('selectedRoomId');
+            const startTimeEl = document.getElementById('start_time');
+            const endTimeEl = document.getElementById('end_time');
             
-            const startDateTime = `${startDate}T${startTime}:00`;
-            const endDateTime = `${endDate}T${endTime}:00`;
+            // Validate elements exist
+            if (!fullnameEl || !phoneEl || !roomIdEl || !startTimeEl || !endTimeEl) {
+                showToast('ข้อผิดพลาด: ไม่พบข้อมูลในฟอร์ม', 'error');
+                return;
+            }
+            
+            const fullname = fullnameEl.value.trim();
+            const phone = phoneEl.value.trim();
+            const address = addressEl ? addressEl.value.trim() : '';
+            const roomId = roomIdEl.value;
+            const startDateTime = startTimeEl.value;
+            const endDateTime = endTimeEl.value;
             
             // Validation
+            if (!fullname || !phone || !roomId || !startDateTime || !endDateTime) {
+                showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                return;
+            }
+            
             const start = new Date(startDateTime);
             const end = new Date(endDateTime);
             const now = new Date();
@@ -777,6 +797,14 @@ if (bookingForm) {
                 return;
             }
             
+            // Check minimum booking duration (1 hour)
+            const durationMs = end.getTime() - start.getTime();
+            const durationHours = durationMs / (1000 * 60 * 60);
+            if (durationHours < 1) {
+                showToast('การจองต้องมีระยะเวลาอย่างน้อย 1 ชั่วโมง', 'error');
+                return;
+            }
+            
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/bookings`, {
@@ -786,6 +814,9 @@ if (bookingForm) {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
+                        fullname: fullname,
+                        phone: phone,
+                        address: address,
                         room_id: parseInt(roomId),
                         start_time: startDateTime,
                         end_time: endDateTime
