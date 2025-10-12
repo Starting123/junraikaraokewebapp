@@ -17,11 +17,11 @@
     <!-- Page-specific Styles -->
     <% if (typeof pageCSS !== 'undefined') { %>
         <% if (Array.isArray(pageCSS)) { %>
-            <% pageCSS.forEach(function(css) { %>
-                <link rel="stylesheet" href="/stylesheets/<%= css %>.css">
-            <% }); %>
+                <% pageCSS.forEach(function(css) { %>
+                    <link rel="stylesheet" href="/styles/<%= css %>.css">
+                <% }); %>
         <% } else { %>
-            <link rel="stylesheet" href="/stylesheets/<%= pageCSS %>.css">
+                <link rel="stylesheet" href="/styles/<%= pageCSS %>.css">
         <% } %>
     <% } %>
     
@@ -49,10 +49,10 @@
     <script>
         window.serverData = {
             user: <%- JSON.stringify(typeof user !== 'undefined' ? user : null) %>,
-            isAuthenticated: <%= typeof user !== 'undefined' && user ? 'true' : 'false' %>,
-            csrfToken: '<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>',
-            currentPage: '<%= typeof currentPage !== 'undefined' ? currentPage : '' %>',
-            environment: '<%= typeof process !== 'undefined' && process.env.NODE_ENV ? process.env.NODE_ENV : 'production' %>'
+            isAuthenticated: '<%= typeof user !== 'undefined' && user ? "true" : "false" %>',
+            csrfToken: '<%= typeof csrfToken !== 'undefined' ? csrfToken : "" %>',
+            currentPage: '<%= typeof currentPage !== 'undefined' ? currentPage : "" %>',
+            environment: '<%= typeof process !== 'undefined' && process.env.NODE_ENV ? process.env.NODE_ENV : "production" %>'
         };
     </script>
     

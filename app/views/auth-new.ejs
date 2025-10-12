@@ -44,7 +44,7 @@
     <script>
         window.serverData = {
             user: <%- JSON.stringify(user) %>,
-            isAuthenticated: <%= user ? 'true' : 'false' %>,
+            isAuthenticated: '<%= user ? "true" : "false" %>',
             csrfToken: '<%= csrfToken %>',
             currentPage: '<%= currentPage %>',
             environment: '<%= typeof process !== "undefined" && process.env.NODE_ENV ? process.env.NODE_ENV : "production" %>',
