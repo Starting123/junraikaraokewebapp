@@ -164,6 +164,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 showMessage('success', 'Login successful! Redirecting...');
                 
+                // Store JWT token in localStorage
+                localStorage.setItem('token', result.token);
+                
                 // Redirect based on user role or redirect parameter
                 const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || 
                                   (result.user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
@@ -263,5 +266,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Utility: Get JWT token from localStorage
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+    
+    // Example: Use JWT for protected API calls
+    async function loginUser(email, password) {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        if (result.token) {
+            localStorage.setItem('token', result.token);
+        }
+        return result;
+    }
 });
-</script>

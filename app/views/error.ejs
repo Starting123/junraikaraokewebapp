@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Oops! Something went wrong.</h1>
+        <p><%= message || 'An unexpected error occurred.' %></p>
+        <% if (error && error.status) { %>
+            <p>Status: <%= error.status %></p>
+        <% } %>
+        <% if (error && error.stack) { %>
+            <pre><%= error.stack %></pre>
+        <% } %>
+        <a href="/" class="btn btn-primary">Go Home</a>
+    </div>
+</body>
+</html>

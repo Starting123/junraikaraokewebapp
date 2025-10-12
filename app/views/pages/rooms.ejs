@@ -544,6 +544,25 @@ document.addEventListener('DOMContentLoaded', function() {
         alert(message);
     }
     
+    // Utility: Get JWT token from localStorage
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
+    // Example: Use JWT for protected API calls
+    async function createRoom(roomData) {
+        const token = getToken();
+        const response = await fetch('/api/rooms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(roomData)
+        });
+        return response.json();
+    }
+    
     // Close modal when clicking outside
     window.addEventListener('click', function(e) {
         const modal = document.getElementById('bookingModal');

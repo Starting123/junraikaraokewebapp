@@ -1,0 +1,18 @@
+<% /* Payment Summary Page */ %>
+<h2>Payment Summary</h2>
+<p>Room: <%= booking.roomName %></p>
+<p>Price: <%= booking.price %> / hour</p>
+<p>Time: <%= booking.startTime %> - <%= booking.endTime %></p>
+<form id="paymentForm" method="POST" action="/api/payment">
+  <input type="hidden" name="bookingId" value="<%= booking.id %>">
+  <label>Card Number</label>
+  <input type="text" name="cardNumber" required>
+  <label>Expiry</label>
+  <input type="text" name="expiry" required>
+  <label>CVC</label>
+  <input type="text" name="cvc" required>
+  <button type="submit">Pay</button>
+</form>
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="error"><%= error %></div>
+<% } %>

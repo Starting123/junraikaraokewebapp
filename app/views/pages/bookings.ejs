@@ -405,6 +405,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             Book Again
                         </button>
                     ` : ''}
+                    
+                    <a href="/bookings/${booking.booking_id}/pdf" class="btn btn-outline">
+                        <i class="fas fa-file-pdf"></i>
+                        Download PDF
+                    </a>
                 </div>
             </div>
         `;
@@ -706,5 +711,38 @@ document.addEventListener('DOMContentLoaded', function() {
             closeCancelModal();
         }
     });
+    
+    // Utility: Get JWT token from localStorage
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
+    // Example: Use JWT for protected API calls
+    async function createBooking(bookingData) {
+        const token = getToken();
+        const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(bookingData)
+        });
+        return response.json();
+    }
+
+    // Example: Save JWT after login
+    async function login(email, password) {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        if (result.token) {
+            localStorage.setItem('token', result.token);
+        }
+        return result;
+    }
 });
 </script>

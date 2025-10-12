@@ -696,6 +696,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             
             if (result.success) {
+                // Store JWT token in localStorage
+                localStorage.setItem('token', result.token);
+                
                 showMessage('success', 'Account created successfully! Please check your email to verify your account.');
                 setTimeout(() => {
                     window.location.href = '/login?message=' + encodeURIComponent('Please verify your email before signing in') + '&type=info';
@@ -710,6 +713,25 @@ document.addEventListener('DOMContentLoaded', function() {
             registerBtn.disabled = false;
             registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
         }
+    }
+    
+    // Utility: Get JWT token from localStorage
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+    
+    // Example: Use JWT for protected API calls
+    async function registerUser(userData) {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        const result = await response.json();
+        if (result.token) {
+            localStorage.setItem('token', result.token);
+        }
+        return result;
     }
     
     function togglePassword() {

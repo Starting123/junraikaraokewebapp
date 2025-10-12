@@ -385,6 +385,42 @@
   margin-bottom: 2rem;
 }
 
+/* payment form styles */
+.payment-form {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.payment-form label {
+  display: block;
+  margin-top: 1rem;
+}
+.payment-form input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.payment-form button {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.payment-form .error {
+  color: #e74c3c;
+  margin-top: 1rem;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .payment-container {

@@ -19,7 +19,7 @@ router.get('/', async (req, res, next) => {
        LEFT JOIN room_types t ON r.type_id = t.type_id
        ORDER BY t.price_per_hour ASC, r.name ASC`
     );
-    res.json(rows);
+    res.json({ success: true, rooms: rows });
   } catch (error) {
     console.error('Error fetching rooms:', error);
     res.status(500).json({ error: 'Failed to fetch rooms' });

@@ -1,0 +1,6 @@
+/*
+  Default room image for rooms without a specific image.
+  Place this file in: public/assets/images/rooms/default-room.jpg
+*/
+
+// This is a placeholder image. You can replace it with a real photo later.

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title || 'เข้าสู่ระบบ - Junrai Karaoke' %></title>
+    <link rel="stylesheet" href="/styles/auth.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Login / Register</h1>
+        <form id="loginForm" method="POST" action="/api/auth/login">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <hr>
+        <form id="registerForm" method="POST" action="/api/auth/register">
+            <label for="firstname">First Name:</label>
+            <input type="text" id="firstname" name="firstname" required>
+            <label for="lastname">Last Name:</label>
+            <input type="text" id="lastname" name="lastname" required>
+            <label for="email">Email:</label>
+            <input type="email" id="reg_email" name="email" required>
+            <label for="password">Password:</label>
+            <input type="password" id="reg_password" name="password" required>
+            <button type="submit">Register</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -184,6 +184,7 @@ router.post('/login', authLimiter, [
         );
 
         res.json({
+          success: true,
           message: 'เข้าสู่ระบบสำเร็จ',
           user: req.session.user,
           token
