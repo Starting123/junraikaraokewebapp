@@ -156,6 +156,7 @@
         // Global variables
         let currentUser = null;
         const API_BASE = '/api';
+        let isCheckingAuth = false;
 
         // Toggle between login and register forms
         function showLogin() {
@@ -370,22 +371,61 @@
         });
 
         // Check if user is already logged in
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
+        async function checkAuth() {
+            // Prevent multiple simultaneous auth checks
+            if (isCheckingAuth) {
+                return;
+            }
             
-            if (token && user) {
-                // Redirect to appropriate dashboard
-                const userData = JSON.parse(user);
-                window.location.href = userData.role_id === 1 ? '/admin' : '/dashboard';
+            isCheckingAuth = true;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const user = localStorage.getItem('user');
+                
+                if (token && user) {
+                    // Verify token is still valid by making a test API call
+                    const response = await fetch('/api/bookings', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        // Token is valid, redirect to appropriate dashboard
+                        const userData = JSON.parse(user);
+                        window.location.href = userData.role_id === 1 ? '/admin' : '/dashboard';
+                    } else {
+                        // Token is invalid, clear localStorage
+                        console.log('Token invalid, clearing localStorage');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                    }
+                } 
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                // Clear invalid tokens
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            } finally {
+                isCheckingAuth = false;
             }
         }
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            // Only check auth once on page load with a small delay
+            setTimeout(checkAuth, 500);
             setupPasswordToggles();
             setupFormSwitches();
+        });
+        
+        // Only check auth when page becomes visible (user switches back to tab)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && !isCheckingAuth) {
+                setTimeout(checkAuth, 1000);
+            }
         });
     </script>
 </body>
