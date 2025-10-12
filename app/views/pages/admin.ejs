@@ -1,424 +1,688 @@
-<!-- Page Header -->
-<div class="page-header admin-header">
+<!-- Admin Header -->
+<section class="admin-header">
     <div class="container">
-        <div class="page-header-content">
-            <div class="admin-welcome">
-                <h1>ผู้ดูแลระบบ</h1>
-                <p>จัดการระบบและข้อมูลทั้งหมด</p>
+        <div class="admin-header-content">
+            <div class="admin-title">
+                <h1>Admin Dashboard</h1>
+                <p>Manage your karaoke business operations</p>
             </div>
             <div class="admin-actions">
-                <button class="btn btn-primary" id="refresh-dashboard">
+                <button class="btn btn-outline" id="refreshData">
                     <i class="fas fa-sync-alt"></i>
-                    รีเฟรชข้อมูล
+                    Refresh Data
+                </button>
+                <a href="/admin/settings" class="btn btn-primary">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+        
+        <nav class="admin-nav">
+            <ul class="admin-nav-list">
+                <li><a href="#overview" class="admin-nav-link active">Overview</a></li>
+                <li><a href="#bookings" class="admin-nav-link">Bookings</a></li>
+                <li><a href="#rooms" class="admin-nav-link">Rooms</a></li>
+                <li><a href="#users" class="admin-nav-link">Users</a></li>
+                <li><a href="#reports" class="admin-nav-link">Reports</a></li>
+            </ul>
+        </nav>
+    </div>
+</section>
+
+<!-- Overview Section -->
+<section id="overview" class="admin-section active">
+    <div class="container">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card revenue">
+                <div class="kpi-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="totalRevenue">₿0</div>
+                    <div class="kpi-label">Total Revenue</div>
+                    <div class="kpi-change positive" id="revenueChange">+0%</div>
+                </div>
+            </div>
+            
+            <div class="kpi-card bookings">
+                <div class="kpi-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="totalBookings">0</div>
+                    <div class="kpi-label">Total Bookings</div>
+                    <div class="kpi-change positive" id="bookingsChange">+0%</div>
+                </div>
+            </div>
+            
+            <div class="kpi-card users">
+                <div class="kpi-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="totalUsers">0</div>
+                    <div class="kpi-label">Total Users</div>
+                    <div class="kpi-change positive" id="usersChange">+0%</div>
+                </div>
+            </div>
+            
+            <div class="kpi-card rooms">
+                <div class="kpi-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-value" id="occupancyRate">0%</div>
+                    <div class="kpi-label">Occupancy Rate</div>
+                    <div class="kpi-change neutral" id="occupancyChange">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Revenue Trend</h3>
+                    <div class="chart-controls">
+                        <select id="revenueTimeframe">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Room Utilization</h3>
+                    <div class="chart-controls">
+                        <button class="btn btn-small btn-outline" id="exportRoomData">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="roomUtilizationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="activity-section">
+            <div class="activity-header">
+                <h3>Recent Activity</h3>
+                <a href="#bookings" class="view-all-link">View All</a>
+            </div>
+            <div class="activity-list" id="recentActivity">
+                <!-- Recent activities will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Quick Stats Grid -->
+        <div class="quick-stats-grid">
+            <div class="stat-box">
+                <h4>Today's Bookings</h4>
+                <div class="stat-value" id="todayBookings">0</div>
+                <div class="stat-detail">
+                    <span class="active">Active: <span id="todayActive">0</span></span>
+                    <span class="completed">Completed: <span id="todayCompleted">0</span></span>
+                </div>
+            </div>
+            
+            <div class="stat-box">
+                <h4>Room Status</h4>
+                <div class="room-status-grid">
+                    <div class="status-item available">
+                        <span class="count" id="availableRooms">0</span>
+                        <span class="label">Available</span>
+                    </div>
+                    <div class="status-item occupied">
+                        <span class="count" id="occupiedRooms">0</span>
+                        <span class="label">Occupied</span>
+                    </div>
+                    <div class="status-item maintenance">
+                        <span class="count" id="maintenanceRooms">0</span>
+                        <span class="label">Maintenance</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-box">
+                <h4>Peak Hours</h4>
+                <div class="peak-hours" id="peakHours">
+                    <!-- Peak hours data will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="stat-box">
+                <h4>Popular Rooms</h4>
+                <div class="popular-rooms" id="popularRooms">
+                    <!-- Popular rooms data will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bookings Management Section -->
+<section id="bookings" class="admin-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Bookings Management</h2>
+            <div class="section-actions">
+                <button class="btn btn-outline" id="exportBookings">
+                    <i class="fas fa-download"></i>
+                    Export
+                </button>
+                <button class="btn btn-primary" id="addBooking">
+                    <i class="fas fa-plus"></i>
+                    Add Booking
                 </button>
             </div>
         </div>
+        
+        <!-- Booking Filters -->
+        <div class="admin-filters">
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="bookingStatusFilter">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Date Range:</label>
+                <input type="date" id="bookingDateFrom">
+                <span>to</span>
+                <input type="date" id="bookingDateTo">
+            </div>
+            <div class="filter-group">
+                <label>Room:</label>
+                <select id="bookingRoomFilter">
+                    <option value="">All Rooms</option>
+                </select>
+            </div>
+            <button class="btn btn-outline btn-small" id="clearBookingFilters">Clear</button>
+        </div>
+        
+        <!-- Bookings Table -->
+        <div class="table-container">
+            <table class="admin-table" id="bookingsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Room</th>
+                        <th>Date & Time</th>
+                        <th>Duration</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTableBody">
+                    <!-- Bookings data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="table-pagination">
+            <div id="bookingsPagination" class="pagination">
+                <!-- Pagination will be generated here -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Management Section -->
+<section id="rooms" class="admin-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Rooms Management</h2>
+            <div class="section-actions">
+                <button class="btn btn-outline" id="bulkRoomActions">
+                    <i class="fas fa-list"></i>
+                    Bulk Actions
+                </button>
+                <button class="btn btn-primary" id="addRoom">
+                    <i class="fas fa-plus"></i>
+                    Add Room
+                </button>
+            </div>
+        </div>
+        
+        <!-- Room Grid -->
+        <div class="admin-room-grid" id="adminRoomGrid">
+            <!-- Rooms will be loaded here -->
+        </div>
+    </div>
+</section>
+
+<!-- Users Management Section -->
+<section id="users" class="admin-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Users Management</h2>
+            <div class="section-actions">
+                <button class="btn btn-outline" id="exportUsers">
+                    <i class="fas fa-download"></i>
+                    Export Users
+                </button>
+                <button class="btn btn-primary" id="addUser">
+                    <i class="fas fa-user-plus"></i>
+                    Add User
+                </button>
+            </div>
+        </div>
+        
+        <!-- User Filters -->
+        <div class="admin-filters">
+            <div class="filter-group">
+                <label>Role:</label>
+                <select id="userRoleFilter">
+                    <option value="">All Roles</option>
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="userStatusFilter">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="userSearch" placeholder="Search by name or email...">
+            </div>
+        </div>
+        
+        <!-- Users Table -->
+        <div class="table-container">
+            <table class="admin-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAllUsers">
+                        </th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Users data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Reports Section -->
+<section id="reports" class="admin-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Reports</h2>
+            <div class="section-actions">
+                <button class="btn btn-outline" id="scheduleReport">
+                    <i class="fas fa-clock"></i>
+                    Schedule Report
+                </button>
+                <button class="btn btn-primary" id="generateReport">
+                    <i class="fas fa-chart-bar"></i>
+                    Generate Report
+                </button>
+            </div>
+        </div>
+        
+        <!-- Report Types -->
+        <div class="report-types">
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="report-content">
+                    <h3>Revenue Report</h3>
+                    <p>Detailed revenue analysis with trends and forecasts</p>
+                    <button class="btn btn-outline btn-small">Generate</button>
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="report-content">
+                    <h3>Booking Analysis</h3>
+                    <p>Booking patterns, peak times, and customer behavior</p>
+                    <button class="btn btn-outline btn-small">Generate</button>
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="report-content">
+                    <h3>Customer Report</h3>
+                    <p>Customer demographics, retention, and satisfaction</p>
+                    <button class="btn btn-outline btn-small">Generate</button>
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="report-content">
+                    <h3>Room Utilization</h3>
+                    <p>Room usage statistics and optimization suggestions</p>
+                    <button class="btn btn-outline btn-small">Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-content">
+        <div class="spinner large"></div>
+        <p>Loading data...</p>
     </div>
 </div>
 
-<!-- Admin Tabs -->
-<section class="admin-tabs-section">
-    <div class="container">
-        <div class="admin-tabs" id="admin-tabs">
-            <button class="admin-tab active" data-tab="overview" id="overview-tab">
-                <i class="fas fa-chart-bar"></i>
-                ภาพรวม
-            </button>
-            <button class="admin-tab" data-tab="bookings" id="bookings-tab">
-                <i class="fas fa-calendar-alt"></i>
-                การจอง
-            </button>
-            <button class="admin-tab" data-tab="rooms" id="rooms-tab">
-                <i class="fas fa-door-open"></i>
-                ห้อง
-            </button>
-            <button class="admin-tab" data-tab="users" id="users-tab">
-                <i class="fas fa-users"></i>
-                ผู้ใช้
-            </button>
-            <button class="admin-tab" data-tab="payments" id="payments-tab">
-                <i class="fas fa-credit-card"></i>
-                การชำระเงิน
-            </button>
-            <button class="admin-tab" data-tab="settings" id="settings-tab">
-                <i class="fas fa-cog"></i>
-                ตั้งค่า
-            </button>
-        </div>
-    </div>
-</section>
-
-<!-- Admin Content -->
-<section class="admin-content">
-    <div class="container">
-        <!-- Overview Tab -->
-        <div id="overview-content" class="tab-content active">
-            <!-- Today's Summary -->
-            <div class="today-summary">
-                <div class="summary-header">
-                    <h3><i class="fas fa-calendar-day"></i> สรุปวันนี้ (<span id="today-date"></span>)</h3>
-                    <div class="live-time" id="live-time"></div>
-                </div>
-                <div class="today-stats-grid">
-                    <div class="today-stat-card income">
-                        <div class="stat-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="today-income">0</div>
-                            <div class="stat-label">รายได้วันนี้ (บาท)</div>
-                            <div class="stat-subtitle" id="today-bookings-count">0 การจอง</div>
-                        </div>
-                        <div class="stat-trend" id="income-trend">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>+0%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="today-stat-card customers">
-                        <div class="stat-icon">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="today-new-customers">0</div>
-                            <div class="stat-label">ลูกค้าใหม่วันนี้</div>
-                            <div class="stat-subtitle" id="total-active-customers">0 คนทั้งหมด</div>
-                        </div>
-                        <div class="stat-trend" id="customers-trend">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>+0%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="today-stat-card rooms-usage">
-                        <div class="stat-icon">
-                            <i class="fas fa-door-closed"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="rooms-occupied">0</div>
-                            <div class="stat-label">ห้องที่ใช้งาน</div>
-                            <div class="stat-subtitle" id="rooms-available">0 ห้องว่าง</div>
-                        </div>
-                        <div class="usage-percentage" id="usage-percentage">0%</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="admin-stats-grid">
-                <div class="admin-stat-card">
-                    <div class="stat-icon bookings">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="total-bookings-admin">-</div>
-                        <div class="stat-label">การจองทั้งหมด</div>
-                        <div class="stat-change positive" id="bookings-change">+0%</div>
-                    </div>
-                </div>
-                
-                <div class="admin-stat-card">
-                    <div class="stat-icon users">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="total-users-admin">-</div>
-                        <div class="stat-label">ผู้ใช้ทั้งหมด</div>
-                        <div class="stat-change positive" id="users-change">+0%</div>
-                    </div>
-                </div>
-                
-                <div class="admin-stat-card">
-                    <div class="stat-icon revenue">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="total-revenue-admin">-</div>
-                        <div class="stat-label">รายได้รวม</div>
-                        <div class="stat-change positive" id="revenue-change">+0%</div>
-                    </div>
-                </div>
-                
-                <div class="admin-stat-card">
-                    <div class="stat-icon rooms">
-                        <i class="fas fa-door-open"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="total-rooms-admin">-</div>
-                        <div class="stat-label">ห้องทั้งหมد</div>
-                        <div class="stat-change neutral" id="rooms-change">-</div>
-                    </div>
-                </div>
-            </div>
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentSection = 'overview';
+    let dashboardData = {};
+    
+    // Initialize dashboard
+    initializeDashboard();
+    
+    // Navigation event listeners
+    document.querySelectorAll('.admin-nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = this.getAttribute('href').substring(1);
+            switchSection(section);
+        });
+    });
+    
+    // Refresh data button
+    document.getElementById('refreshData').addEventListener('click', refreshAllData);
+    
+    async function initializeDashboard() {
+        showLoading();
+        try {
+            await Promise.all([
+                loadOverviewData(),
+                loadRecentActivity(),
+                loadRoomStatus()
+            ]);
+        } catch (error) {
+            console.error('Dashboard initialization error:', error);
+            showError('Failed to initialize dashboard');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function loadOverviewData() {
+        try {
+            const response = await fetch('/api/admin/dashboard/overview');
+            const data = await response.json();
             
-            <!-- Charts Section -->
-            <div class="admin-charts-grid">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3>การจองรายเดือน</h3>
-                        <select id="bookings-chart-period" class="chart-period-select">
-                            <option value="6months">6 เดือนล่าสุด</option>
-                            <option value="year">ปีนี้</option>
-                            <option value="custom">กำหนดเอง</option>
-                        </select>
-                    </div>
-                    <div class="chart-content">
-                        <div id="bookings-chart" class="chart-placeholder">
-                            <i class="fas fa-chart-bar"></i>
-                            <p>กราฟการจองรายเดือน</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3>อัตราการใช้งานห้อง</h3>
-                    </div>
-                    <div class="chart-content">
-                        <div id="room-usage-chart" class="chart-placeholder">
-                            <i class="fas fa-chart-pie"></i>
-                            <p>กราฟอัตราการใช้งานห้อง</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            if (data.success) {
+                dashboardData.overview = data.data;
+                updateOverviewKPIs(data.data);
+                updateQuickStats(data.data);
+            }
+        } catch (error) {
+            console.error('Error loading overview data:', error);
+        }
+    }
+    
+    async function loadRecentActivity() {
+        try {
+            const response = await fetch('/api/admin/dashboard/activity?limit=10');
+            const data = await response.json();
             
-            <!-- Recent Activities -->
-            <div class="admin-activities">
-                <div class="activities-header">
-                    <h3>กิจกรรมล่าสุด</h3>
-                    <button class="btn btn-outline btn-small" id="view-all-activities">ดูทั้งหมด</button>
-                </div>
-                
-                <div class="activities-list" id="recent-activities">
-                    <div class="loading-state">
-                        <div class="loading-spinner small"></div>
-                        <p>กำลังโหลดกิจกรรม...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+            if (data.success) {
+                displayRecentActivity(data.activities);
+            }
+        } catch (error) {
+            console.error('Error loading recent activity:', error);
+        }
+    }
+    
+    async function loadRoomStatus() {
+        try {
+            const response = await fetch('/api/admin/dashboard/rooms');
+            const data = await response.json();
+            
+            if (data.success) {
+                updateRoomStatus(data.rooms);
+            }
+        } catch (error) {
+            console.error('Error loading room status:', error);
+        }
+    }
+    
+    function updateOverviewKPIs(data) {
+        document.getElementById('totalRevenue').textContent = '₿' + (data.totalRevenue || 0);
+        document.getElementById('totalBookings').textContent = data.totalBookings || 0;
+        document.getElementById('totalUsers').textContent = data.totalUsers || 0;
+        document.getElementById('occupancyRate').textContent = (data.occupancyRate || 0) + '%';
         
-        <!-- Bookings Management Tab -->
-        <div id="bookings-content" class="tab-content">
-            <div class="tab-header">
-                <h2>จัดการการจอง</h2>
-                <div class="tab-actions">
-                    <select id="booking-status-filter" class="filter-select">
-                        <option value="">สถานะทั้งหมด</option>
-                        <option value="pending">รอการยืนยัน</option>
-                        <option value="confirmed">ยืนยันแล้ว</option>
-                        <option value="completed">เสร็จสิ้น</option>
-                        <option value="cancelled">ยกเลิก</option>
-                    </select>
-                    
-                    <input type="date" id="booking-date-filter" class="filter-input">
-                    
-                    <button class="btn btn-primary" id="export-bookings">
-                        <i class="fas fa-download"></i>
-                        ส่งออกข้อมูล
-                    </button>
-                </div>
-            </div>
-            
-            <div class="admin-table-container">
-                <div id="bookings-table-loading" class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <p>กำลังโหลดข้อมูลการจอง...</p>
-                </div>
-                
-                <div id="bookings-table-content" style="display: none;">
-                    <!-- Bookings table will be populated here -->
-                </div>
-            </div>
-        </div>
+        // Update change indicators
+        updateChangeIndicator('revenueChange', data.revenueChange || 0);
+        updateChangeIndicator('bookingsChange', data.bookingsChange || 0);
+        updateChangeIndicator('usersChange', data.usersChange || 0);
+        updateChangeIndicator('occupancyChange', data.occupancyChange || 0);
+    }
+    
+    function updateChangeIndicator(elementId, change) {
+        const element = document.getElementById(elementId);
+        const sign = change >= 0 ? '+' : '';
+        element.textContent = sign + change + '%';
         
-        <!-- Rooms Management Tab -->
-        <div id="rooms-content" class="tab-content">
-            <div class="tab-header">
-                <h2>จัดการห้อง</h2>
-                <div class="tab-actions">
-                    <button class="btn btn-primary" id="add-room-btn">
-                        <i class="fas fa-plus"></i>
-                        เพิ่มห้องใหม่
-                    </button>
-                </div>
-            </div>
-            
-            <div class="admin-rooms-grid" id="admin-rooms-grid">
-                <div class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <p>กำลังโหลดข้อมูลห้อง...</p>
-                </div>
-            </div>
-        </div>
+        if (change > 0) {
+            element.className = 'kpi-change positive';
+        } else if (change < 0) {
+            element.className = 'kpi-change negative';
+        } else {
+            element.className = 'kpi-change neutral';
+        }
+    }
+    
+    function updateQuickStats(data) {
+        document.getElementById('todayBookings').textContent = data.todayBookings || 0;
+        document.getElementById('todayActive').textContent = data.todayActive || 0;
+        document.getElementById('todayCompleted').textContent = data.todayCompleted || 0;
         
-        <!-- Users Management Tab -->
-        <div id="users-content" class="tab-content">
-            <div class="tab-header">
-                <h2>จัดการผู้ใช้</h2>
-                <div class="tab-actions">
-                    <select id="user-role-filter" class="filter-select">
-                        <option value="">บทบาททั้งหมด</option>
-                        <option value="1">ผู้ดูแลระบบ</option>
-                        <option value="2">ผู้ใช้ทั่วไป</option>
-                    </select>
-                    
-                    <input type="text" id="user-search" class="filter-input" placeholder="ค้นหาผู้ใช้...">
-                    
-                    <button class="btn btn-primary" id="export-users">
-                        <i class="fas fa-download"></i>
-                        ส่งออกข้อมูล
-                    </button>
-                </div>
-            </div>
-            
-            <div class="admin-table-container">
-                <div id="users-table-loading" class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <p>กำลังโหลดข้อมูลผู้ใช้...</p>
-                </div>
-                
-                <div id="users-table-content" style="display: none;">
-                    <!-- Users table will be populated here -->
-                </div>
-            </div>
-        </div>
+        // Update peak hours
+        const peakHoursElement = document.getElementById('peakHours');
+        if (data.peakHours && data.peakHours.length > 0) {
+            peakHoursElement.innerHTML = data.peakHours.map(hour => 
+                `<div class="peak-hour">${hour.hour}:00 (${hour.bookings})</div>`
+            ).join('');
+        }
         
-        <!-- Payments Management Tab -->
-        <div id="payments-content" class="tab-content">
-            <div class="tab-header">
-                <h2>จัดการการชำระเงิน</h2>
-                <div class="tab-actions">
-                    <select id="payment-status-filter" class="filter-select">
-                        <option value="">สถานะทั้งหมด</option>
-                        <option value="pending">รอการชำระ</option>
-                        <option value="paid">ชำระแล้ว</option>
-                        <option value="failed">ชำระไม่สำเร็จ</option>
-                        <option value="refunded">คืนเงิน</option>
-                    </select>
-                    
-                    <input type="date" id="payment-date-filter" class="filter-input">
-                    
-                    <button class="btn btn-primary" id="export-payments">
-                        <i class="fas fa-download"></i>
-                        ส่งออกข้อมูล
-                    </button>
-                </div>
-            </div>
-            
-            <div class="admin-table-container">
-                <div id="payments-table-loading" class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <p>กำลังโหลดข้อมูลการชำระเงิน...</p>
-                </div>
-                
-                <div id="payments-table-content" style="display: none;">
-                    <!-- Payments table will be populated here -->
-                </div>
-            </div>
-        </div>
+        // Update popular rooms
+        const popularRoomsElement = document.getElementById('popularRooms');
+        if (data.popularRooms && data.popularRooms.length > 0) {
+            popularRoomsElement.innerHTML = data.popularRooms.map(room => 
+                `<div class="popular-room">${room.name} (${room.bookings})</div>`
+            ).join('');
+        }
+    }
+    
+    function updateRoomStatus(rooms) {
+        const statusCounts = {
+            available: 0,
+            occupied: 0,
+            maintenance: 0
+        };
         
-        <!-- Settings Tab -->
-        <div id="settings-content" class="tab-content">
-            <div class="tab-header">
-                <h2>ตั้งค่าระบบ</h2>
-            </div>
-            
-            <div class="settings-grid">
-                <div class="settings-card">
-                    <div class="settings-header">
-                        <h3>การจอง</h3>
-                    </div>
-                    <div class="settings-content">
-                        <div class="setting-item">
-                            <label>เวลาเปิดให้บริการ</label>
-                            <div class="time-range">
-                                <input type="time" id="opening-time" value="10:00">
-                                <span>ถึง</span>
-                                <input type="time" id="closing-time" value="24:00">
-                            </div>
-                        </div>
-                        
-                        <div class="setting-item">
-                            <label>จำนวนวันล่วงหน้าที่อนุญาต</label>
-                            <input type="number" id="advance-booking-days" value="30" min="1" max="365">
-                        </div>
-                        
-                        <div class="setting-item">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="auto-confirm-bookings">
-                                <span class="checkmark"></span>
-                                ยืนยันการจองอัตโนมัติ
-                            </label>
-                        </div>
-                    </div>
+        rooms.forEach(room => {
+            if (statusCounts.hasOwnProperty(room.status)) {
+                statusCounts[room.status]++;
+            }
+        });
+        
+        document.getElementById('availableRooms').textContent = statusCounts.available;
+        document.getElementById('occupiedRooms').textContent = statusCounts.occupied;
+        document.getElementById('maintenanceRooms').textContent = statusCounts.maintenance;
+    }
+    
+    function displayRecentActivity(activities) {
+        const activityList = document.getElementById('recentActivity');
+        
+        if (!activities || activities.length === 0) {
+            activityList.innerHTML = '<div class="no-activity">No recent activity</div>';
+            return;
+        }
+        
+        activityList.innerHTML = activities.map(activity => `
+            <div class="activity-item ${activity.type}">
+                <div class="activity-icon">
+                    <i class="fas ${getActivityIcon(activity.type)}"></i>
                 </div>
-                
-                <div class="settings-card">
-                    <div class="settings-header">
-                        <h3>การแจ้งเตือน</h3>
-                    </div>
-                    <div class="settings-content">
-                        <div class="setting-item">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="email-notifications" checked>
-                                <span class="checkmark"></span>
-                                แจ้งเตือนทางอีเมล
-                            </label>
-                        </div>
-                        
-                        <div class="setting-item">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="sms-notifications">
-                                <span class="checkmark"></span>
-                                แจ้งเตือนทาง SMS
-                            </label>
-                        </div>
-                        
-                        <div class="setting-item">
-                            <label>เวลาส่งการแจ้งเตือนล่วงหน้า (ชั่วโมง)</label>
-                            <input type="number" id="notification-hours" value="2" min="1" max="48">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="settings-card">
-                    <div class="settings-header">
-                        <h3>การชำระเงิน</h3>
-                    </div>
-                    <div class="settings-content">
-                        <div class="setting-item">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="require-deposit" checked>
-                                <span class="checkmark"></span>
-                                เรียกเก็บเงินมัดจำ
-                            </label>
-                        </div>
-                        
-                        <div class="setting-item">
-                            <label>เปอร์เซ็นต์เงินมัดจำ</label>
-                            <input type="number" id="deposit-percentage" value="50" min="0" max="100">
-                        </div>
-                        
-                        <div class="setting-item">
-                            <label>ระยะเวลายกเลิกฟรี (ชั่วโมง)</label>
-                            <input type="number" id="free-cancellation-hours" value="24" min="0" max="168">
-                        </div>
-                    </div>
+                <div class="activity-content">
+                    <div class="activity-text">${activity.description}</div>
+                    <div class="activity-time">${formatActivityTime(activity.created_at)}</div>
                 </div>
             </div>
-            
-            <div class="settings-actions">
-                <button class="btn btn-outline" id="reset-settings">รีเซ็ตการตั้งค่า</button>
-                <button class="btn btn-primary" id="save-settings">
-                    <span class="btn-text">บันทึกการตั้งค่า</span>
-                    <span class="btn-loading" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        กำลังบันทึก...
-                    </span>
-                </button>
-            </div>
-        </div>
-    </div>
-</section>
+        `).join('');
+    }
+    
+    function getActivityIcon(type) {
+        const icons = {
+            booking: 'fa-calendar-plus',
+            cancellation: 'fa-times-circle',
+            payment: 'fa-credit-card',
+            user: 'fa-user-plus',
+            room: 'fa-music'
+        };
+        return icons[type] || 'fa-info-circle';
+    }
+    
+    function formatActivityTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+        return Math.floor(diff / 86400000) + ' days ago';
+    }
+    
+    function switchSection(section) {
+        // Update navigation
+        document.querySelectorAll('.admin-nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        document.querySelector(`[href="#${section}"]`).classList.add('active');
+        
+        // Show/hide sections
+        document.querySelectorAll('.admin-section').forEach(sec => {
+            sec.classList.remove('active');
+        });
+        document.getElementById(section).classList.add('active');
+        
+        currentSection = section;
+        
+        // Load section-specific data
+        loadSectionData(section);
+    }
+    
+    async function loadSectionData(section) {
+        switch (section) {
+            case 'bookings':
+                await loadBookingsData();
+                break;
+            case 'rooms':
+                await loadRoomsData();
+                break;
+            case 'users':
+                await loadUsersData();
+                break;
+            case 'reports':
+                await loadReportsData();
+                break;
+        }
+    }
+    
+    async function loadBookingsData() {
+        // Implementation for loading bookings data
+        console.log('Loading bookings data...');
+    }
+    
+    async function loadRoomsData() {
+        // Implementation for loading rooms data
+        console.log('Loading rooms data...');
+    }
+    
+    async function loadUsersData() {
+        // Implementation for loading users data
+        console.log('Loading users data...');
+    }
+    
+    async function loadReportsData() {
+        // Implementation for loading reports data
+        console.log('Loading reports data...');
+    }
+    
+    async function refreshAllData() {
+        showLoading();
+        try {
+            await initializeDashboard();
+            if (currentSection !== 'overview') {
+                await loadSectionData(currentSection);
+            }
+            showSuccess('Data refreshed successfully');
+        } catch (error) {
+            console.error('Refresh error:', error);
+            showError('Failed to refresh data');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    
+    function showError(message) {
+        // Implement toast notification
+        alert(message);
+    }
+    
+    function showSuccess(message) {
+        // Implement toast notification
+        alert(message);
+    }
+});
+</script>

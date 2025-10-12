@@ -1,64 +1,43 @@
-<!-- Navigation -->
-<nav class="navbar">
+<nav class="main-navbar" id="mainNavbar">
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <a href="/" class="navbar-brand">
-                <i class="fas fa-microphone-alt"></i>
-                Junrai Karaoke
-            </a>
-            
-            <!-- Desktop Navigation -->
-            <ul class="navbar-nav" id="navbar-nav">
-                <li><a href="/" class="nav-link" data-page="home">หน้าหลัก</a></li>
-                <li><a href="/rooms" class="nav-link" data-page="rooms">ห้องคาราโอเกะ</a></li>
-                <li><a href="/bookings" class="nav-link" data-page="bookings">การจอง</a></li>
-                <li><a href="/contact" class="nav-link" data-page="contact">ติดต่อเรา</a></li>
-                
-                <!-- Auth-dependent Navigation -->
-                <li class="auth-nav-item" data-auth="authenticated" style="display:none;">
-                    <a href="/dashboard" class="nav-link" data-page="dashboard">แดชบอร์ด</a>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/" class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'home' ? 'active' : '' %>">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/rooms" class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'rooms' ? 'active' : '' %>">
+                    <i class="fas fa-music"></i>
+                    <span>Rooms</span>
+                </a>
+            </li>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <li class="nav-item">
+                    <a href="/bookings" class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'bookings' ? 'active' : '' %>">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>My Bookings</span>
+                    </a>
                 </li>
-                <li class="auth-nav-item admin-only" data-auth="admin" style="display:none;">
-                    <a href="/admin" class="nav-link" data-page="admin">ผู้ดูแลระบบ</a>
+            <% } %>
+            <li class="nav-item">
+                <a href="/contact" class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'contact' ? 'active' : '' %>">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contact</span>
+                </a>
+            </li>
+            <% if (typeof user !== 'undefined' && user && user.role === 'admin') { %>
+                <li class="nav-item admin-only">
+                    <a href="/admin/dashboard" class="nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'admin' ? 'active' : '' %>">
+                        <i class="fas fa-cog"></i>
+                        <span>Admin</span>
+                    </a>
                 </li>
-                <li class="auth-nav-item" data-auth="guest">
-                    <a href="/auth" class="nav-link" data-page="auth">เข้าสู่ระบบ</a>
-                </li>
-                <li class="auth-nav-item" data-auth="authenticated" style="display:none;">
-                    <button class="btn btn-outline" id="logout-btn">ออกจากระบบ</button>
-                </li>
-            </ul>
-            
-            <!-- Mobile Menu Toggle -->
-            <div class="nav-toggle" id="nav-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
+            <% } %>
+        </ul>
         
-        <!-- Mobile Navigation Menu -->
-        <div class="mobile-nav" id="mobile-nav">
-            <div class="mobile-nav-content">
-                <a href="/" class="mobile-nav-link" data-page="home">หน้าหลัก</a>
-                <a href="/rooms" class="mobile-nav-link" data-page="rooms">ห้องคาราโอเกะ</a>
-                <a href="/bookings" class="mobile-nav-link" data-page="bookings">การจอง</a>
-                <a href="/contact" class="mobile-nav-link" data-page="contact">ติดต่อเรา</a>
-                
-                <!-- Auth-dependent Mobile Navigation -->
-                <div class="mobile-auth-section">
-                    <a href="/dashboard" class="mobile-nav-link auth-nav-item" data-auth="authenticated" data-page="dashboard" style="display:none;">แดชบอร์ด</a>
-                    <a href="/admin" class="mobile-nav-link auth-nav-item admin-only" data-auth="admin" data-page="admin" style="display:none;">ผู้ดูแลระบบ</a>
-                    <a href="/auth" class="mobile-nav-link auth-nav-item" data-auth="guest" data-page="auth">เข้าสู่ระบบ</a>
-                    <button class="mobile-logout-btn auth-nav-item" data-auth="authenticated" id="mobile-logout-btn" style="display:none;">ออกจากระบบ</button>
-                </div>
-            </div>
-        </div>
+        <!-- Mobile menu overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
     </div>
 </nav>
-
-<!-- Page Loading Indicator -->
-<div id="page-loading" class="page-loading" style="display:none;">
-    <div class="loading-spinner"></div>
-    <span>กำลังโหลด...</span>
-</div>

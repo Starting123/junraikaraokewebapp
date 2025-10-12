@@ -1,118 +1,271 @@
 <!-- Hero Section -->
-<section class="hero">
+<section class="hero-section">
     <div class="hero-content">
         <div class="container">
             <div class="hero-text">
-                <h1 class="hero-title">ยินดีต้อนรับสู่ Junrai Karaoke</h1>
-                <p class="hero-subtitle">ระบบจองห้องคาราโอเกะออนไลน์ที่ทันสมัยและสะดวกสบาย</p>
-                <div class="hero-buttons">
-                    <a href="/rooms" class="btn btn-primary btn-large">เลือกห้องคาราโอเกะ</a>
-                    <a href="/bookings" class="btn btn-outline btn-large">ดูการจองของฉัน</a>
+                <h1 class="hero-title">
+                    Welcome to <span class="brand-highlight">Junrai Karaoke</span>
+                </h1>
+                <p class="hero-description">
+                    Experience premium karaoke entertainment with state-of-the-art sound systems, 
+                    comfortable private rooms, and an extensive song library in multiple languages.
+                </p>
+                <div class="hero-actions">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <a href="/rooms" class="btn btn-primary btn-large">
+                            <i class="fas fa-music"></i>
+                            Book a Room
+                        </a>
+                        <a href="/bookings" class="btn btn-outline btn-large">
+                            <i class="fas fa-calendar-alt"></i>
+                            My Bookings
+                        </a>
+                    <% } else { %>
+                        <a href="/register" class="btn btn-primary btn-large">
+                            <i class="fas fa-user-plus"></i>
+                            Get Started
+                        </a>
+                        <a href="/rooms" class="btn btn-outline btn-large">
+                            <i class="fas fa-eye"></i>
+                            View Rooms
+                        </a>
+                    <% } %>
                 </div>
             </div>
             <div class="hero-image">
-                <i class="fas fa-microphone-alt hero-icon"></i>
+                <img src="/assets/images/hero-karaoke.jpg" alt="Karaoke Room" class="hero-img">
             </div>
+        </div>
+    </div>
+    
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalRooms">
+                        <%= typeof roomStats !== 'undefined' ? roomStats.total_rooms : '0' %>
+                    </div>
+                    <div class="stat-label">Total Rooms</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number available" id="availableRooms">
+                        <%= typeof roomStats !== 'undefined' ? roomStats.available_rooms : '0' %>
+                    </div>
+                    <div class="stat-label">Available Now</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number occupied" id="occupiedRooms">
+                        <%= typeof roomStats !== 'undefined' ? roomStats.occupied_rooms : '0' %>
+                    </div>
+                    <div class="stat-label">Currently Occupied</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Operating Hours</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Rooms Section -->
+<section class="featured-rooms">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Featured Rooms</h2>
+            <p class="section-description">
+                Discover our most popular karaoke rooms with premium amenities
+            </p>
+        </div>
+        
+        <div class="rooms-grid" id="featuredRoomsGrid">
+            <% if (typeof featuredRooms !== 'undefined' && featuredRooms.length > 0) { %>
+                <% featuredRooms.forEach(function(room) { %>
+                    <div class="room-card">
+                        <div class="room-image">
+                            <img src="/assets/images/rooms/room-<%= room.room_id %>.jpg" 
+                                 alt="<%= room.name %>" 
+                                 onerror="this.src='/assets/images/rooms/default-room.jpg'">
+                            <div class="room-status <%= room.status %>">
+                                <i class="fas fa-circle"></i>
+                                <%= room.status.charAt(0).toUpperCase() + room.status.slice(1) %>
+                            </div>
+                        </div>
+                        <div class="room-content">
+                            <h3 class="room-name"><%= room.name %></h3>
+                            <div class="room-info">
+                                <div class="room-detail">
+                                    <i class="fas fa-users"></i>
+                                    <span>Up to <%= room.capacity %> people</span>
+                                </div>
+                                <div class="room-detail">
+                                    <i class="fas fa-tag"></i>
+                                    <span><%= room.type_name %></span>
+                                </div>
+                            </div>
+                            <div class="room-price">
+                                <span class="price">₿<%= room.price_per_hour %></span>
+                                <span class="period">per hour</span>
+                            </div>
+                            <div class="room-actions">
+                                <a href="/rooms/<%= room.room_id %>" class="btn btn-outline btn-small">
+                                    View Details
+                                </a>
+                                <% if (room.status === 'available') { %>
+                                    <a href="/rooms/<%= room.room_id %>/book" class="btn btn-primary btn-small">
+                                        Book Now
+                                    </a>
+                                <% } else { %>
+                                    <button class="btn btn-disabled btn-small" disabled>
+                                        Unavailable
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="no-rooms-message">
+                    <i class="fas fa-music"></i>
+                    <h3>No Featured Rooms Available</h3>
+                    <p>Please check back later or browse all rooms.</p>
+                    <a href="/rooms" class="btn btn-primary">View All Rooms</a>
+                </div>
+            <% } %>
+        </div>
+        
+        <div class="section-actions">
+            <a href="/rooms" class="btn btn-primary">
+                <i class="fas fa-list"></i>
+                View All Rooms
+            </a>
         </div>
     </div>
 </section>
 
 <!-- Features Section -->
-<section class="features">
+<section class="features-section">
     <div class="container">
-        <h2 class="section-title">จุดเด่นของเรา</h2>
+        <div class="section-header">
+            <h2 class="section-title">Why Choose Junrai Karaoke?</h2>
+            <p class="section-description">
+                Premium amenities and services for the ultimate karaoke experience
+            </p>
+        </div>
+        
         <div class="features-grid">
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
-                    <i class="fas fa-clock"></i>
+                    <i class="fas fa-microphone-alt"></i>
                 </div>
-                <h3>จองออนไลน์ 24/7</h3>
-                <p>สามารถจองห้องคาราโอเกะได้ตลอด 24 ชั่วโมง ผ่านระบบออนไลน์ที่สะดวกและรวดเร็ว</p>
+                <h3 class="feature-title">Premium Sound System</h3>
+                <p class="feature-description">
+                    State-of-the-art audio equipment for crystal clear sound quality
+                </p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
                     <i class="fas fa-music"></i>
                 </div>
-                <h3>ห้องคุณภาพสูง</h3>
-                <p>ห้องคาราโอเกะทุกห้องมาพร้อมระบบเสียงคุณภาพสูงและเพลงใหม่ล่าสุด</p>
+                <h3 class="feature-title">Extensive Song Library</h3>
+                <p class="feature-description">
+                    Over 100,000 songs in Thai, English, Japanese, Korean, and Chinese
+                </p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
-                    <i class="fas fa-credit-card"></i>
+                    <i class="fas fa-couch"></i>
                 </div>
-                <h3>ชำระเงินสะดวก</h3>
-                <p>รองรับการชำระเงินหลายช่องทาง ปลอดภัยด้วยระบบ SSL</p>
+                <h3 class="feature-title">Comfortable Rooms</h3>
+                <p class="feature-description">
+                    Spacious private rooms with comfortable seating and ambient lighting
+                </p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-item">
                 <div class="feature-icon">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-utensils"></i>
                 </div>
-                <h3>บริการเป็นกันเอง</h3>
-                <p>ทีมงานมืออาชีพพร้อมให้บริการและดูแลความสะดวกสบายของคุณ</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Rooms Preview Section -->
-<section class="rooms-preview">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">ห้องคาราโอเกะของเรา</h2>
-            <p class="section-subtitle">เลือกห้องที่เหมาะสมกับความต้องการของคุณ</p>
-        </div>
-        
-        <div id="rooms-container" class="rooms-grid loading">
-            <div class="loading-spinner"></div>
-            <p>กำลังโหลดข้อมูลห้อง...</p>
-        </div>
-        
-        <div class="section-footer">
-            <a href="/rooms" class="btn btn-primary">ดูห้องทั้งหมด</a>
-        </div>
-    </div>
-</section>
-
-<!-- Stats Section -->
-<section class="stats">
-    <div class="container">
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-number" id="total-rooms">-</div>
-                <div class="stat-label">ห้องคาราโอเกะ</div>
+                <h3 class="feature-title">Food & Beverage</h3>
+                <p class="feature-description">
+                    Delicious snacks and refreshing drinks delivered to your room
+                </p>
             </div>
             
-            <div class="stat-item">
-                <div class="stat-number" id="happy-customers">1000+</div>
-                <div class="stat-label">ลูกค้าที่พึงพอใจ</div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3 class="feature-title">Easy Booking</h3>
+                <p class="feature-description">
+                    Simple online reservation system with instant confirmation
+                </p>
             </div>
             
-            <div class="stat-item">
-                <div class="stat-number" id="total-bookings">-</div>
-                <div class="stat-label">การจองทั้งหมด</div>
-            </div>
-            
-            <div class="stat-item">
-                <div class="stat-number">5 ปี</div>
-                <div class="stat-label">ประสบการณ์</div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="feature-title">24/7 Support</h3>
+                <p class="feature-description">
+                    Round-the-clock customer service for any assistance you need
+                </p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="cta">
+<section class="cta-section">
     <div class="container">
         <div class="cta-content">
-            <h2>พร้อมร้องเพลงแล้วหรือยัง?</h2>
-            <p>จองห้องคาราโอเกะเลย! ง่ายๆ เพียงไคลิกเดียว</p>
-            <div class="cta-buttons">
-                <a href="/rooms" class="btn btn-primary btn-large">จองเลย</a>
-                <a href="/contact" class="btn btn-outline btn-large">ติดต่อเรา</a>
+            <h2 class="cta-title">Ready to Sing Your Heart Out?</h2>
+            <p class="cta-description">
+                Book your karaoke room now and create unforgettable memories with friends and family
+            </p>
+            <div class="cta-actions">
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <a href="/rooms" class="btn btn-primary btn-large">
+                        <i class="fas fa-music"></i>
+                        Book a Room Now
+                    </a>
+                <% } else { %>
+                    <a href="/register" class="btn btn-primary btn-large">
+                        <i class="fas fa-user-plus"></i>
+                        Join Now
+                    </a>
+                    <a href="/contact" class="btn btn-outline btn-large">
+                        <i class="fas fa-phone"></i>
+                        Contact Us
+                    </a>
+                <% } %>
             </div>
         </div>
     </div>
 </section>
+
+<!-- JavaScript for dynamic content -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh room stats every 30 seconds
+    function refreshRoomStats() {
+        fetch('/api/rooms/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('totalRooms').textContent = data.stats.total_rooms;
+                    document.getElementById('availableRooms').textContent = data.stats.available_rooms;
+                    document.getElementById('occupiedRooms').textContent = data.stats.occupied_rooms;
+                }
+            })
+            .catch(error => console.error('Error refreshing stats:', error));
+    }
+    
+    // Initial load and periodic refresh
+    setTimeout(refreshRoomStats, 5000); // First refresh after 5 seconds
+    setInterval(refreshRoomStats, 30000); // Then every 30 seconds
+});
+</script>

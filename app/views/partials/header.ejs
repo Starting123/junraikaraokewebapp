@@ -1,54 +1,61 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof title !== 'undefined' ? title : 'Junrai Karaoke' %></title>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Custom Styles -->
-    <% if (typeof pageCSS !== 'undefined') { %>
-        <link rel="stylesheet" href="/styles/main.css">
-           <link rel="stylesheet" href="/styles/<%= pageCSS %>.css">
-    <% } %>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <a href="/" class="navbar-brand">
-                    <i class="fas fa-microphone-alt"></i>
-                    Junrai Karaoke
+<header class="site-header">
+    <div class="container">
+        <div class="header-content">
+            <!-- Logo -->
+            <div class="logo">
+                <a href="/">
+                    <img src="/assets/images/logo.png" alt="Junrai Karaoke" class="logo-img">
+                    <span class="logo-text">Junrai Karaoke</span>
                 </a>
-                <ul class="navbar-nav">
-                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
-                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
-                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-                    <% if (user) { %>
-                        <li><a href="/dashboard" class="nav-link" id="dashboardLink">แดชบอร์ด</a></li>
-                        <% if (user.role_id === 1) { %>
-                            <li><a href="/admin" class="nav-link" id="adminLink">ผู้ดูแลระบบ</a></li>
-                        <% } else { %>
-                            <li><a href="/admin" class="nav-link" id="adminLink" style="display:none;">ผู้ดูแลระบบ</a></li>
-                        <% } %>
-                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn">ออกจากระบบ</button></li>
-                    <% } else { %>
-                        <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display:none;">แดชบอร์ด</a></li>
-                        <li><a href="/admin" class="nav-link" id="adminLink" style="display:none;">ผู้ดูแลระบบ</a></li>
-                        <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display:none;">ออกจากระบบ</button></li>
-                    <% } %>
-                </ul>
             </div>
             
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
+            <!-- User Info / Login -->
+            <div class="header-actions">
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <!-- Logged in user -->
+                    <div class="user-menu">
+                        <div class="user-info">
+                            <i class="fas fa-user-circle"></i>
+                            <span class="username"><%= user.username || user.email %></span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="user-dropdown">
+                            <a href="/dashboard" class="dropdown-item">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Dashboard
+                            </a>
+                            <a href="/bookings" class="dropdown-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                My Bookings
+                            </a>
+                            <% if (user.role === 'admin') { %>
+                                <a href="/admin/dashboard" class="dropdown-item">
+                                    <i class="fas fa-cog"></i>
+                                    Admin Panel
+                                </a>
+                            <% } %>
+                            <div class="dropdown-divider"></div>
+                            <a href="/logout" class="dropdown-item logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <!-- Not logged in -->
+                    <div class="auth-buttons">
+                        <a href="/login" class="btn btn-outline">Login</a>
+                        <a href="/register" class="btn btn-primary">Register</a>
+                    </div>
+                <% } %>
+                
+                <!-- Mobile menu toggle -->
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
-    </nav>
+    </div>
+</header>

@@ -1,229 +1,399 @@
-/**
- * Admin Rooms Controller
- * Handles CRUD operations for rooms management
- */
-
 const db = require('../db');
-const { body, param, validationResult } = require('express-validator');
 
-// Get all rooms with room types
-async function listRooms(req, res) {
-  try {
-    const [rows] = await db.query(`
-      SELECT r.*, rt.type_name, rt.price_per_hour, rt.description as type_description
-      FROM rooms r 
-      LEFT JOIN room_types rt ON r.type_id = rt.type_id 
-      ORDER BY r.room_id ASC
-    `);
-    
-    res.json({ 
-      success: true, 
-      rooms: rows,
-      count: rows.length 
-    });
-  } catch (error) {
-    console.error('Error listing rooms:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch rooms',
-      message: error.message 
-    });
-  }
-}
-
-// Get single room by ID
-async function getRoom(req, res) {
-  try {
-    const roomId = req.params.id;
-    
-    const [rows] = await db.query(`
-      SELECT r.*, rt.type_name, rt.price_per_hour, rt.description as type_description
-      FROM rooms r 
-      LEFT JOIN room_types rt ON r.type_id = rt.type_id 
-      WHERE r.room_id = ?
-    `, [roomId]);
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Room not found' 
-      });
+// Get all rooms with booking statistics
+exports.getAllRooms = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                r.*,
+                COUNT(b.id) as total_bookings,
+                SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_bookings,
+                SUM(CASE WHEN b.status = 'pending' THEN 1 ELSE 0 END) as pending_bookings,
+                SUM(CASE WHEN b.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_bookings,
+                COALESCE(SUM(CASE WHEN b.status = 'confirmed' THEN b.total_amount ELSE 0 END), 0) as total_revenue
+            FROM rooms r
+            LEFT JOIN bookings b ON r.id = b.room_id
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        `;
+        
+        const [rooms] = await db.execute(query);
+        
+        res.json({
+            success: true,
+            data: rooms,
+            message: 'Rooms retrieved successfully'
+        });
+    } catch (error) {
+        console.error('Error fetching rooms:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch rooms',
+            error: error.message
+        });
     }
-    
-    res.json({ 
-      success: true, 
-      room: rows[0] 
-    });
-  } catch (error) {
-    console.error('Error fetching room:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch room',
-      message: error.message 
-    });
-  }
-}
+};
+
+// Get room by ID
+exports.getRoomById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const query = `
+            SELECT 
+                r.*,
+                COUNT(b.id) as total_bookings,
+                SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_bookings,
+                COALESCE(SUM(CASE WHEN b.status = 'confirmed' THEN b.total_amount ELSE 0 END), 0) as total_revenue
+            FROM rooms r
+            LEFT JOIN bookings b ON r.id = b.room_id
+            WHERE r.id = ?
+            GROUP BY r.id
+        `;
+        
+        const [rooms] = await db.execute(query, [id]);
+        
+        if (rooms.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: rooms[0],
+            message: 'Room retrieved successfully'
+        });
+    } catch (error) {
+        console.error('Error fetching room:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch room',
+            error: error.message
+        });
+    }
+};
 
 // Create new room
-async function createRoom(req, res) {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        success: false, 
-        errors: errors.array() 
-      });
+exports.createRoom = async (req, res) => {
+    try {
+        const { name, description, capacity, hourly_rate, room_type, amenities, image_url } = req.body;
+        
+        // Validate required fields
+        if (!name || !capacity || !hourly_rate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, capacity, and hourly rate are required'
+            });
+        }
+        
+        const query = `
+            INSERT INTO rooms (name, description, capacity, hourly_rate, room_type, amenities, image_url, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'available', NOW())
+        `;
+        
+        const [result] = await db.execute(query, [
+            name,
+            description || null,
+            capacity,
+            hourly_rate,
+            room_type || 'standard',
+            JSON.stringify(amenities || []),
+            image_url || null
+        ]);
+        
+        res.status(201).json({
+            success: true,
+            data: {
+                id: result.insertId,
+                name,
+                description,
+                capacity,
+                hourly_rate,
+                room_type,
+                amenities,
+                image_url
+            },
+            message: 'Room created successfully'
+        });
+    } catch (error) {
+        console.error('Error creating room:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create room',
+            error: error.message
+        });
     }
-    
-    const { name, type_id, capacity, status = 'available', description } = req.body;
-    
-    const [result] = await db.query(
-      'INSERT INTO rooms (name, type_id, capacity, status, description) VALUES (?, ?, ?, ?, ?)',
-      [name, type_id, capacity, status, description]
-    );
-    
-    // Fetch the created room with type info
-    const [newRoom] = await db.query(`
-      SELECT r.*, rt.type_name, rt.price_per_hour 
-      FROM rooms r 
-      LEFT JOIN room_types rt ON r.type_id = rt.type_id 
-      WHERE r.room_id = ?
-    `, [result.insertId]);
-    
-    res.status(201).json({ 
-      success: true, 
-      room: newRoom[0],
-      message: 'Room created successfully' 
-    });
-  } catch (error) {
-    console.error('Error creating room:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to create room',
-      message: error.message 
-    });
-  }
-}
+};
 
 // Update room
-async function updateRoom(req, res) {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        success: false, 
-        errors: errors.array() 
-      });
+exports.updateRoom = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, capacity, hourly_rate, room_type, amenities, image_url, status } = req.body;
+        
+        // Check if room exists
+        const [existingRoom] = await db.execute('SELECT id FROM rooms WHERE id = ?', [id]);
+        
+        if (existingRoom.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+        
+        const query = `
+            UPDATE rooms 
+            SET name = COALESCE(?, name),
+                description = COALESCE(?, description),
+                capacity = COALESCE(?, capacity),
+                hourly_rate = COALESCE(?, hourly_rate),
+                room_type = COALESCE(?, room_type),
+                amenities = COALESCE(?, amenities),
+                image_url = COALESCE(?, image_url),
+                status = COALESCE(?, status),
+                updated_at = NOW()
+            WHERE id = ?
+        `;
+        
+        await db.execute(query, [
+            name,
+            description,
+            capacity,
+            hourly_rate,
+            room_type,
+            amenities ? JSON.stringify(amenities) : null,
+            image_url,
+            status,
+            id
+        ]);
+        
+        res.json({
+            success: true,
+            message: 'Room updated successfully'
+        });
+    } catch (error) {
+        console.error('Error updating room:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update room',
+            error: error.message
+        });
     }
-    
-    const roomId = req.params.id;
-    const { name, type_id, capacity, status, description } = req.body;
-    
-    // Check if room exists
-    const [existing] = await db.query('SELECT room_id FROM rooms WHERE room_id = ?', [roomId]);
-    if (existing.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Room not found' 
-      });
-    }
-    
-    await db.query(
-      'UPDATE rooms SET name = ?, type_id = ?, capacity = ?, status = ?, description = ?, updated_at = NOW() WHERE room_id = ?',
-      [name, type_id, capacity, status, description, roomId]
-    );
-    
-    // Fetch updated room
-    const [updatedRoom] = await db.query(`
-      SELECT r.*, rt.type_name, rt.price_per_hour 
-      FROM rooms r 
-      LEFT JOIN room_types rt ON r.type_id = rt.type_id 
-      WHERE r.room_id = ?
-    `, [roomId]);
-    
-    res.json({ 
-      success: true, 
-      room: updatedRoom[0],
-      message: 'Room updated successfully' 
-    });
-  } catch (error) {
-    console.error('Error updating room:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to update room',
-      message: error.message 
-    });
-  }
-}
+};
 
 // Delete room
-async function deleteRoom(req, res) {
-  try {
-    const roomId = req.params.id;
-    
-    // Check if room has active bookings
-    const [activeBookings] = await db.query(
-      'SELECT COUNT(*) as count FROM bookings WHERE room_id = ? AND status = "active"', 
-      [roomId]
-    );
-    
-    if (activeBookings[0].count > 0) {
-      return res.status(409).json({ 
-        success: false, 
-        error: 'Cannot delete room with active bookings',
-        message: `This room has ${activeBookings[0].count} active booking(s)` 
-      });
+exports.deleteRoom = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Check if room exists
+        const [existingRoom] = await db.execute('SELECT id FROM rooms WHERE id = ?', [id]);
+        
+        if (existingRoom.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+        
+        // Check if room has active bookings
+        const [activeBookings] = await db.execute(
+            'SELECT COUNT(*) as count FROM bookings WHERE room_id = ? AND status IN ("confirmed", "pending")',
+            [id]
+        );
+        
+        if (activeBookings[0].count > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot delete room with active bookings'
+            });
+        }
+        
+        await db.execute('DELETE FROM rooms WHERE id = ?', [id]);
+        
+        res.json({
+            success: true,
+            message: 'Room deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete room',
+            error: error.message
+        });
     }
-    
-    // Check if room exists
-    const [existing] = await db.query('SELECT room_id FROM rooms WHERE room_id = ?', [roomId]);
-    if (existing.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Room not found' 
-      });
-    }
-    
-    await db.query('DELETE FROM rooms WHERE room_id = ?', [roomId]);
-    
-    res.json({ 
-      success: true, 
-      message: 'Room deleted successfully' 
-    });
-  } catch (error) {
-    console.error('Error deleting room:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to delete room',
-      message: error.message 
-    });
-  }
-}
-
-// Get room types for dropdown
-async function getRoomTypes(req, res) {
-  try {
-    const [rows] = await db.query('SELECT * FROM room_types ORDER BY type_name ASC');
-    
-    res.json({ 
-      success: true, 
-      roomTypes: rows 
-    });
-  } catch (error) {
-    console.error('Error fetching room types:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch room types',
-      message: error.message 
-    });
-  }
-}
-
-module.exports = {
-  listRooms,
-  getRoom,
-  createRoom,
-  updateRoom,
-  deleteRoom,
-  getRoomTypes
 };
+
+// Toggle room status
+exports.toggleRoomStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Get current status
+        const [room] = await db.execute('SELECT status FROM rooms WHERE id = ?', [id]);
+        
+        if (room.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Room not found'
+            });
+        }
+        
+        const newStatus = room[0].status === 'available' ? 'maintenance' : 'available';
+        
+        await db.execute('UPDATE rooms SET status = ?, updated_at = NOW() WHERE id = ?', [newStatus, id]);
+        
+        res.json({
+            success: true,
+            data: { status: newStatus },
+            message: `Room status changed to ${newStatus}`
+        });
+    } catch (error) {
+        console.error('Error toggling room status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to toggle room status',
+            error: error.message
+        });
+    }
+};
+
+// Get room bookings
+exports.getRoomBookings = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { page = 1, limit = 10, status } = req.query;
+        const offset = (page - 1) * limit;
+        
+        let query = `
+            SELECT 
+                b.*,
+                u.username,
+                u.email,
+                u.full_name
+            FROM bookings b
+            JOIN users u ON b.user_id = u.id
+            WHERE b.room_id = ?
+        `;
+        
+        const params = [id];
+        
+        if (status) {
+            query += ' AND b.status = ?';
+            params.push(status);
+        }
+        
+        query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const [bookings] = await db.execute(query, params);
+        
+        // Get total count
+        let countQuery = 'SELECT COUNT(*) as total FROM bookings WHERE room_id = ?';
+        const countParams = [id];
+        
+        if (status) {
+            countQuery += ' AND status = ?';
+            countParams.push(status);
+        }
+        
+        const [totalCount] = await db.execute(countQuery, countParams);
+        
+        res.json({
+            success: true,
+            data: {
+                bookings,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total: totalCount[0].total,
+                    pages: Math.ceil(totalCount[0].total / limit)
+                }
+            },
+            message: 'Room bookings retrieved successfully'
+        });
+    } catch (error) {
+        console.error('Error fetching room bookings:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch room bookings',
+            error: error.message
+        });
+    }
+};
+
+// Get room availability
+exports.getRoomAvailability = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { date } = req.query;
+        
+        if (!date) {
+            return res.status(400).json({
+                success: false,
+                message: 'Date parameter is required'
+            });
+        }
+        
+        const query = `
+            SELECT 
+                booking_date,
+                start_time,
+                end_time,
+                status
+            FROM bookings
+            WHERE room_id = ? 
+            AND booking_date = ?
+            AND status IN ('confirmed', 'pending')
+            ORDER BY start_time
+        `;
+        
+        const [bookings] = await db.execute(query, [id, date]);
+        
+        res.json({
+            success: true,
+            data: {
+                date,
+                bookings,
+                available_slots: generateAvailableSlots(bookings)
+            },
+            message: 'Room availability retrieved successfully'
+        });
+    } catch (error) {
+        console.error('Error fetching room availability:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch room availability',
+            error: error.message
+        });
+    }
+};
+
+// Helper function to generate available time slots
+function generateAvailableSlots(bookings) {
+    const slots = [];
+    const openTime = 9; // 9 AM
+    const closeTime = 23; // 11 PM
+    
+    for (let hour = openTime; hour < closeTime; hour++) {
+        const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
+        const nextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
+        
+        const isBooked = bookings.some(booking => {
+            const startTime = booking.start_time.substring(0, 5);
+            const endTime = booking.end_time.substring(0, 5);
+            return timeSlot >= startTime && timeSlot < endTime;
+        });
+        
+        slots.push({
+            start_time: timeSlot,
+            end_time: nextHour,
+            available: !isBooked
+        });
+    }
+    
+    return slots;
+}

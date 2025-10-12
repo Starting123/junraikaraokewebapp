@@ -47,6 +47,15 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, env: process.env.NODE_ENV });
 });
 
+// API Status check route
+app.get('/api/status', (req, res) => {
+  res.json({ 
+    status: 'online', 
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // Enhanced security middleware
 app.use(helmet({
   contentSecurityPolicy: {

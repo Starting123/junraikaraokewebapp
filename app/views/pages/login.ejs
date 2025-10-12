@@ -1,0 +1,267 @@
+<!-- Login Page -->
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-content">
+            <!-- Logo and Title -->
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <img src="/assets/images/logo.png" alt="Junrai Karaoke" class="logo-img">
+                    <h1>Junrai Karaoke</h1>
+                </div>
+                <div class="auth-title">
+                    <h2>Welcome Back!</h2>
+                    <p>Sign in to access your account and manage your bookings</p>
+                </div>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <% } %>
+                
+                <!-- Error/Success Messages -->
+                <div id="authMessages" class="auth-messages hidden">
+                    <div class="message-content"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" name="email" required 
+                               placeholder="Enter your email address">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" name="password" required 
+                               placeholder="Enter your password">
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe" name="remember_me">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="/forgot-password" class="forgot-link">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Sign In
+                </button>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <!-- Social Login Options -->
+                <div class="social-login">
+                    <button type="button" class="btn btn-social google" id="googleLogin">
+                        <i class="fab fa-google"></i>
+                        Continue with Google
+                    </button>
+                    <button type="button" class="btn btn-social facebook" id="facebookLogin">
+                        <i class="fab fa-facebook-f"></i>
+                        Continue with Facebook
+                    </button>
+                    <button type="button" class="btn btn-social line" id="lineLogin">
+                        <i class="fab fa-line"></i>
+                        Continue with LINE
+                    </button>
+                </div>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? 
+                        <a href="/register" class="auth-link">Sign up here</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Auth Side Image -->
+        <div class="auth-side">
+            <div class="auth-side-content">
+                <h3>Experience Premium Karaoke</h3>
+                <ul class="feature-list">
+                    <li>
+                        <i class="fas fa-music"></i>
+                        <span>Over 100,000 songs in multiple languages</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-microphone-alt"></i>
+                        <span>State-of-the-art sound systems</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-couch"></i>
+                        <span>Comfortable private rooms</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Easy online booking system</span>
+                    </li>
+                </ul>
+                <div class="testimonial">
+                    <p>"Amazing karaoke experience! The rooms are spacious and the sound quality is excellent."</p>
+                    <cite>- Sarah K., Regular Customer</cite>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const passwordToggle = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const authMessages = document.getElementById('authMessages');
+    
+    // Password visibility toggle
+    passwordToggle.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+    
+    // Login form submission
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData);
+        
+        // Disable submit button and show loading
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+        
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showMessage('success', 'Login successful! Redirecting...');
+                
+                // Redirect based on user role or redirect parameter
+                const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || 
+                                  (result.user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+                
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1500);
+            } else {
+                showMessage('error', result.message || 'Login failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            showMessage('error', 'An error occurred. Please try again.');
+        } finally {
+            // Re-enable submit button
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        }
+    });
+    
+    // Social login handlers
+    document.getElementById('googleLogin').addEventListener('click', function() {
+        window.location.href = '/api/auth/google';
+    });
+    
+    document.getElementById('facebookLogin').addEventListener('click', function() {
+        window.location.href = '/api/auth/facebook';
+    });
+    
+    document.getElementById('lineLogin').addEventListener('click', function() {
+        window.location.href = '/api/auth/line';
+    });
+    
+    // Auto-fill email from URL parameter (for password reset flow)
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email');
+    if (emailParam) {
+        document.getElementById('email').value = decodeURIComponent(emailParam);
+    }
+    
+    // Show message from URL parameter (for redirects with messages)
+    const messageParam = urlParams.get('message');
+    const messageType = urlParams.get('type');
+    if (messageParam && messageType) {
+        showMessage(messageType, decodeURIComponent(messageParam));
+    }
+    
+    function showMessage(type, message) {
+        const messageContent = authMessages.querySelector('.message-content');
+        messageContent.textContent = message;
+        
+        authMessages.className = 'auth-messages ' + type;
+        authMessages.classList.remove('hidden');
+        
+        // Auto-hide success messages
+        if (type === 'success') {
+            setTimeout(() => {
+                authMessages.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Scroll to message
+        authMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Form validation
+    const emailInput = document.getElementById('email');
+    const passwordInputField = document.getElementById('password');
+    
+    emailInput.addEventListener('blur', function() {
+        if (this.value && !isValidEmail(this.value)) {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+    
+    passwordInputField.addEventListener('input', function() {
+        if (this.value.length > 0 && this.value.length < 6) {
+            this.classList.add('error');
+        } else {
+            this.classList.remove('error');
+        }
+    });
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Handle Enter key to submit form
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.target.matches('textarea')) {
+            const submitBtn = document.querySelector('button[type="submit"]:not([disabled])');
+            if (submitBtn) {
+                submitBtn.click();
+            }
+        }
+    });
+});
+</script>

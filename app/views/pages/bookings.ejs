@@ -1,183 +1,710 @@
 <!-- Page Header -->
-<div class="page-header">
+<section class="page-header">
     <div class="container">
         <div class="page-header-content">
-            <h1>การจองของฉัน</h1>
-            <p>จัดการและติดตามสถานะการจองห้องคาราโอเกะ</p>
+            <h1 class="page-title">My Bookings</h1>
+            <p class="page-description">
+                Manage your karaoke room reservations and booking history
+            </p>
+            <nav class="breadcrumb">
+                <a href="/">Home</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>My Bookings</span>
+            </nav>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Booking Actions -->
-<section class="booking-actions">
+<!-- Booking Statistics -->
+<section class="booking-stats">
     <div class="container">
-        <div class="actions-wrapper">
-            <div class="actions-left">
-                <h3>การจองทั้งหมด</h3>
-                <span id="total-bookings-count" class="count-badge">0 รายการ</span>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon active">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="activeBookings">0</div>
+                    <div class="stat-label">Active Bookings</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon completed">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="completedBookings">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon cancelled">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="cancelledBookings">0</div>
+                    <div class="stat-label">Cancelled</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalHours">0</div>
+                    <div class="stat-label">Total Hours</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Filters -->
+<section class="booking-filters">
+    <div class="container">
+        <div class="filters-container">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-status="all">
+                    <i class="fas fa-list"></i>
+                    All Bookings
+                </button>
+                <button class="filter-tab" data-status="active">
+                    <i class="fas fa-calendar-check"></i>
+                    Active
+                </button>
+                <button class="filter-tab" data-status="completed">
+                    <i class="fas fa-check-circle"></i>
+                    Completed
+                </button>
+                <button class="filter-tab" data-status="cancelled">
+                    <i class="fas fa-times-circle"></i>
+                    Cancelled
+                </button>
             </div>
             
-            <div class="actions-right">
-                <select id="status-filter" class="filter-select">
-                    <option value="">สถานะทั้งหมด</option>
-                    <option value="pending">รอการยืนยัน</option>
-                    <option value="confirmed">ยืนยันแล้ว</option>
-                    <option value="completed">เสร็จสิ้น</option>
-                    <option value="cancelled">ยกเลิก</option>
-                </select>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <input type="date" id="dateFrom" class="filter-input">
+                    <span>to</span>
+                    <input type="date" id="dateTo" class="filter-input">
+                </div>
                 
-                <select id="date-range-filter" class="filter-select">
-                    <option value="">ช่วงเวลาทั้งหมด</option>
-                    <option value="today">วันนี้</option>
-                    <option value="this-week">สัปดาห์นี้</option>
-                    <option value="this-month">เดือนนี้</option>
-                    <option value="past">ที่ผ่านมา</option>
-                </select>
+                <div class="filter-group">
+                    <select id="roomFilter" class="filter-select">
+                        <option value="">All Rooms</option>
+                    </select>
+                </div>
                 
+                <button id="clearFilters" class="btn btn-outline btn-small">
+                    <i class="fas fa-times"></i>
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="loading-spinner hidden">
+    <div class="spinner"></div>
+    <p>Loading bookings...</p>
+</div>
+
+<!-- Bookings List -->
+<section class="bookings-section">
+    <div class="container">
+        <div class="bookings-header">
+            <div class="results-info">
+                <span id="resultsCount">0</span> bookings found
+            </div>
+            <div class="booking-actions">
                 <a href="/rooms" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
-                    จองใหม่
+                    New Booking
                 </a>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- Guest Notice (for non-authenticated users) -->
-<section class="guest-notice" id="guest-notice" style="display: none;">
-    <div class="container">
-        <div class="notice-card">
-            <div class="notice-icon">
-                <i class="fas fa-info-circle"></i>
-            </div>
-            <div class="notice-content">
-                <h3>เข้าสู่ระบบเพื่อดูการจอง</h3>
-                <p>กรุณาเข้าสู่ระบบเพื่อดูและจัดการการจองห้องคาราโอเกะของคุณ</p>
-                <div class="notice-actions">
-                    <a href="/auth" class="btn btn-primary">เข้าสู่ระบบ</a>
-                    <a href="/rooms" class="btn btn-outline">จองใหม่</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Bookings Content -->
-<section class="bookings-content" id="bookings-content">
-    <div class="container">
-        <!-- Loading State -->
-        <div id="bookings-loading" class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>กำลังโหลดข้อมูลการจอง...</p>
+        
+        <div id="bookingsList" class="bookings-list">
+            <!-- Bookings will be loaded here dynamically -->
         </div>
         
-        <!-- Error State -->
-        <div id="bookings-error" class="error-state" style="display: none;">
-            <div class="error-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3>เกิดข้อผิดพลาด</h3>
-            <p>ไม่สามารถโหลดข้อมูลการจองได้ กรุณาลองใหม่อีกครั้ง</p>
-            <button class="btn btn-primary" id="retry-load-bookings">ลองใหม่</button>
-        </div>
-        
-        <!-- Empty State -->
-        <div id="bookings-empty" class="empty-state" style="display: none;">
-            <div class="empty-icon">
-                <i class="fas fa-calendar-times"></i>
-            </div>
-            <h3>ยังไม่มีการจอง</h3>
-            <p>คุณยังไม่มีการจองห้องคาราโอเกะ เริ่มต้นจองห้องแรกของคุณเลย!</p>
-            <a href="/rooms" class="btn btn-primary">เลือกห้องคาราโอเกะ</a>
-        </div>
-        
-        <!-- Bookings List -->
-        <div id="bookings-list" class="bookings-list" style="display: none;">
-            <!-- Booking cards will be populated by JavaScript -->
+        <!-- No Bookings Message -->
+        <div id="noBookings" class="no-bookings hidden">
+            <i class="fas fa-calendar-alt"></i>
+            <h3>No bookings found</h3>
+            <p>You haven't made any bookings yet or no bookings match your current filters.</p>
+            <a href="/rooms" class="btn btn-primary">
+                <i class="fas fa-music"></i>
+                Book Your First Room
+            </a>
         </div>
         
         <!-- Pagination -->
-        <div id="bookings-pagination" class="pagination-wrapper" style="display: none;">
-            <div class="pagination">
-                <button class="pagination-btn" id="prev-bookings-page" disabled>
-                    <i class="fas fa-chevron-left"></i>
-                    ก่อนหน้า
-                </button>
-                
-                <div class="pagination-info">
-                    <span id="current-bookings-page">1</span> / <span id="total-bookings-pages">1</span>
-                </div>
-                
-                <button class="pagination-btn" id="next-bookings-page">
-                    ถัดไป
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+        <div class="pagination-container">
+            <div id="pagination" class="pagination hidden">
+                <!-- Pagination buttons will be generated here -->
             </div>
         </div>
     </div>
 </section>
 
 <!-- Booking Details Modal -->
-<div id="booking-modal" class="modal" style="display: none;">
-    <div class="modal-backdrop" id="booking-modal-backdrop"></div>
-    <div class="modal-content modal-large">
+<div id="bookingModal" class="modal">
+    <div class="modal-content large">
         <div class="modal-header">
-            <h2>รายละเอียดการจอง</h2>
-            <button class="modal-close" id="close-booking-modal">
+            <h3 id="modalTitle">Booking Details</h3>
+            <button class="modal-close" id="closeModal">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
         <div class="modal-body">
-            <div id="modal-booking-content">
-                <!-- Booking details will be populated by JavaScript -->
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="modal-booking-close-btn">ปิด</button>
-            <div class="modal-booking-actions">
-                <!-- Actions will be populated based on booking status -->
+            <div id="bookingDetails">
+                <!-- Booking details will be loaded here -->
             </div>
         </div>
     </div>
 </div>
 
 <!-- Cancel Booking Modal -->
-<div id="cancel-booking-modal" class="modal" style="display: none;">
-    <div class="modal-backdrop" id="cancel-booking-modal-backdrop"></div>
+<div id="cancelModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>ยืนยันการยกเลิก</h2>
-            <button class="modal-close" id="close-cancel-booking-modal">
+            <h3>Cancel Booking</h3>
+            <button class="modal-close" id="closeCancelModal">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
         <div class="modal-body">
-            <div class="cancel-booking-content">
-                <div class="warning-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+            <div class="cancel-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>Are you sure you want to cancel this booking?</h4>
+                <p>This action cannot be undone. Depending on our cancellation policy, you may be charged a fee.</p>
+            </div>
+            
+            <div class="cancel-details">
+                <div class="detail-item">
+                    <span class="label">Room:</span>
+                    <span id="cancelRoomName">-</span>
                 </div>
-                <h3>คุณแน่ใจหรือไม่?</h3>
-                <p>การยกเลิกการจองนี้ไม่สามารถย้อนกลับได้ หากชำระเงินแล้วจะมีการคืนเงินตามนโยบาย</p>
-                
-                <div class="cancel-reason">
-                    <label for="cancel-reason-select">เหตุผลในการยกเลิก (ไม่บังคับ)</label>
-                    <select id="cancel-reason-select" class="form-control">
-                        <option value="">เลือกเหตุผล...</option>
-                        <option value="schedule-change">เปลี่ยนแปลงตารางเวลา</option>
-                        <option value="emergency">เหตุฉุกเฉิน</option>
-                        <option value="duplicate-booking">จองซ้ำ</option>
-                        <option value="other">อื่นๆ</option>
-                    </select>
+                <div class="detail-item">
+                    <span class="label">Date & Time:</span>
+                    <span id="cancelDateTime">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Total Cost:</span>
+                    <span id="cancelTotalCost">-</span>
                 </div>
             </div>
-        </div>
-        
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="cancel-booking-cancel-btn">ไม่ยกเลิก</button>
-            <button class="btn btn-danger" id="confirm-cancel-booking-btn">ยืนยันการยกเลิก</button>
+            
+            <div class="cancel-reason">
+                <label for="cancelReason">Reason for cancellation (optional):</label>
+                <textarea id="cancelReason" placeholder="Please let us know why you're cancelling..."></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" id="keepBooking">Keep Booking</button>
+                <button type="button" class="btn btn-danger" id="confirmCancel">
+                    <i class="fas fa-times"></i>
+                    Cancel Booking
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    let currentStatus = 'all';
+    let isLoading = false;
+    let selectedBookingId = null;
+    
+    // Load bookings and stats on page load
+    loadBookings();
+    loadBookingStats();
+    loadRoomOptions();
+    
+    // Filter event listeners
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const status = this.dataset.status;
+            setActiveTab(status);
+            currentStatus = status;
+            currentPage = 1;
+            loadBookings();
+        });
+    });
+    
+    document.getElementById('dateFrom').addEventListener('change', applyFilters);
+    document.getElementById('dateTo').addEventListener('change', applyFilters);
+    document.getElementById('roomFilter').addEventListener('change', applyFilters);
+    document.getElementById('clearFilters').addEventListener('click', clearFilters);
+    
+    // Modal event listeners
+    document.getElementById('closeModal').addEventListener('click', closeBookingModal);
+    document.getElementById('closeCancelModal').addEventListener('click', closeCancelModal);
+    document.getElementById('keepBooking').addEventListener('click', closeCancelModal);
+    document.getElementById('confirmCancel').addEventListener('click', handleCancelBooking);
+    
+    async function loadBookings() {
+        if (isLoading) return;
+        
+        isLoading = true;
+        showLoading();
+        
+        try {
+            const params = new URLSearchParams({
+                page: currentPage,
+                status: currentStatus,
+                dateFrom: document.getElementById('dateFrom').value || '',
+                dateTo: document.getElementById('dateTo').value || '',
+                roomId: document.getElementById('roomFilter').value || ''
+            });
+            
+            const response = await fetch('/api/bookings?' + params);
+            const data = await response.json();
+            
+            if (data.success) {
+                displayBookings(data.bookings);
+                updateResultsCount(data.total);
+                setupPagination(data.totalPages, currentPage);
+            } else {
+                showError('Failed to load bookings: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            showError('Failed to load bookings. Please try again.');
+        } finally {
+            isLoading = false;
+            hideLoading();
+        }
+    }
+    
+    async function loadBookingStats() {
+        try {
+            const response = await fetch('/api/bookings/stats');
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('activeBookings').textContent = data.stats.active || 0;
+                document.getElementById('completedBookings').textContent = data.stats.completed || 0;
+                document.getElementById('cancelledBookings').textContent = data.stats.cancelled || 0;
+                document.getElementById('totalHours').textContent = data.stats.totalHours || 0;
+            }
+        } catch (error) {
+            console.error('Error loading booking stats:', error);
+        }
+    }
+    
+    async function loadRoomOptions() {
+        try {
+            const response = await fetch('/api/rooms?minimal=true');
+            const data = await response.json();
+            
+            if (data.success) {
+                const roomFilter = document.getElementById('roomFilter');
+                data.rooms.forEach(room => {
+                    const option = document.createElement('option');
+                    option.value = room.room_id;
+                    option.textContent = room.name;
+                    roomFilter.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading room options:', error);
+        }
+    }
+    
+    function displayBookings(bookings) {
+        const list = document.getElementById('bookingsList');
+        list.innerHTML = '';
+        
+        if (bookings.length === 0) {
+            document.getElementById('noBookings').classList.remove('hidden');
+            return;
+        } else {
+            document.getElementById('noBookings').classList.add('hidden');
+        }
+        
+        bookings.forEach(booking => {
+            const bookingCard = createBookingCard(booking);
+            list.appendChild(bookingCard);
+        });
+    }
+    
+    function createBookingCard(booking) {
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+        card.dataset.bookingId = booking.booking_id;
+        
+        const startDate = new Date(booking.start_time);
+        const endDate = new Date(booking.end_time);
+        const duration = (endDate - startDate) / (1000 * 60 * 60); // hours
+        
+        card.innerHTML = `
+            <div class="booking-status ${booking.status}">
+                <i class="fas ${getStatusIcon(booking.status)}"></i>
+                <span>${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}</span>
+            </div>
+            
+            <div class="booking-info">
+                <div class="booking-header">
+                    <h3 class="room-name">${booking.room_name}</h3>
+                    <div class="booking-id">#${booking.booking_id}</div>
+                </div>
+                
+                <div class="booking-details">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>${startDate.toLocaleDateString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>${duration} hours</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>₿${booking.total_amount || (booking.price_per_hour * duration).toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <div class="booking-actions">
+                    <button class="btn btn-outline btn-small view-details-btn" 
+                            data-booking-id="${booking.booking_id}">
+                        <i class="fas fa-eye"></i>
+                        View Details
+                    </button>
+                    
+                    ${booking.status === 'active' && new Date() < startDate ? `
+                        <button class="btn btn-outline btn-small edit-booking-btn" 
+                                data-booking-id="${booking.booking_id}">
+                            <i class="fas fa-edit"></i>
+                            Modify
+                        </button>
+                        <button class="btn btn-danger btn-small cancel-booking-btn" 
+                                data-booking-id="${booking.booking_id}"
+                                data-room-name="${booking.room_name}"
+                                data-start-time="${booking.start_time}"
+                                data-end-time="${booking.end_time}"
+                                data-total-amount="${booking.total_amount || (booking.price_per_hour * duration).toFixed(2)}">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    ` : ''}
+                    
+                    ${booking.status === 'completed' ? `
+                        <button class="btn btn-primary btn-small book-again-btn" 
+                                data-room-id="${booking.room_id}">
+                            <i class="fas fa-redo"></i>
+                            Book Again
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners
+        card.querySelector('.view-details-btn').addEventListener('click', () => {
+            viewBookingDetails(booking.booking_id);
+        });
+        
+        const cancelBtn = card.querySelector('.cancel-booking-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                openCancelModal(
+                    booking.booking_id,
+                    cancelBtn.dataset.roomName,
+                    cancelBtn.dataset.startTime,
+                    cancelBtn.dataset.endTime,
+                    cancelBtn.dataset.totalAmount
+                );
+            });
+        }
+        
+        const bookAgainBtn = card.querySelector('.book-again-btn');
+        if (bookAgainBtn) {
+            bookAgainBtn.addEventListener('click', () => {
+                window.location.href = `/rooms/${bookAgainBtn.dataset.roomId}`;
+            });
+        }
+        
+        return card;
+    }
+    
+    function getStatusIcon(status) {
+        switch (status) {
+            case 'active': return 'fa-calendar-check';
+            case 'completed': return 'fa-check-circle';
+            case 'cancelled': return 'fa-times-circle';
+            default: return 'fa-question-circle';
+        }
+    }
+    
+    async function viewBookingDetails(bookingId) {
+        try {
+            const response = await fetch(`/api/bookings/${bookingId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                displayBookingDetails(data.booking);
+                document.getElementById('bookingModal').classList.add('active');
+            } else {
+                showError('Failed to load booking details: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error loading booking details:', error);
+            showError('Failed to load booking details. Please try again.');
+        }
+    }
+    
+    function displayBookingDetails(booking) {
+        const startDate = new Date(booking.start_time);
+        const endDate = new Date(booking.end_time);
+        const duration = (endDate - startDate) / (1000 * 60 * 60);
+        
+        document.getElementById('modalTitle').textContent = `Booking #${booking.booking_id}`;
+        
+        document.getElementById('bookingDetails').innerHTML = `
+            <div class="booking-detail-grid">
+                <div class="detail-section">
+                    <h4>Booking Information</h4>
+                    <div class="detail-list">
+                        <div class="detail-row">
+                            <span class="label">Booking ID:</span>
+                            <span class="value">#${booking.booking_id}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Status:</span>
+                            <span class="value status ${booking.status}">
+                                <i class="fas ${getStatusIcon(booking.status)}"></i>
+                                ${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Created:</span>
+                            <span class="value">${new Date(booking.created_at).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Room Details</h4>
+                    <div class="detail-list">
+                        <div class="detail-row">
+                            <span class="label">Room:</span>
+                            <span class="value">${booking.room_name}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Type:</span>
+                            <span class="value">${booking.room_type || 'Standard'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Capacity:</span>
+                            <span class="value">${booking.room_capacity} people</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Time & Duration</h4>
+                    <div class="detail-list">
+                        <div class="detail-row">
+                            <span class="label">Date:</span>
+                            <span class="value">${startDate.toLocaleDateString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Start Time:</span>
+                            <span class="value">${startDate.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">End Time:</span>
+                            <span class="value">${endDate.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Duration:</span>
+                            <span class="value">${duration} hours</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Payment Information</h4>
+                    <div class="detail-list">
+                        <div class="detail-row">
+                            <span class="label">Price per Hour:</span>
+                            <span class="value">₿${booking.price_per_hour}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Total Amount:</span>
+                            <span class="value total">₿${booking.total_amount || (booking.price_per_hour * duration).toFixed(2)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Payment Status:</span>
+                            <span class="value">${booking.payment_status || 'Pending'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function openCancelModal(bookingId, roomName, startTime, endTime, totalAmount) {
+        selectedBookingId = bookingId;
+        
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        
+        document.getElementById('cancelRoomName').textContent = roomName;
+        document.getElementById('cancelDateTime').textContent = 
+            `${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        document.getElementById('cancelTotalCost').textContent = '₿' + totalAmount;
+        
+        document.getElementById('cancelModal').classList.add('active');
+    }
+    
+    async function handleCancelBooking() {
+        if (!selectedBookingId) return;
+        
+        const reason = document.getElementById('cancelReason').value;
+        
+        try {
+            const response = await fetch(`/api/bookings/${selectedBookingId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                },
+                body: JSON.stringify({ reason })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeCancelModal();
+                showSuccess('Booking cancelled successfully.');
+                loadBookings();
+                loadBookingStats();
+            } else {
+                showError('Failed to cancel booking: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Cancel booking error:', error);
+            showError('Failed to cancel booking. Please try again.');
+        }
+    }
+    
+    function setActiveTab(status) {
+        document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelector(`[data-status="${status}"]`).classList.add('active');
+    }
+    
+    function applyFilters() {
+        currentPage = 1;
+        loadBookings();
+    }
+    
+    function clearFilters() {
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        document.getElementById('roomFilter').value = '';
+        applyFilters();
+    }
+    
+    function updateResultsCount(total) {
+        document.getElementById('resultsCount').textContent = total;
+    }
+    
+    function setupPagination(totalPages, currentPageNum) {
+        const pagination = document.getElementById('pagination');
+        
+        if (totalPages <= 1) {
+            pagination.classList.add('hidden');
+            return;
+        }
+        
+        pagination.classList.remove('hidden');
+        pagination.innerHTML = '';
+        
+        // Previous button
+        if (currentPageNum > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.addEventListener('click', () => {
+                currentPage = currentPageNum - 1;
+                loadBookings();
+            });
+            pagination.appendChild(prevBtn);
+        }
+        
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = 'pagination-btn' + (i === currentPageNum ? ' active' : '');
+            pageBtn.textContent = i;
+            pageBtn.addEventListener('click', () => {
+                currentPage = i;
+                loadBookings();
+            });
+            pagination.appendChild(pageBtn);
+        }
+        
+        // Next button
+        if (currentPageNum < totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.addEventListener('click', () => {
+                currentPage = currentPageNum + 1;
+                loadBookings();
+            });
+            pagination.appendChild(nextBtn);
+        }
+    }
+    
+    function closeBookingModal() {
+        document.getElementById('bookingModal').classList.remove('active');
+    }
+    
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.remove('active');
+        document.getElementById('cancelReason').value = '';
+        selectedBookingId = null;
+    }
+    
+    function showLoading() {
+        document.getElementById('loadingSpinner').classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingSpinner').classList.add('hidden');
+    }
+    
+    function showError(message) {
+        alert(message); // Replace with toast notification
+    }
+    
+    function showSuccess(message) {
+        alert(message); // Replace with toast notification
+    }
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(e) {
+        const bookingModal = document.getElementById('bookingModal');
+        const cancelModal = document.getElementById('cancelModal');
+        
+        if (e.target === bookingModal) {
+            closeBookingModal();
+        }
+        if (e.target === cancelModal) {
+            closeCancelModal();
+        }
+    });
+});
+</script>

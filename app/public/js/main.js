@@ -1,463 +1,530 @@
-/**
- * Main Application Entry Point
- * Initializes all modules and sets up the application
- */
+// Main JavaScript file for Junrai Karaoke Web App
 
-import { $, $$, on, ready } from './core/dom.js';
-import { emit, on as eventOn, showToast } from './core/events.js';
-import { apiGet, apiPost, setToken } from './core/api.js';
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize common functionality
+    initializeCommonFeatures();
+    initializeModals();
+    initializeDropdowns();
+    initializeForms();
+    initializeAnimations();
+});
 
-class JunraiKaraokeApp {
-    constructor() {
-        this.initialized = false;
-        this.modules = {};
-        
-        this.init();
-    }
-
-    /**
-     * Initialize the application
-     */
-    init() {
-        if (this.initialized) return;
-        
-        // Wait for DOM to be ready
-        window.DOM.ready(() => {
-            this.setupGlobalErrorHandling();
-            this.initializeModules();
-            this.setupGlobalEventHandlers();
-            this.checkAuthOnLoad();
-            
-            this.initialized = true;
-            console.log('Junrai Karaoke App initialized successfully');
+// Common Features
+function initializeCommonFeatures() {
+    // Mobile menu toggle
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navMenu = document.querySelector('.nav-menu');
+    
+    if (mobileMenuBtn && navMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            this.classList.toggle('active');
         });
-    }
-
-    /**
-     * Setup global error handling
-     */
-    setupGlobalErrorHandling() {
-        // Handle uncaught errors
-        window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            this.handleGlobalError(event.error);
-        });
-
-        // Handle unhandled promise rejections
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            this.handleGlobalError(event.reason);
-        });
-    }
-
-    /**
-     * Initialize all modules based on current page
-     */
-    initializeModules() {
-        const currentPath = window.location.pathname;
         
-        // Core modules (always loaded)
-        this.modules.eventBus = window.EventBus;
-        this.modules.api = window.API;
-        this.modules.dom = window.DOM;
-        this.modules.auth = window.Auth;
-        
-        // Page-specific modules
-        if (currentPath.includes('/admin')) {
-            this.initializeAdminModules();
-        } else if (currentPath.includes('/booking') || currentPath.includes('/rooms')) {
-            this.initializeBookingModules();
-        } else if (currentPath.includes('/payment')) {
-            this.initializePaymentModules();
-        } else if (currentPath === '/auth') {
-            this.initializeAuthModules();
-        }
-        
-        // Initialize common modules for all pages
-        this.initializeCommonModules();
-    }
-
-    /**
-     * Initialize admin-specific modules
-     */
-    initializeAdminModules() {
-        if (window.AdminDashboard) {
-            this.modules.adminDashboard = window.AdminDashboard;
-        }
-    }
-
-    /**
-     * Initialize booking-specific modules
-     */
-    initializeBookingModules() {
-        if (window.Booking) {
-            this.modules.booking = window.Booking;
-        }
-    }
-
-    /**
-     * Initialize payment-specific modules
-     */
-    initializePaymentModules() {
-        if (window.Payment) {
-            this.modules.payment = window.Payment;
-        }
-    }
-
-    /**
-     * Initialize auth-specific modules
-     */
-    initializeAuthModules() {
-        // Auth module is always initialized
-        // Additional auth-specific setup can go here
-    }
-
-    /**
-     * Initialize modules common to all pages
-     */
-    initializeCommonModules() {
-        // Mobile navigation toggle
-        this.setupMobileNavigation();
-        
-        // CSRF token setup
-        this.setupCSRFToken();
-        
-        // Lazy loading for images
-        this.setupLazyLoading();
-        
-        // Form enhancements
-        this.setupFormEnhancements();
-    }
-
-    /**
-     * Setup global event handlers
-     */
-    setupGlobalEventHandlers() {
-        // Handle navigation
-        window.EventBus.on('navigate', (event) => {
-            const { url, newWindow } = event.data;
-            if (newWindow) {
-                window.open(url, '_blank');
-            } else {
-                window.location.href = url;
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
             }
         });
-
-        // Handle logout from any module
-        window.EventBus.on('auth:logout', () => {
-            this.handleLogout();
-        });
-
-        // Handle auth errors
-        window.EventBus.on('auth:error', (event) => {
-            this.handleAuthError(event.data);
-        });
-
-        // Handle page visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                this.handlePageVisibilityChange();
+    }
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             }
         });
+    });
+    
+    // Back to top button
+    createBackToTopButton();
+    
+    // Initialize tooltips
+    initializeTooltips();
+}
 
-        // Handle window resize
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                this.handleWindowResize();
-            }, 250);
-        });
-    }
-
-    /**
-     * Check authentication status on page load
-     */
-    checkAuthOnLoad() {
-        // Auth module handles this automatically
-        // Additional checks can be added here if needed
+// Modal functionality
+function initializeModals() {
+    const modals = document.querySelectorAll('.modal');
+    
+    modals.forEach(modal => {
+        const closeButtons = modal.querySelectorAll('.modal-close, [data-modal-close]');
         
-        // Auto-redirect if on auth page and already logged in
-        if (window.location.pathname === '/auth' && window.Auth.isAuthenticated()) {
-            const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
-            const defaultRedirect = window.Auth.isAdmin() ? '/admin' : '/dashboard';
-            window.location.href = redirectUrl || defaultRedirect;
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => closeModal(modal));
+        });
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal(modal);
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal(modal);
+            }
+        });
+    });
+}
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus on first input if exists
+        const firstInput = modal.querySelector('input, textarea, select');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 100);
         }
     }
+}
 
-    /**
-     * Setup mobile navigation
-     */
-    setupMobileNavigation() {
-        const navToggle = window.DOM.$('#navToggle');
-        const navbar = window.DOM.$('.navbar');
+function closeModal(modal) {
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
         
-        if (navToggle && navbar) {
-            window.DOM.addEventListener(navToggle, 'click', () => {
-                window.DOM.toggleClass(navbar, 'mobile-open');
+        // Clear any form data if specified
+        const form = modal.querySelector('form');
+        if (form && form.hasAttribute('data-clear-on-close')) {
+            form.reset();
+        }
+    }
+}
+
+// Dropdown functionality
+function initializeDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown');
+    
+    dropdowns.forEach(dropdown => {
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        
+        if (trigger && menu) {
+            trigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Close other dropdowns
+                dropdowns.forEach(otherDropdown => {
+                    if (otherDropdown !== dropdown) {
+                        otherDropdown.classList.remove('active');
+                    }
+                });
+                
+                dropdown.classList.toggle('active');
             });
+        }
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('active');
+        });
+    });
+}
 
-            // Close mobile nav when clicking outside
-            document.addEventListener('click', (event) => {
-                if (!navbar.contains(event.target)) {
-                    window.DOM.removeClass(navbar, 'mobile-open');
+// Form enhancements
+function initializeForms() {
+    // Add loading states to forms with API calls
+    const apiForms = document.querySelectorAll('form[data-api]');
+    
+    apiForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
+        });
+    });
+    
+    // Auto-resize textareas
+    const textareas = document.querySelectorAll('textarea[data-auto-resize]');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+    
+    // Form validation
+    initializeFormValidation();
+    
+    // Character counters
+    initializeCharacterCounters();
+}
+
+// Form validation
+function initializeFormValidation() {
+    const forms = document.querySelectorAll('form[data-validate]');
+    
+    forms.forEach(form => {
+        const inputs = form.querySelectorAll('input, textarea, select');
+        
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => validateInput(input));
+            input.addEventListener('input', () => clearInputError(input));
+        });
+        
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!validateInput(input)) {
+                    isValid = false;
                 }
             });
-        }
-    }
-
-    /**
-     * Setup CSRF token
-     */
-    setupCSRFToken() {
-        // Extract CSRF token from meta tag or script tag
-        const metaToken = window.DOM.$('meta[name="csrf-token"]');
-        if (metaToken) {
-            window.csrfToken = metaToken.getAttribute('content');
-        }
-        
-        // Also check for inline script variable
-        if (typeof csrfToken !== 'undefined') {
-            window.csrfToken = csrfToken;
-        }
-    }
-
-    /**
-     * Setup lazy loading for images
-     */
-    setupLazyLoading() {
-        if ('IntersectionObserver' in window) {
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        const src = img.getAttribute('data-src');
-                        if (src) {
-                            img.src = src;
-                            img.removeAttribute('data-src');
-                            observer.unobserve(img);
-                        }
-                    }
-                });
-            });
-
-            window.DOM.$$('img[data-src]').forEach(img => {
-                imageObserver.observe(img);
-            });
-        }
-    }
-
-    /**
-     * Setup form enhancements
-     */
-    setupFormEnhancements() {
-        // Auto-save form data in localStorage for recovery
-        window.DOM.$$('form[data-autosave]').forEach(form => {
-            this.setupFormAutoSave(form);
-        });
-
-        // Real-time validation
-        window.DOM.$$('input[data-validate], textarea[data-validate]').forEach(input => {
-            this.setupInputValidation(input);
-        });
-    }
-
-    /**
-     * Setup form auto-save
-     */
-    setupFormAutoSave(form) {
-        const formId = form.id || `form-${Date.now()}`;
-        const storageKey = `autosave-${formId}`;
-        
-        // Load saved data
-        try {
-            const savedData = localStorage.getItem(storageKey);
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                Object.keys(data).forEach(key => {
-                    const input = form.querySelector(`[name="${key}"]`);
-                    if (input && input.type !== 'password') {
-                        input.value = data[key];
-                    }
-                });
-            }
-        } catch (e) {
-            console.warn('Failed to load auto-saved form data:', e);
-        }
-        
-        // Save data on input
-        const saveData = window.DOM.debounce(() => {
-            try {
-                const formData = window.DOM.getFormData(form);
-                localStorage.setItem(storageKey, JSON.stringify(formData));
-            } catch (e) {
-                console.warn('Failed to auto-save form data:', e);
-            }
-        }, 1000);
-        
-        form.addEventListener('input', saveData);
-        
-        // Clear saved data on successful submit
-        form.addEventListener('submit', () => {
-            localStorage.removeItem(storageKey);
-        });
-    }
-
-    /**
-     * Setup input validation
-     */
-    setupInputValidation(input) {
-        const validateInput = () => {
-            const value = input.value;
-            const validateType = input.getAttribute('data-validate');
             
-            window.EventBus.emit('input:validate', {
-                type: validateType,
-                input,
-                value,
-                isValid: this.validateInputValue(value, validateType)
-            });
-        };
-        
-        input.addEventListener('blur', validateInput);
-        input.addEventListener('input', window.DOM.debounce(validateInput, 500));
-    }
-
-    /**
-     * Validate input value
-     */
-    validateInputValue(value, type) {
-        switch (type) {
-            case 'email':
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-            case 'phone':
-                return /^[0-9-+().\s]+$/.test(value);
-            case 'required':
-                return value.trim().length > 0;
-            default:
-                return true;
-        }
-    }
-
-    /**
-     * Handle global errors
-     */
-    handleGlobalError(error) {
-        // Log error details
-        console.error('Application error:', error);
-        
-        // Show user-friendly error message
-        const message = this.getUserFriendlyErrorMessage(error);
-        window.EventBus.emit('toast:show', {
-            message,
-            type: 'error',
-            duration: 5000
-        });
-    }
-
-    /**
-     * Get user-friendly error message
-     */
-    getUserFriendlyErrorMessage(error) {
-        if (error.message) {
-            if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-                return 'เกิดปัญหาการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง';
-            }
-            if (error.message.includes('JSON')) {
-                return 'เกิดข้อผิดพลาดในการประมวลผลข้อมูล';
-            }
-        }
-        
-        return 'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง';
-    }
-
-    /**
-     * Handle logout
-     */
-    handleLogout() {
-        // Clear any cached data
-        this.clearApplicationCache();
-        
-        // Reset modules if needed
-        Object.values(this.modules).forEach(module => {
-            if (module && typeof module.reset === 'function') {
-                module.reset();
+            if (!isValid) {
+                e.preventDefault();
+                showFormError(form, 'Please correct the errors above');
             }
         });
-    }
+    });
+}
 
-    /**
-     * Handle auth error
-     */
-    handleAuthError(error) {
-        if (error.status === 401) {
-            this.handleLogout();
+function validateInput(input) {
+    const value = input.value.trim();
+    const type = input.type;
+    const required = input.hasAttribute('required');
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Required field validation
+    if (required && !value) {
+        isValid = false;
+        errorMessage = 'This field is required';
+    }
+    
+    // Email validation
+    else if (type === 'email' && value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+            isValid = false;
+            errorMessage = 'Please enter a valid email address';
         }
     }
-
-    /**
-     * Handle page visibility change
-     */
-    handlePageVisibilityChange() {
-        // Refresh auth status when page becomes visible
-        if (window.Auth && window.Auth.isAuthenticated()) {
-            // Optional: refresh user data or check token validity
+    
+    // Phone validation
+    else if (input.name === 'phone' && value) {
+        const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
+        if (!phoneRegex.test(value)) {
+            isValid = false;
+            errorMessage = 'Please enter a valid phone number';
         }
     }
-
-    /**
-     * Handle window resize
-     */
-    handleWindowResize() {
-        // Emit resize event for modules that need to respond
-        window.EventBus.emit('window:resize', {
-            width: window.innerWidth,
-            height: window.innerHeight
-        });
+    
+    // Password validation
+    else if (type === 'password' && value) {
+        if (value.length < 8) {
+            isValid = false;
+            errorMessage = 'Password must be at least 8 characters long';
+        }
     }
-
-    /**
-     * Clear application cache
-     */
-    clearApplicationCache() {
-        // Clear auto-saved form data
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('autosave-')) {
-                localStorage.removeItem(key);
-            }
-        });
+    
+    // Custom validation patterns
+    const pattern = input.getAttribute('pattern');
+    if (pattern && value && !new RegExp(pattern).test(value)) {
+        isValid = false;
+        errorMessage = input.getAttribute('data-error-message') || 'Please enter a valid value';
     }
+    
+    // Show/hide error
+    if (isValid) {
+        clearInputError(input);
+    } else {
+        showInputError(input, errorMessage);
+    }
+    
+    return isValid;
+}
 
-    /**
-     * Get application info
-     */
-    getInfo() {
-        return {
-            initialized: this.initialized,
-            modules: Object.keys(this.modules),
-            currentPath: window.location.pathname,
-            userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString()
-        };
+function showInputError(input, message) {
+    clearInputError(input);
+    
+    input.classList.add('error');
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'form-error';
+    errorDiv.textContent = message;
+    
+    input.parentNode.appendChild(errorDiv);
+}
+
+function clearInputError(input) {
+    input.classList.remove('error');
+    
+    const existingError = input.parentNode.querySelector('.form-error');
+    if (existingError) {
+        existingError.remove();
     }
 }
 
-// Initialize the application
-window.JunraiApp = new JunraiKaraokeApp();
+function showFormError(form, message) {
+    let errorDiv = form.querySelector('.form-message.error');
+    
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'form-message error';
+        form.insertBefore(errorDiv, form.firstChild);
+    }
+    
+    errorDiv.textContent = message;
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
-// Make app info available for debugging
-window.debug = {
-    app: () => window.JunraiApp.getInfo(),
-    modules: () => window.JunraiApp.modules,
-    eventBus: () => window.EventBus.debug(),
-    auth: () => ({
-        isAuthenticated: window.Auth.isAuthenticated(),
-        isAdmin: window.Auth.isAdmin(),
-        user: window.Auth.getCurrentUser()
-    })
+// Character counters
+function initializeCharacterCounters() {
+    const inputs = document.querySelectorAll('[data-max-length]');
+    
+    inputs.forEach(input => {
+        const maxLength = parseInt(input.getAttribute('data-max-length'));
+        
+        // Create counter element
+        const counter = document.createElement('div');
+        counter.className = 'character-count';
+        counter.innerHTML = `<span class="current">0</span>/${maxLength}`;
+        
+        input.parentNode.appendChild(counter);
+        
+        // Update counter on input
+        input.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            const currentSpan = counter.querySelector('.current');
+            
+            currentSpan.textContent = currentLength;
+            
+            // Add warning class when approaching limit
+            if (currentLength > maxLength * 0.9) {
+                counter.classList.add('warning');
+            } else {
+                counter.classList.remove('warning');
+            }
+            
+            // Prevent exceeding limit
+            if (currentLength > maxLength) {
+                this.value = this.value.substring(0, maxLength);
+                currentSpan.textContent = maxLength;
+            }
+        });
+    });
+}
+
+// Animation on scroll
+function initializeAnimations() {
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    
+    if (animatedElements.length === 0) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+    
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// Tooltips
+function initializeTooltips() {
+    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    
+    tooltipElements.forEach(element => {
+        element.addEventListener('mouseenter', showTooltip);
+        element.addEventListener('mouseleave', hideTooltip);
+        element.addEventListener('focus', showTooltip);
+        element.addEventListener('blur', hideTooltip);
+    });
+}
+
+function showTooltip(e) {
+    const element = e.target;
+    const tooltipText = element.getAttribute('data-tooltip');
+    
+    if (!tooltipText) return;
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = tooltipText;
+    
+    document.body.appendChild(tooltip);
+    
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+    tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+    
+    setTimeout(() => tooltip.classList.add('visible'), 10);
+    
+    element._tooltip = tooltip;
+}
+
+function hideTooltip(e) {
+    const element = e.target;
+    if (element._tooltip) {
+        element._tooltip.remove();
+        delete element._tooltip;
+    }
+}
+
+// Back to top button
+function createBackToTopButton() {
+    const backToTop = document.createElement('button');
+    backToTop.className = 'back-to-top';
+    backToTop.innerHTML = '<i class="fas fa-chevron-up"></i>';
+    backToTop.setAttribute('aria-label', 'Back to top');
+    
+    document.body.appendChild(backToTop);
+    
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+    
+    // Scroll to top when clicked
+    backToTop.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
+// Utility functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    }
+}
+
+// API helper functions
+async function apiRequest(url, options = {}) {
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        }
+    };
+    
+    const mergedOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+    
+    try {
+        const response = await fetch(url, mergedOptions);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Request failed');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('API Request Error:', error);
+        throw error;
+    }
+}
+
+// Toast notifications
+function showToast(message, type = 'info', duration = 5000) {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${getToastIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, duration);
+    
+    // Show animation
+    setTimeout(() => toast.classList.add('visible'), 10);
+}
+
+function getToastIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    return icons[type] || icons.info;
+}
+
+// Export functions for global use
+window.JunraiKaraoke = {
+    openModal,
+    closeModal,
+    showToast,
+    apiRequest,
+    debounce,
+    throttle
 };
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = JunraiKaraokeApp;
-}

@@ -1,50 +1,94 @@
-<!-- Footer -->
-<footer class="footer">
+<footer class="site-footer">
     <div class="container">
         <div class="footer-content">
+            <!-- Company Info -->
             <div class="footer-section">
                 <h3>Junrai Karaoke</h3>
-                <p>ระบบจองห้องคาราโอเกะออนไลน์ที่ทันสมัยและสะดวกสบาย</p>
+                <p>Experience the best karaoke entertainment with our premium rooms and state-of-the-art sound systems.</p>
                 <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-line"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-line"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-youtube"></i>
+                    </a>
                 </div>
             </div>
             
+            <!-- Quick Links -->
             <div class="footer-section">
-                <h4>ลิงก์ด่วน</h4>
+                <h4>Quick Links</h4>
                 <ul class="footer-links">
-                    <li><a href="/">หน้าหลัก</a></li>
-                    <li><a href="/rooms">ห้องคาราโอเกะ</a></li>
-                    <li><a href="/bookings">การจอง</a></li>
-                    <li><a href="/contact">ติดต่อเรา</a></li>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/rooms">Rooms</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <li><a href="/bookings">My Bookings</a></li>
+                    <% } else { %>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/register">Register</a></li>
+                    <% } %>
                 </ul>
             </div>
             
+            <!-- Contact Info -->
             <div class="footer-section">
-                <h4>ติดต่อเรา</h4>
+                <h4>Contact Information</h4>
                 <div class="contact-info">
-                    <p><i class="fas fa-phone"></i> 02-xxx-xxxx</p>
-                    <p><i class="fas fa-envelope"></i> info@junraikaraoke.com</p>
-                    <p><i class="fas fa-map-marker-alt"></i> กรุงเทพมหานคร</p>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>123 Music Street, Entertainment District</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+66 (0) 2-xxx-xxxx</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>info@junraikaraoke.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Daily: 10:00 AM - 2:00 AM</span>
+                    </div>
                 </div>
             </div>
             
+            <!-- Business Hours -->
             <div class="footer-section">
-                <h4>เวลาทำการ</h4>
+                <h4>Business Hours</h4>
                 <div class="hours-info">
-                    <p>จันทร์ - อาทิตย์</p>
-                    <p>10:00 - 24:00 น.</p>
+                    <div class="hours-item">
+                        <span class="day">Monday - Friday</span>
+                        <span class="time">2:00 PM - 2:00 AM</span>
+                    </div>
+                    <div class="hours-item">
+                        <span class="day">Saturday - Sunday</span>
+                        <span class="time">10:00 AM - 2:00 AM</span>
+                    </div>
+                    <div class="hours-item">
+                        <span class="day">Holidays</span>
+                        <span class="time">10:00 AM - 12:00 AM</span>
+                    </div>
                 </div>
             </div>
         </div>
         
+        <!-- Footer Bottom -->
         <div class="footer-bottom">
-            <p>&copy; <%= new Date().getFullYear() %> Junrai Karaoke. สงวนลิขสิทธิ์.</p>
-            <div class="footer-bottom-links">
-                <a href="/privacy">นโยบายความเป็นส่วนตัว</a>
-                <a href="/terms">ข้อกำหนดการใช้งาน</a>
+            <div class="footer-bottom-content">
+                <p>&copy; <%= new Date().getFullYear() %> Junrai Karaoke. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/sitemap">Sitemap</a>
+                </div>
             </div>
         </div>
     </div>

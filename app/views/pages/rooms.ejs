@@ -1,327 +1,555 @@
 <!-- Page Header -->
-<div class="page-header">
+<section class="page-header">
     <div class="container">
         <div class="page-header-content">
-            <h1>ห้องคาราโอเกะที่ว่าง</h1>
-            <p>เลือกห้องที่เหมาะสมกับความต้องการของคุณและจองเลย!</p>
-        </div>
-    </div>
-</div>
-
-<!-- Room Stats -->
-<section class="room-stats">
-    <div class="container">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-door-open"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="available-count">0</h3>
-                    <p>ห้องว่าง</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="occupied-count">0</h3>
-                    <p>ห้องที่ใช้งาน</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="current-time">--:--</h3>
-                    <p>เวลาปัจจุบัน</p>
-                </div>
-            </div>
+            <h1 class="page-title">Karaoke Rooms</h1>
+            <p class="page-description">
+                Choose from our selection of premium karaoke rooms designed for every occasion
+            </p>
+            <nav class="breadcrumb">
+                <a href="/">Home</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>Rooms</span>
+            </nav>
         </div>
     </div>
 </section>
 
-<!-- Filters Section -->
-<section class="filters-section">
+<!-- Filters and Search -->
+<section class="rooms-filters">
     <div class="container">
-        <div class="filters-wrapper">
-            <div class="filters-header">
-                <h3>กรองห้อง</h3>
-                <button class="btn btn-outline btn-small" id="clear-filters">ล้างตัวกรอง</button>
+        <div class="filters-container">
+            <div class="search-box">
+                <input type="text" id="roomSearch" placeholder="Search rooms by name..." class="search-input">
+                <i class="fas fa-search search-icon"></i>
             </div>
             
-            <div class="filters-grid">
-                <!-- Capacity Filter -->
-                <div class="filter-group">
-                    <label>จำนวนคน</label>
-                    <select id="capacity-filter" class="filter-select">
-                        <option value="">ทั้งหมด</option>
-                        <option value="1-5">1-5 คน</option>
-                        <option value="6-10">6-10 คน</option>
-                        <option value="11-15">11-15 คน</option>
-                        <option value="16+">16+ คน</option>
-                    </select>
-                </div>
-                
-                <!-- Price Range Filter -->
-                <div class="filter-group">
-                    <label>ช่วงราคา (บาท/ชั่วโมง)</label>
-                    <select id="price-filter" class="filter-select">
-                        <option value="">ทั้งหมด</option>
-                        <option value="0-100">0-100 บาท</option>
-                        <option value="101-200">101-200 บาท</option>
-                        <option value="201-300">201-300 บาท</option>
-                        <option value="301+">301+ บาท</option>
-                    </select>
-                </div>
-                
-                <!-- Status Filter -->
-                <div class="filter-group">
-                    <label>สถานะ</label>
-                    <select id="status-filter" class="filter-select">
-                        <option value="">ทั้งหมด</option>
-                        <option value="available">ว่าง</option>
-                        <option value="occupied">ใช้งาน</option>
-                        <option value="maintenance">ปรับปรุง</option>
-                    </select>
-                </div>
-                
-                <!-- Price Filter -->
-                <div class="filter-group">
-                    <label>ราคาต่อชั่วโมง</label>
-                    <select id="price-filter" class="filter-select">
-                        <option value="">ทั้งหมด</option>
-                        <option value="0-500">0-500 บาท</option>
-                        <option value="501-1000">501-1,000 บาท</option>
-                        <option value="1001-1500">1,001-1,500 บาท</option>
-                        <option value="1501+">1,501+ บาท</option>
-                    </select>
-                </div>
-                
-                <!-- Availability Filter -->
-                <div class="filter-group">
-                    <label>วันที่</label>
-                    <input type="date" id="date-filter" class="filter-input" min="<%= new Date().toISOString().split('T')[0] %>">
-                </div>
-                
-                <!-- Search -->
-                <div class="filter-group">
-                    <label>ค้นหา</label>
-                    <input type="text" id="search-filter" class="filter-input" placeholder="ชื่อห้อง หรือคำอธิบาย">
-                </div>
+            <div class="filter-group">
+                <label for="capacityFilter">Capacity:</label>
+                <select id="capacityFilter" class="filter-select">
+                    <option value="">All Capacities</option>
+                    <option value="1-4">1-4 People</option>
+                    <option value="5-8">5-8 People</option>
+                    <option value="9-12">9-12 People</option>
+                    <option value="13+">13+ People</option>
+                </select>
             </div>
+            
+            <div class="filter-group">
+                <label for="typeFilter">Room Type:</label>
+                <select id="typeFilter" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium</option>
+                    <option value="vip">VIP</option>
+                    <option value="party">Party Room</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="statusFilter">Availability:</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">All Rooms</option>
+                    <option value="available">Available Only</option>
+                    <option value="occupied">Occupied</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="priceSort">Sort by Price:</label>
+                <select id="priceSort" class="filter-select">
+                    <option value="">Default</option>
+                    <option value="asc">Price: Low to High</option>
+                    <option value="desc">Price: High to Low</option>
+                </select>
+            </div>
+            
+            <button id="clearFilters" class="btn btn-outline btn-small">
+                <i class="fas fa-times"></i>
+                Clear Filters
+            </button>
         </div>
     </div>
 </section>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="loading-spinner hidden">
+    <div class="spinner"></div>
+    <p>Loading rooms...</p>
+</div>
 
 <!-- Rooms Grid -->
 <section class="rooms-section">
     <div class="container">
-        <!-- Loading State -->
-        <div id="rooms-loading" class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>กำลังโหลดข้อมูลห้อง...</p>
-        </div>
-        
-        <!-- Error State -->
-        <div id="rooms-error" class="error-state" style="display: none;">
-            <div class="error-icon">
-                <i class="fas fa-exclamation-triangle"></i>
+        <div class="rooms-results-header">
+            <div class="results-count">
+                <span id="resultsCount">0</span> rooms found
             </div>
-            <h3>เกิดข้อผิดพลาด</h3>
-            <p>ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง</p>
-            <button class="btn btn-primary" id="retry-load-rooms">ลองใหม่</button>
-        </div>
-        
-        <!-- Empty State -->
-        <div id="rooms-empty" class="empty-state" style="display: none;">
-            <div class="empty-icon">
-                <i class="fas fa-search"></i>
-            </div>
-            <h3>ไม่พบห้องที่ตรงตามเงื่อนไข</h3>
-            <p>ลองปรับเปลี่ยนตัวกรองหรือค้นหาด้วยคำใหม่</p>
-        </div>
-        
-        <!-- Rooms Grid -->
-        <div id="rooms-grid" class="rooms-grid" style="display: none;">
-            <!-- Room cards will be populated by JavaScript -->
-        </div>
-        
-        <!-- Room Cards Template (for JavaScript rendering) -->
-        <template id="room-card-template">
-            <div class="room-card" data-room-id="">
-                <div class="room-status-badge"></div>
-                <div class="room-image">
-                    <img src="/assets/images/room-placeholder.jpg" alt="Room Image" loading="lazy">
-                    <div class="room-type-badge"></div>
-                </div>
-                <div class="room-info">
-                    <div class="room-header">
-                        <h3 class="room-name"></h3>
-                        <div class="room-capacity">
-                            <i class="fas fa-users"></i>
-                            <span class="capacity-text"></span>
-                        </div>
-                    </div>
-                    <div class="room-details">
-                        <div class="room-price">
-                            <span class="price-amount"></span>
-                            <span class="price-unit">บาท/ชั่วโมง</span>
-                        </div>
-                        <div class="room-features">
-                            <span class="feature"><i class="fas fa-microphone"></i> ไมโครโฟน</span>
-                            <span class="feature"><i class="fas fa-tv"></i> จอแสดงผล</span>
-                            <span class="feature"><i class="fas fa-volume-up"></i> เสียงคุณภาพ</span>
-                        </div>
-                    </div>
-                    <div class="room-actions">
-                        <button class="btn btn-outline btn-small room-details-btn">
-                            <i class="fas fa-info-circle"></i>
-                            รายละเอียด
-                        </button>
-                        <button class="btn btn-primary room-book-btn">
-                            <i class="fas fa-calendar-plus"></i>
-                            จองห้อง
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </template>
-        
-        <!-- Pagination -->
-        <div id="rooms-pagination" class="pagination-wrapper" style="display: none;">
-            <div class="pagination">
-                <button class="pagination-btn" id="prev-page" disabled>
-                    <i class="fas fa-chevron-left"></i>
-                    ก่อนหน้า
+            <div class="view-options">
+                <button id="gridView" class="view-btn active" title="Grid View">
+                    <i class="fas fa-th"></i>
                 </button>
-                
-                <div class="pagination-info">
-                    <span id="current-page">1</span> / <span id="total-pages">1</span>
-                </div>
-                
-                <button class="pagination-btn" id="next-page">
-                    ถัดไป
-                    <i class="fas fa-chevron-right"></i>
+                <button id="listView" class="view-btn" title="List View">
+                    <i class="fas fa-list"></i>
                 </button>
             </div>
+        </div>
+        
+        <div id="roomsGrid" class="rooms-grid">
+            <!-- Rooms will be loaded here dynamically -->
+        </div>
+        
+        <!-- No Results Message -->
+        <div id="noResults" class="no-results hidden">
+            <i class="fas fa-search"></i>
+            <h3>No rooms found</h3>
+            <p>Try adjusting your search criteria or filters</p>
+            <button id="resetSearch" class="btn btn-primary">Reset Search</button>
+        </div>
+        
+        <!-- Load More Button -->
+        <div class="load-more-container">
+            <button id="loadMoreBtn" class="btn btn-outline btn-large hidden">
+                <i class="fas fa-plus"></i>
+                Load More Rooms
+            </button>
         </div>
     </div>
 </section>
 
-<!-- Room Details Modal -->
-<div id="room-modal" class="modal" style="display: none;">
-    <div class="modal-backdrop" id="room-modal-backdrop"></div>
+<!-- Room Booking Modal -->
+<div id="bookingModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modal-room-name">รายละเอียดห้อง</h2>
-            <button class="modal-close" id="close-room-modal">
+            <h3 id="modalRoomName">Book Room</h3>
+            <button class="modal-close" id="closeModal">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
         <div class="modal-body">
-            <div id="modal-room-content">
-                <!-- Room details will be populated by JavaScript -->
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="modal-close-btn">ปิด</button>
-            <button class="btn btn-primary" id="modal-book-btn">จองห้องนี้</button>
+            <form id="quickBookingForm">
+                <input type="hidden" id="modalRoomId" name="room_id">
+                
+                <div class="form-group">
+                    <label for="bookingDate">Date:</label>
+                    <input type="date" id="bookingDate" name="date" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime">Start Time:</label>
+                        <input type="time" id="startTime" name="start_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Time:</label>
+                        <input type="time" id="endTime" name="end_time" required>
+                    </div>
+                </div>
+                
+                <div class="booking-summary">
+                    <div class="summary-item">
+                        <span>Duration:</span>
+                        <span id="durationDisplay">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Price per hour:</span>
+                        <span id="pricePerHour">-</span>
+                    </div>
+                    <div class="summary-item total">
+                        <span>Total Cost:</span>
+                        <span id="totalCost">-</span>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="cancelBooking">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calendar-check"></i>
+                        Confirm Booking
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Booking Modal -->
-<div id="booking-modal" class="modal" style="display: none;">
-    <div class="modal-backdrop" id="booking-modal-backdrop"></div>
-    <div class="modal-content large">
-        <div class="modal-header">
-            <h2>จองห้อง: <span id="booking-room-name"></span></h2>
-            <button class="modal-close" id="close-booking-modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    let isLoading = false;
+    let allRooms = [];
+    let filteredRooms = [];
+    
+    // Load rooms on page load
+    loadRooms();
+    
+    // Filter and search event listeners
+    document.getElementById('roomSearch').addEventListener('input', applyFilters);
+    document.getElementById('capacityFilter').addEventListener('change', applyFilters);
+    document.getElementById('typeFilter').addEventListener('change', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('priceSort').addEventListener('change', applyFilters);
+    document.getElementById('clearFilters').addEventListener('click', clearFilters);
+    
+    // View toggle
+    document.getElementById('gridView').addEventListener('click', () => setView('grid'));
+    document.getElementById('listView').addEventListener('click', () => setView('list'));
+    
+    // Load more button
+    document.getElementById('loadMoreBtn').addEventListener('click', loadMoreRooms);
+    
+    // Modal events
+    document.getElementById('closeModal').addEventListener('click', closeBookingModal);
+    document.getElementById('cancelBooking').addEventListener('click', closeBookingModal);
+    document.getElementById('quickBookingForm').addEventListener('submit', handleQuickBooking);
+    
+    // Time change events for booking calculation
+    document.getElementById('startTime').addEventListener('change', calculateBookingCost);
+    document.getElementById('endTime').addEventListener('change', calculateBookingCost);
+    
+    async function loadRooms() {
+        if (isLoading) return;
         
-        <div class="modal-body">
-            <form id="booking-form" class="booking-form">
-                <input type="hidden" id="booking-room-id" name="room_id">
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="booking-date">วันที่จอง <span class="required">*</span></label>
-                        <input type="date" id="booking-date" name="booking_date" required 
-                               min="<%= new Date().toISOString().split('T')[0] %>">
-                    </div>
-                    <div class="form-group">
-                        <label for="booking-duration">ระยะเวลา (ชั่วโมง) <span class="required">*</span></label>
-                        <select id="booking-duration" name="duration" required>
-                            <option value="">เลือกระยะเวลา</option>
-                            <option value="1">1 ชั่วโมง</option>
-                            <option value="2">2 ชั่วโมง</option>
-                            <option value="3">3 ชั่วโมง</option>
-                            <option value="4">4 ชั่วโมง</option>
-                            <option value="5">5 ชั่วโมง</option>
-                            <option value="6">6 ชั่วโมง</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="booking-start-time">เวลาเริ่มต้น <span class="required">*</span></label>
-                        <select id="booking-start-time" name="start_time" required>
-                            <option value="">เลือกเวลา</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="booking-guests">จำนวนผู้ใช้งาน</label>
-                        <input type="number" id="booking-guests" name="guests" min="1" placeholder="จำนวนคน">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="booking-notes">หมายเหตุ (ถ้ามี)</label>
-                    <textarea id="booking-notes" name="notes" rows="3" 
-                              placeholder="ความต้องการพิเศษหรือหมายเหตุเพิ่มเติม"></textarea>
-                </div>
-                
-                <!-- Booking Summary -->
-                <div class="booking-summary">
-                    <h4>สรุปการจอง</h4>
-                    <div class="summary-row">
-                        <span>ห้อง:</span>
-                        <span id="summary-room-name">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>วันที่:</span>
-                        <span id="summary-date">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>เวลา:</span>
-                        <span id="summary-time">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>ระยะเวลา:</span>
-                        <span id="summary-duration">-</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>ราคารวม:</span>
-                        <span id="summary-total">0 บาท</span>
-                    </div>
-                </div>
-            </form>
-        </div>
+        isLoading = true;
+        showLoading();
         
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="cancel-booking">ยกเลิก</button>
-            <button class="btn btn-primary" id="confirm-booking" type="submit" form="booking-form">
-                <i class="fas fa-credit-card"></i>
-                ยืนยันและชำระเงิน
-            </button>
-        </div>
-    </div>
-</div>
+        try {
+            const response = await fetch('/api/rooms?page=' + currentPage);
+            const data = await response.json();
+            
+            if (data.success) {
+                if (currentPage === 1) {
+                    allRooms = data.rooms;
+                } else {
+                    allRooms = [...allRooms, ...data.rooms];
+                }
+                
+                filteredRooms = [...allRooms];
+                displayRooms(filteredRooms);
+                updateResultsCount();
+                
+                // Show/hide load more button
+                const loadMoreBtn = document.getElementById('loadMoreBtn');
+                if (data.hasMore) {
+                    loadMoreBtn.classList.remove('hidden');
+                } else {
+                    loadMoreBtn.classList.add('hidden');
+                }
+            } else {
+                showError('Failed to load rooms: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error loading rooms:', error);
+            showError('Failed to load rooms. Please try again.');
+        } finally {
+            isLoading = false;
+            hideLoading();
+        }
+    }
+    
+    function displayRooms(rooms) {
+        const grid = document.getElementById('roomsGrid');
+        const isListView = grid.classList.contains('list-view');
+        
+        if (currentPage === 1) {
+            grid.innerHTML = '';
+        }
+        
+        if (rooms.length === 0) {
+            document.getElementById('noResults').classList.remove('hidden');
+            return;
+        } else {
+            document.getElementById('noResults').classList.add('hidden');
+        }
+        
+        rooms.forEach(room => {
+            const roomCard = createRoomCard(room, isListView);
+            grid.appendChild(roomCard);
+        });
+    }
+    
+    function createRoomCard(room, isListView = false) {
+        const card = document.createElement('div');
+        card.className = 'room-card' + (isListView ? ' list-item' : '');
+        card.dataset.roomId = room.room_id;
+        
+        card.innerHTML = `
+            <div class="room-image">
+                <img src="/assets/images/rooms/room-${room.room_id}.jpg" 
+                     alt="${room.name}" 
+                     onerror="this.src='/assets/images/rooms/default-room.jpg'">
+                <div class="room-status ${room.status}">
+                    <i class="fas fa-circle"></i>
+                    ${room.status.charAt(0).toUpperCase() + room.status.slice(1)}
+                </div>
+                ${room.features ? `<div class="room-features">
+                    ${room.features.split(',').slice(0, 2).map(feature => 
+                        `<span class="feature-tag">${feature.trim()}</span>`
+                    ).join('')}
+                </div>` : ''}
+            </div>
+            <div class="room-content">
+                <h3 class="room-name">${room.name}</h3>
+                <div class="room-info">
+                    <div class="room-detail">
+                        <i class="fas fa-users"></i>
+                        <span>Up to ${room.capacity} people</span>
+                    </div>
+                    <div class="room-detail">
+                        <i class="fas fa-tag"></i>
+                        <span>${room.type_name || 'Standard'}</span>
+                    </div>
+                    ${room.size ? `<div class="room-detail">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                        <span>${room.size} sqm</span>
+                    </div>` : ''}
+                </div>
+                ${room.description ? `<p class="room-description">${room.description}</p>` : ''}
+                <div class="room-price">
+                    <span class="price">₿${room.price_per_hour}</span>
+                    <span class="period">per hour</span>
+                </div>
+                <div class="room-actions">
+                    <a href="/rooms/${room.room_id}" class="btn btn-outline btn-small">
+                        <i class="fas fa-eye"></i>
+                        View Details
+                    </a>
+                    ${room.status === 'available' ? `
+                        <button class="btn btn-primary btn-small quick-book-btn" 
+                                data-room-id="${room.room_id}" 
+                                data-room-name="${room.name}" 
+                                data-price="${room.price_per_hour}">
+                            <i class="fas fa-calendar-plus"></i>
+                            Quick Book
+                        </button>
+                    ` : `
+                        <button class="btn btn-disabled btn-small" disabled>
+                            <i class="fas fa-clock"></i>
+                            ${room.status === 'occupied' ? 'Occupied' : 'Unavailable'}
+                        </button>
+                    `}
+                </div>
+            </div>
+        `;
+        
+        // Add quick book event listener
+        const quickBookBtn = card.querySelector('.quick-book-btn');
+        if (quickBookBtn) {
+            quickBookBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openBookingModal(
+                    quickBookBtn.dataset.roomId,
+                    quickBookBtn.dataset.roomName,
+                    quickBookBtn.dataset.price
+                );
+            });
+        }
+        
+        return card;
+    }
+    
+    function applyFilters() {
+        const searchTerm = document.getElementById('roomSearch').value.toLowerCase();
+        const capacityFilter = document.getElementById('capacityFilter').value;
+        const typeFilter = document.getElementById('typeFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const priceSort = document.getElementById('priceSort').value;
+        
+        filteredRooms = allRooms.filter(room => {
+            // Search filter
+            if (searchTerm && !room.name.toLowerCase().includes(searchTerm)) {
+                return false;
+            }
+            
+            // Capacity filter
+            if (capacityFilter) {
+                const capacity = parseInt(room.capacity);
+                switch (capacityFilter) {
+                    case '1-4': if (capacity < 1 || capacity > 4) return false; break;
+                    case '5-8': if (capacity < 5 || capacity > 8) return false; break;
+                    case '9-12': if (capacity < 9 || capacity > 12) return false; break;
+                    case '13+': if (capacity < 13) return false; break;
+                }
+            }
+            
+            // Type filter
+            if (typeFilter && room.type_name && !room.type_name.toLowerCase().includes(typeFilter.toLowerCase())) {
+                return false;
+            }
+            
+            // Status filter
+            if (statusFilter && room.status !== statusFilter) {
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // Sort by price
+        if (priceSort) {
+            filteredRooms.sort((a, b) => {
+                const priceA = parseFloat(a.price_per_hour);
+                const priceB = parseFloat(b.price_per_hour);
+                return priceSort === 'asc' ? priceA - priceB : priceB - priceA;
+            });
+        }
+        
+        currentPage = 1;
+        displayRooms(filteredRooms);
+        updateResultsCount();
+    }
+    
+    function clearFilters() {
+        document.getElementById('roomSearch').value = '';
+        document.getElementById('capacityFilter').value = '';
+        document.getElementById('typeFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('priceSort').value = '';
+        
+        filteredRooms = [...allRooms];
+        displayRooms(filteredRooms);
+        updateResultsCount();
+    }
+    
+    function updateResultsCount() {
+        document.getElementById('resultsCount').textContent = filteredRooms.length;
+    }
+    
+    function setView(viewType) {
+        const grid = document.getElementById('roomsGrid');
+        const gridBtn = document.getElementById('gridView');
+        const listBtn = document.getElementById('listView');
+        
+        if (viewType === 'list') {
+            grid.classList.add('list-view');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+        } else {
+            grid.classList.remove('list-view');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+        }
+        
+        // Re-render current rooms with new view
+        displayRooms(filteredRooms);
+    }
+    
+    function loadMoreRooms() {
+        currentPage++;
+        loadRooms();
+    }
+    
+    function openBookingModal(roomId, roomName, pricePerHour) {
+        <% if (typeof user === 'undefined' || !user) { %>
+            // Redirect to login if not authenticated
+            window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+            return;
+        <% } %>
+        
+        document.getElementById('modalRoomId').value = roomId;
+        document.getElementById('modalRoomName').textContent = roomName;
+        document.getElementById('pricePerHour').textContent = '₿' + pricePerHour;
+        
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('bookingDate').value = today;
+        document.getElementById('bookingDate').min = today;
+        
+        document.getElementById('bookingModal').classList.add('active');
+    }
+    
+    function closeBookingModal() {
+        document.getElementById('bookingModal').classList.remove('active');
+        document.getElementById('quickBookingForm').reset();
+    }
+    
+    function calculateBookingCost() {
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+        const pricePerHourText = document.getElementById('pricePerHour').textContent;
+        
+        if (startTime && endTime && pricePerHourText) {
+            const start = new Date('2000-01-01T' + startTime);
+            const end = new Date('2000-01-01T' + endTime);
+            
+            if (end > start) {
+                const durationMs = end - start;
+                const durationHours = durationMs / (1000 * 60 * 60);
+                const pricePerHour = parseFloat(pricePerHourText.replace('₿', ''));
+                const totalCost = durationHours * pricePerHour;
+                
+                document.getElementById('durationDisplay').textContent = durationHours + ' hours';
+                document.getElementById('totalCost').textContent = '₿' + totalCost.toFixed(2);
+            } else {
+                document.getElementById('durationDisplay').textContent = '-';
+                document.getElementById('totalCost').textContent = '-';
+            }
+        }
+    }
+    
+    async function handleQuickBooking(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const bookingData = Object.fromEntries(formData);
+        
+        // Combine date and time
+        bookingData.start_time = bookingData.date + 'T' + bookingData.start_time;
+        bookingData.end_time = bookingData.date + 'T' + bookingData.end_time;
+        delete bookingData.date;
+        
+        try {
+            const response = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                },
+                body: JSON.stringify(bookingData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeBookingModal();
+                showSuccess('Booking created successfully! Redirecting to your bookings...');
+                setTimeout(() => {
+                    window.location.href = '/bookings';
+                }, 2000);
+            } else {
+                showError('Booking failed: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Booking error:', error);
+            showError('Failed to create booking. Please try again.');
+        }
+    }
+    
+    function showLoading() {
+        document.getElementById('loadingSpinner').classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingSpinner').classList.add('hidden');
+    }
+    
+    function showError(message) {
+        // You can implement a toast notification system here
+        alert(message);
+    }
+    
+    function showSuccess(message) {
+        // You can implement a toast notification system here
+        alert(message);
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('bookingModal');
+        if (e.target === modal) {
+            closeBookingModal();
+        }
+    });
+});
+</script>

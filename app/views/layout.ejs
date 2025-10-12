@@ -1,80 +1,120 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof title !== 'undefined' ? title : 'Junrai Karaoke' %></title>
+    <title><%= title %></title>
     
-    <!-- CSRF Token Meta -->
-    <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+    <!-- Meta Tags -->
+    <meta name="description" content="Junrai Karaoke - Professional karaoke room booking system">
+    <meta name="keywords" content="karaoke, booking, entertainment, music">
+    <meta name="author" content="Junrai Karaoke">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
     
-    <!-- Global Styles -->
+    <!-- Base CSS -->
     <link rel="stylesheet" href="/styles/main.css">
     
-    <!-- Page-specific Styles -->
-    <% if (typeof pageCSS !== 'undefined') { %>
-        <% if (Array.isArray(pageCSS)) { %>
-                <% pageCSS.forEach(function(css) { %>
-                    <link rel="stylesheet" href="/styles/<%= css %>.css">
-                <% }); %>
-        <% } else { %>
-                <link rel="stylesheet" href="/styles/<%= pageCSS %>.css">
-        <% } %>
+    <!-- Page-specific CSS -->
+    <% if (typeof pageCSS !== 'undefined' && pageCSS) { %>
+        <link rel="stylesheet" href="/styles/<%= pageCSS %>.css">
     <% } %>
     
-    <!-- Additional Head Content -->
-    <% if (typeof additionalHead !== 'undefined') { %>
-        <%- additionalHead %>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSRF Token for forms -->
+    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+        <meta name="csrf-token" content="<%= csrfToken %>">
     <% } %>
 </head>
-<body data-current-page="<%= typeof currentPage !== 'undefined' ? currentPage : '' %>">
-    <!-- Include Header/Navigation -->
+<body class="<%= typeof currentPage !== 'undefined' ? 'page-' + currentPage : '' %>">
+    <!-- Status Banner (Online/Offline) -->
+    <div id="status-banner" class="status-banner hidden">
+        <div class="status-content">
+            <i class="fas fa-circle status-indicator"></i>
+            <span id="status-text">Checking connection...</span>
+        </div>
+    </div>
+
+    <!-- Header -->
     <%- include('partials/header') %>
+    
+    <!-- Navigation -->
+    <%- include('partials/navbar') %>
     
     <!-- Main Content -->
     <main class="main-content">
         <%- body %>
     </main>
     
-    <!-- Include Footer -->
+    <!-- Footer -->
     <%- include('partials/footer') %>
     
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
+    <!-- Base JavaScript -->
+    <script src="/js/main.js"></script>
     
-    <!-- Expose Server Data to Client -->
+    <!-- Page-specific JavaScript -->
+    <% if (typeof pageScript !== 'undefined' && pageScript) { %>
+        <script src="/js/<%= pageScript %>.js"></script>
+    <% } %>
+    
+    <!-- Status Check Script -->
     <script>
-        window.serverData = {
-            user: <%- JSON.stringify(typeof user !== 'undefined' ? user : null) %>,
-            isAuthenticated: '<%= typeof user !== 'undefined' && user ? "true" : "false" %>',
-            csrfToken: '<%= typeof csrfToken !== 'undefined' ? csrfToken : "" %>',
-            currentPage: '<%= typeof currentPage !== 'undefined' ? currentPage : "" %>',
-            environment: '<%= typeof process !== 'undefined' && process.env.NODE_ENV ? process.env.NODE_ENV : "production" %>'
+        // Check backend status
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch('/api/status', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const banner = document.getElementById('status-banner');
+                const statusText = document.getElementById('status-text');
+                const statusIndicator = banner.querySelector('.status-indicator');
+                
+                if (response.ok) {
+                    banner.className = 'status-banner online';
+                    statusText.textContent = 'System Online';
+                    statusIndicator.className = 'fas fa-circle status-indicator online';
+                } else {
+                    throw new Error('Server responded with error');
+                }
+            } catch (error) {
+                const banner = document.getElementById('status-banner');
+                const statusText = document.getElementById('status-text');
+                const statusIndicator = banner.querySelector('.status-indicator');
+                
+                banner.className = 'status-banner offline';
+                statusText.textContent = 'System Offline';
+                statusIndicator.className = 'fas fa-circle status-indicator offline';
+            }
+            
+            // Show banner
+            document.getElementById('status-banner').classList.remove('hidden');
+            
+            // Hide banner after 3 seconds if online
+            setTimeout(() => {
+                const banner = document.getElementById('status-banner');
+                if (banner.classList.contains('online')) {
+                    banner.classList.add('hidden');
+                }
+            }, 3000);
         }
+        
+        // Check status on page load
+        document.addEventListener('DOMContentLoaded', checkBackendStatus);
+        
+        // Check status every 30 seconds
+        setInterval(checkBackendStatus, 30000);
     </script>
-    
-    <!-- Core JavaScript Modules (Load Order Important) -->
-    <script type="module" src="/js/core/dom.js"></script>
-    <script type="module" src="/js/core/events.js"></script>
-    <script type="module" src="/js/core/api.js"></script>
-    
-    <!-- Authentication Module (Required for all pages) -->
-    <script type="module" src="/js/modules/auth.js"></script>
-    
-    <!-- Main Application -->
-    <script type="module" src="/js/main.js"></script>
-    
-    <!-- Page-specific JavaScript Module -->
-    <% if (typeof pageScript !== 'undefined') { %>
-        <script type="module" src="/js/modules/<%= pageScript %>.js" defer></script>
-    <% } %>
-    
-    <!-- Additional Footer Scripts -->
-    <% if (typeof additionalFooter !== 'undefined') { %>
-        <%- additionalFooter %>
-    <% } %>
 </body>
 </html>
