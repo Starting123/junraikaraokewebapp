@@ -2,794 +2,106 @@
 <section class="auth-section">
     <div class="auth-container">
         <div class="auth-content">
-            <!-- Logo and Title -->
             <div class="auth-header">
                 <div class="auth-logo">
-                    <img src="/assets/images/logo.png" alt="Junrai Karaoke" class="logo-img">
-                    <h1>Junrai Karaoke</h1>
+                    <img src="/assets/images/logo.png" alt="Junrai Karaoke" style="height:48px;">
                 </div>
                 <div class="auth-title">
-                    <h2>Join Junrai Karaoke</h2>
-                    <p>Create your account to start booking amazing karaoke experiences</p>
+                    <h2>Register for Junrai Karaoke</h2>
+                    <p>Create your account to book rooms and enjoy exclusive offers.</p>
                 </div>
             </div>
             
             <!-- Register Form -->
             <form id="registerForm" class="auth-form">
-                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <% } %>
-                
-                <!-- Error/Success Messages -->
-                <div id="authMessages" class="auth-messages hidden">
-                    <div class="message-content"></div>
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" name="firstname" required>
                 </div>
-                
-                <!-- Progress Indicator -->
-                <div class="registration-progress">
-                    <div class="progress-step active" data-step="1">
-                        <div class="step-number">1</div>
-                        <div class="step-label">Personal Info</div>
-                    </div>
-                    <div class="progress-step" data-step="2">
-                        <div class="step-number">2</div>
-                        <div class="step-label">Account Details</div>
-                    </div>
-                    <div class="progress-step" data-step="3">
-                        <div class="step-number">3</div>
-                        <div class="step-label">Verification</div>
-                    </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="lastname" required>
                 </div>
-                
-                <!-- Step 1: Personal Information -->
-                <div class="form-step active" id="step1">
-                    <div class="step-header">
-                        <h3>Personal Information</h3>
-                        <p>Tell us a bit about yourself</p>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="firstName">First Name *</label>
-                            <div class="input-group">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="firstName" name="first_name" required 
-                                       placeholder="Enter your first name">
-                            </div>
-                            <div class="field-error" id="firstNameError"></div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="lastName">Last Name *</label>
-                            <div class="input-group">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" id="lastName" name="last_name" required 
-                                       placeholder="Enter your last name">
-                            </div>
-                            <div class="field-error" id="lastNameError"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phone">Phone Number *</label>
-                        <div class="input-group">
-                            <i class="fas fa-phone input-icon"></i>
-                            <select class="country-code" id="countryCode" name="country_code">
-                                <option value="+66">🇹🇭 +66</option>
-                                <option value="+1">🇺🇸 +1</option>
-                                <option value="+86">🇨🇳 +86</option>
-                                <option value="+81">🇯🇵 +81</option>
-                                <option value="+82">🇰🇷 +82</option>
-                            </select>
-                            <input type="tel" id="phone" name="phone" required 
-                                   placeholder="812345678" pattern="[0-9]{9,10}">
-                        </div>
-                        <div class="field-error" id="phoneError"></div>
-                        <div class="field-help">We'll use this for booking confirmations</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="birthDate">Date of Birth</label>
-                        <div class="input-group">
-                            <i class="fas fa-calendar input-icon"></i>
-                            <input type="date" id="birthDate" name="birth_date" 
-                                   max="2006-01-01">
-                        </div>
-                        <div class="field-help">Must be 18+ to create an account</div>
-                    </div>
-                    
-                    <div class="step-actions">
-                        <button type="button" class="btn btn-primary" id="nextStep1">
-                            Next Step
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
                 </div>
-                
-                <!-- Step 2: Account Details -->
-                <div class="form-step" id="step2">
-                    <div class="step-header">
-                        <h3>Account Details</h3>
-                        <p>Set up your login credentials</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Email Address *</label>
-                        <div class="input-group">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="email" name="email" required 
-                                   placeholder="Enter your email address">
-                            <div class="validation-icon" id="emailValidation"></div>
-                        </div>
-                        <div class="field-error" id="emailError"></div>
-                        <div class="field-help">We'll send booking confirmations here</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <div class="input-group">
-                            <i class="fas fa-at input-icon"></i>
-                            <input type="text" id="username" name="username" 
-                                   placeholder="Choose a unique username (optional)">
-                            <div class="validation-icon" id="usernameValidation"></div>
-                        </div>
-                        <div class="field-error" id="usernameError"></div>
-                        <div class="field-help">Leave blank to use your email as username</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="registerPassword">Password *</label>
-                        <div class="input-group">
-                            <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="registerPassword" name="password" required 
-                                   placeholder="Create a strong password">
-                            <button type="button" class="password-toggle" id="toggleRegisterPassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="field-error" id="passwordError"></div>
-                        <div class="password-strength" id="passwordStrength">
-                            <div class="strength-meter">
-                                <div class="strength-fill"></div>
-                            </div>
-                            <div class="strength-text">Password strength</div>
-                        </div>
-                        <div class="password-requirements">
-                            <div class="requirement" id="req-length">
-                                <i class="fas fa-times"></i>
-                                At least 8 characters
-                            </div>
-                            <div class="requirement" id="req-uppercase">
-                                <i class="fas fa-times"></i>
-                                One uppercase letter
-                            </div>
-                            <div class="requirement" id="req-lowercase">
-                                <i class="fas fa-times"></i>
-                                One lowercase letter
-                            </div>
-                            <div class="requirement" id="req-number">
-                                <i class="fas fa-times"></i>
-                                One number
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password *</label>
-                        <div class="input-group">
-                            <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="confirmPassword" name="confirm_password" required 
-                                   placeholder="Confirm your password">
-                            <div class="validation-icon" id="confirmPasswordValidation"></div>
-                        </div>
-                        <div class="field-error" id="confirmPasswordError"></div>
-                    </div>
-                    
-                    <div class="step-actions">
-                        <button type="button" class="btn btn-outline" id="prevStep2">
-                            <i class="fas fa-arrow-left"></i>
-                            Previous
-                        </button>
-                        <button type="button" class="btn btn-primary" id="nextStep2">
-                            Next Step
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required>
                 </div>
-                
-                <!-- Step 3: Verification & Terms -->
-                <div class="form-step" id="step3">
-                    <div class="step-header">
-                        <h3>Almost Done!</h3>
-                        <p>Review your information and accept our terms</p>
-                    </div>
-                    
-                    <!-- Registration Summary -->
-                    <div class="registration-summary">
-                        <h4>Registration Summary</h4>
-                        <div class="summary-item">
-                            <span class="label">Name:</span>
-                            <span class="value" id="summaryName">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="label">Email:</span>
-                            <span class="value" id="summaryEmail">-</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="label">Phone:</span>
-                            <span class="value" id="summaryPhone">-</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Marketing Preferences -->
-                    <div class="preferences-section">
-                        <h4>Communication Preferences</h4>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="emailNotifications" name="email_notifications" checked>
-                                <span class="checkmark"></span>
-                                Email notifications for bookings and updates
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="smsNotifications" name="sms_notifications">
-                                <span class="checkmark"></span>
-                                SMS notifications for booking reminders
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="marketingEmails" name="marketing_emails">
-                                <span class="checkmark"></span>
-                                Special offers and promotional emails
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Terms and Conditions -->
-                    <div class="terms-section">
-                        <div class="checkbox-group required">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="agreeTerms" name="agree_terms" required>
-                                <span class="checkmark"></span>
-                                I agree to the <a href="/terms" target="_blank">Terms of Service</a> 
-                                and <a href="/privacy" target="_blank">Privacy Policy</a> *
-                            </label>
-                        </div>
-                        <div class="checkbox-group required">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="ageConfirmation" name="age_confirmation" required>
-                                <span class="checkmark"></span>
-                                I confirm that I am 18 years of age or older *
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="step-actions">
-                        <button type="button" class="btn btn-outline" id="prevStep3">
-                            <i class="fas fa-arrow-left"></i>
-                            Previous
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="registerBtn">
-                            <i class="fas fa-user-plus"></i>
-                            Create Account
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                
-                <!-- Social Registration -->
-                <div class="social-login">
-                    <button type="button" class="btn btn-social google" id="googleRegister">
-                        <i class="fab fa-google"></i>
-                        Sign up with Google
-                    </button>
-                    <button type="button" class="btn btn-social facebook" id="facebookRegister">
-                        <i class="fab fa-facebook-f"></i>
-                        Sign up with Facebook
-                    </button>
-                    <button type="button" class="btn btn-social line" id="lineRegister">
-                        <i class="fab fa-line"></i>
-                        Sign up with LINE
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        <i class="fas fa-user-plus"></i> Register
                     </button>
                 </div>
-                
-                <div class="auth-footer">
-                    <p>Already have an account? 
-                        <a href="/login" class="auth-link">Sign in here</a>
-                    </p>
-                </div>
+                <div id="authMessages" class="auth-messages hidden"></div>
             </form>
-        </div>
-        
-        <!-- Auth Side Image -->
-        <div class="auth-side">
-            <div class="auth-side-content">
-                <h3>Join Our Community</h3>
-                <div class="benefits-list">
-                    <div class="benefit-item">
-                        <i class="fas fa-star"></i>
-                        <div>
-                            <h4>Member Benefits</h4>
-                            <p>Exclusive discounts and priority booking</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <div>
-                            <h4>Easy Management</h4>
-                            <p>Track and manage all your bookings online</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-bell"></i>
-                        <div>
-                            <h4>Smart Notifications</h4>
-                            <p>Get reminders and updates about your bookings</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-gift"></i>
-                        <div>
-                            <h4>Special Offers</h4>
-                            <p>Access to member-only promotions and events</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-number">10K+</div>
-                        <div class="stat-label">Happy Customers</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">50+</div>
-                        <div class="stat-label">Premium Rooms</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">100K+</div>
-                        <div class="stat-label">Songs Available</div>
-                    </div>
-                </div>
+            
+            <div class="auth-footer">
+                <span>Already have an account?</span>
+                <a href="/login" class="auth-link">Sign in here</a>
             </div>
         </div>
     </div>
 </section>
 
-<!-- JavaScript -->
+<link rel="stylesheet" href="/styles/auth.css">
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentStep = 1;
-    const totalSteps = 3;
-    
-    // Form elements
-    const registerForm = document.getElementById('registerForm');
-    const authMessages = document.getElementById('authMessages');
-    const registerBtn = document.getElementById('registerBtn');
-    
-    // Step navigation
-    document.getElementById('nextStep1').addEventListener('click', () => validateAndNextStep(1));
-    document.getElementById('nextStep2').addEventListener('click', () => validateAndNextStep(2));
-    document.getElementById('prevStep2').addEventListener('click', () => goToStep(1));
-    document.getElementById('prevStep3').addEventListener('click', () => goToStep(2));
-    
-    // Password toggle
-    document.getElementById('toggleRegisterPassword').addEventListener('click', togglePassword);
-    
-    // Real-time validation
-    document.getElementById('email').addEventListener('blur', validateEmail);
-    document.getElementById('username').addEventListener('blur', validateUsername);
-    document.getElementById('registerPassword').addEventListener('input', validatePassword);
-    document.getElementById('confirmPassword').addEventListener('input', validateConfirmPassword);
-    document.getElementById('phone').addEventListener('input', validatePhone);
-    
-    // Form submission
-    registerForm.addEventListener('submit', handleRegistration);
-    
-    // Social registration
-    document.getElementById('googleRegister').addEventListener('click', () => {
-        window.location.href = '/api/auth/google?action=register';
+// Helper: Show error message
+function showError(msg) {
+    const messages = document.getElementById('authMessages');
+    messages.textContent = msg;
+    messages.classList.remove('hidden');
+    messages.className = 'auth-messages error';
+}
+
+// Helper: Validate password strength
+function isStrongPassword(pw) {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{12,}$/.test(pw);
+}
+
+// Helper: Check email uniqueness via backend
+async function isEmailAvailable(email) {
+    const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    return data.available;
+}
+
+// Register form handler
+const registerForm = document.getElementById('registerForm');
+registerForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        firstname: document.getElementById('firstName').value.trim(),
+        lastname: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+    };
+    if (!formData.firstname || !formData.lastname || !formData.email || !formData.password) {
+        showError('All fields are required.');
+        return;
+    }
+    if (!isStrongPassword(formData.password)) {
+        showError('Password must be at least 12 characters and include upper, lower, digit, special char.');
+        return;
+    }
+    if (!(await isEmailAvailable(formData.email))) {
+        showError('Email already exists.');
+        return;
+    }
+    // If all good, send to backend
+    const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
     });
-    document.getElementById('facebookRegister').addEventListener('click', () => {
-        window.location.href = '/api/auth/facebook?action=register';
-    });
-    document.getElementById('lineRegister').addEventListener('click', () => {
-        window.location.href = '/api/auth/line?action=register';
-    });
-    
-    function validateAndNextStep(step) {
-        if (validateStep(step)) {
-            goToStep(step + 1);
-        }
-    }
-    
-    function validateStep(step) {
-        let isValid = true;
-        
-        switch (step) {
-            case 1:
-                isValid &= validateRequired('firstName', 'First name is required');
-                isValid &= validateRequired('lastName', 'Last name is required');
-                isValid &= validatePhone();
-                break;
-            case 2:
-                isValid &= validateEmail();
-                isValid &= validatePassword();
-                isValid &= validateConfirmPassword();
-                break;
-            case 3:
-                isValid &= validateRequired('agreeTerms', 'You must agree to the terms and conditions');
-                isValid &= validateRequired('ageConfirmation', 'You must confirm you are 18 or older');
-                break;
-        }
-        
-        return Boolean(isValid);
-    }
-    
-    function goToStep(step) {
-        if (step < 1 || step > totalSteps) return;
-        
-        // Hide current step
-        document.querySelector('.form-step.active').classList.remove('active');
-        document.querySelector('.progress-step.active').classList.remove('active');
-        
-        // Show new step
-        document.getElementById(`step${step}`).classList.add('active');
-        document.querySelector(`[data-step="${step}"]`).classList.add('active');
-        
-        // Update summary if going to step 3
-        if (step === 3) {
-            updateRegistrationSummary();
-        }
-        
-        currentStep = step;
-    }
-    
-    function updateRegistrationSummary() {
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const email = document.getElementById('email').value;
-        const countryCode = document.getElementById('countryCode').value;
-        const phone = document.getElementById('phone').value;
-        
-        document.getElementById('summaryName').textContent = `${firstName} ${lastName}`;
-        document.getElementById('summaryEmail').textContent = email;
-        document.getElementById('summaryPhone').textContent = `${countryCode} ${phone}`;
-    }
-    
-    function validateRequired(fieldId, message) {
-        const field = document.getElementById(fieldId);
-        const errorDiv = document.getElementById(fieldId + 'Error');
-        
-        if (!field.value.trim()) {
-            showFieldError(fieldId, message);
-            return false;
-        } else {
-            clearFieldError(fieldId);
-            return true;
-        }
-    }
-    
-    async function validateEmail() {
-        const email = document.getElementById('email').value;
-        const errorDiv = document.getElementById('emailError');
-        const validationIcon = document.getElementById('emailValidation');
-        
-        if (!email) {
-            showFieldError('email', 'Email is required');
-            return false;
-        }
-        
-        if (!isValidEmail(email)) {
-            showFieldError('email', 'Please enter a valid email address');
-            return false;
-        }
-        
-        // Check if email is already registered
-        try {
-            validationIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const response = await fetch('/api/auth/check-email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            
-            const result = await response.json();
-            
-            if (result.exists) {
-                showFieldError('email', 'This email is already registered');
-                validationIcon.innerHTML = '<i class="fas fa-times text-danger"></i>';
-                return false;
-            } else {
-                clearFieldError('email');
-                validationIcon.innerHTML = '<i class="fas fa-check text-success"></i>';
-                return true;
-            }
-        } catch (error) {
-            console.error('Email validation error:', error);
-            clearFieldError('email');
-            validationIcon.innerHTML = '';
-            return true; // Don't block registration on API error
-        }
-    }
-    
-    async function validateUsername() {
-        const username = document.getElementById('username').value;
-        const validationIcon = document.getElementById('usernameValidation');
-        
-        if (!username) {
-            clearFieldError('username');
-            validationIcon.innerHTML = '';
-            return true;
-        }
-        
-        if (username.length < 3) {
-            showFieldError('username', 'Username must be at least 3 characters');
-            return false;
-        }
-        
-        try {
-            validationIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            const response = await fetch('/api/auth/check-username', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
-            });
-            
-            const result = await response.json();
-            
-            if (result.exists) {
-                showFieldError('username', 'This username is already taken');
-                validationIcon.innerHTML = '<i class="fas fa-times text-danger"></i>';
-                return false;
-            } else {
-                clearFieldError('username');
-                validationIcon.innerHTML = '<i class="fas fa-check text-success"></i>';
-                return true;
-            }
-        } catch (error) {
-            console.error('Username validation error:', error);
-            clearFieldError('username');
-            validationIcon.innerHTML = '';
-            return true;
-        }
-    }
-    
-    function validatePassword() {
-        const password = document.getElementById('registerPassword').value;
-        const requirements = {
-            length: password.length >= 8,
-            uppercase: /[A-Z]/.test(password),
-            lowercase: /[a-z]/.test(password),
-            number: /\d/.test(password)
-        };
-        
-        // Update requirement indicators
-        Object.keys(requirements).forEach(req => {
-            const element = document.getElementById(`req-${req}`);
-            const icon = element.querySelector('i');
-            
-            if (requirements[req]) {
-                element.classList.add('met');
-                icon.className = 'fas fa-check';
-            } else {
-                element.classList.remove('met');
-                icon.className = 'fas fa-times';
-            }
-        });
-        
-        // Calculate strength
-        const metRequirements = Object.values(requirements).filter(Boolean).length;
-        const strengthMeter = document.querySelector('.strength-fill');
-        const strengthText = document.querySelector('.strength-text');
-        
-        let strengthClass = '';
-        let strengthLabel = '';
-        
-        switch (metRequirements) {
-            case 0:
-            case 1:
-                strengthClass = 'weak';
-                strengthLabel = 'Weak';
-                break;
-            case 2:
-                strengthClass = 'fair';
-                strengthLabel = 'Fair';
-                break;
-            case 3:
-                strengthClass = 'good';
-                strengthLabel = 'Good';
-                break;
-            case 4:
-                strengthClass = 'strong';
-                strengthLabel = 'Strong';
-                break;
-        }
-        
-        strengthMeter.className = `strength-fill ${strengthClass}`;
-        strengthMeter.style.width = `${(metRequirements / 4) * 100}%`;
-        strengthText.textContent = `Password strength: ${strengthLabel}`;
-        
-        const allMet = Object.values(requirements).every(Boolean);
-        
-        if (password && !allMet) {
-            showFieldError('registerPassword', 'Password must meet all requirements');
-            return false;
-        } else {
-            clearFieldError('registerPassword');
-            return allMet;
-        }
-    }
-    
-    function validateConfirmPassword() {
-        const password = document.getElementById('registerPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const validationIcon = document.getElementById('confirmPasswordValidation');
-        
-        if (!confirmPassword) {
-            showFieldError('confirmPassword', 'Please confirm your password');
-            validationIcon.innerHTML = '';
-            return false;
-        }
-        
-        if (password !== confirmPassword) {
-            showFieldError('confirmPassword', 'Passwords do not match');
-            validationIcon.innerHTML = '<i class="fas fa-times text-danger"></i>';
-            return false;
-        } else {
-            clearFieldError('confirmPassword');
-            validationIcon.innerHTML = '<i class="fas fa-check text-success"></i>';
-            return true;
-        }
-    }
-    
-    function validatePhone() {
-        const phone = document.getElementById('phone').value;
-        const phoneRegex = /^[0-9]{9,10}$/;
-        
-        if (!phone) {
-            showFieldError('phone', 'Phone number is required');
-            return false;
-        }
-        
-        if (!phoneRegex.test(phone)) {
-            showFieldError('phone', 'Please enter a valid phone number');
-            return false;
-        } else {
-            clearFieldError('phone');
-            return true;
-        }
-    }
-    
-    async function handleRegistration(e) {
-        e.preventDefault();
-        
-        if (!validateStep(3)) {
-            return;
-        }
-        
-        const formData = new FormData(registerForm);
-        const data = Object.fromEntries(formData);
-        
-        // Combine country code and phone
-        data.phone = data.country_code + data.phone;
-        delete data.country_code;
-        delete data.confirm_password;
-        
-        registerBtn.disabled = true;
-        registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
-        
-        try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                },
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // Store JWT token in localStorage
-                localStorage.setItem('token', result.token);
-                
-                showMessage('success', 'Account created successfully! Please check your email to verify your account.');
-                setTimeout(() => {
-                    window.location.href = '/login?message=' + encodeURIComponent('Please verify your email before signing in') + '&type=info';
-                }, 2000);
-            } else {
-                showMessage('error', result.message || 'Registration failed. Please try again.');
-            }
-        } catch (error) {
-            console.error('Registration error:', error);
-            showMessage('error', 'An error occurred. Please try again.');
-        } finally {
-            registerBtn.disabled = false;
-            registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-        }
-    }
-    
-    // Utility: Get JWT token from localStorage
-    function getToken() {
-        return localStorage.getItem('token');
-    }
-    
-    // Example: Use JWT for protected API calls
-    async function registerUser(userData) {
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-        const result = await response.json();
-        if (result.token) {
-            localStorage.setItem('token', result.token);
-        }
-        return result;
-    }
-    
-    function togglePassword() {
-        const passwordInput = document.getElementById('registerPassword');
-        const toggleIcon = document.querySelector('#toggleRegisterPassword i');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        }
-    }
-    
-    function showFieldError(fieldId, message) {
-        const field = document.getElementById(fieldId);
-        const errorDiv = document.getElementById(fieldId + 'Error');
-        
-        field.classList.add('error');
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-    }
-    
-    function clearFieldError(fieldId) {
-        const field = document.getElementById(fieldId);
-        const errorDiv = document.getElementById(fieldId + 'Error');
-        
-        field.classList.remove('error');
-        if (errorDiv) {
-            errorDiv.textContent = '';
-            errorDiv.style.display = 'none';
-        }
-    }
-    
-    function showMessage(type, message) {
-        const messageContent = authMessages.querySelector('.message-content');
-        messageContent.textContent = message;
-        
-        authMessages.className = 'auth-messages ' + type;
-        authMessages.classList.remove('hidden');
-        
-        if (type === 'success') {
-            setTimeout(() => {
-                authMessages.classList.add('hidden');
-            }, 5000);
-        }
-        
-        authMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+    const result = await response.json();
+    if (result.success) {
+        window.location.href = '/login';
+    } else {
+        showError(result.message || 'Registration failed.');
     }
 });
 </script>

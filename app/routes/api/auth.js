@@ -227,6 +227,14 @@ router.get('/me', requireLogin, async (req, res, next) => {
   }
 });
 
+// GET /api/auth/check-email - check if email is available
+router.get('/check-email', async (req, res) => {
+    const email = req.query.email;
+    if (!email) return res.json({ available: false });
+    const [rows] = await db.query('SELECT user_id FROM users WHERE email = ? LIMIT 1', [email]);
+    res.json({ available: rows.length === 0 });
+});
+
 // Global error handler for auth routes
 router.use((err, req, res, next) => {
   console.error('Auth API Error:', {
