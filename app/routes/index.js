@@ -189,4 +189,26 @@ router.get('/payment/cancel', function(req, res, next) {
     res.render('payment-cancel');
 });
 
+router.get('/register', function(req, res, next) {
+    res.render('pages/register', {
+        title: 'Register - Junrai Karaoke',
+        currentPage: 'register',
+        pageCSS: 'auth',
+        pageScript: 'register',
+        user: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
+});
+
+router.get('/login', function(req, res, next) {
+    res.render('pages/login', {
+        title: 'Login - Junrai Karaoke',
+        currentPage: 'login',
+        pageCSS: 'auth',
+        pageScript: 'login',
+        user: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
+});
+
 module.exports = router;
