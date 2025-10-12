@@ -2,11 +2,46 @@
 <div class="page-header">
     <div class="container">
         <div class="page-header-content">
-            <h1>ห้องคาราโอเกะ</h1>
-            <p>เลือกห้องที่เหมาะสมกับความต้องการของคุณ</p>
+            <h1>ห้องคาราโอเกะที่ว่าง</h1>
+            <p>เลือกห้องที่เหมาะสมกับความต้องการของคุณและจองเลย!</p>
         </div>
     </div>
 </div>
+
+<!-- Room Stats -->
+<section class="room-stats">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="available-count">0</h3>
+                    <p>ห้องว่าง</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="occupied-count">0</h3>
+                    <p>ห้องที่ใช้งาน</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="current-time">--:--</h3>
+                    <p>เวลาปัจจุบัน</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Filters Section -->
 <section class="filters-section">
@@ -27,6 +62,29 @@
                         <option value="6-10">6-10 คน</option>
                         <option value="11-15">11-15 คน</option>
                         <option value="16+">16+ คน</option>
+                    </select>
+                </div>
+                
+                <!-- Price Range Filter -->
+                <div class="filter-group">
+                    <label>ช่วงราคา (บาท/ชั่วโมง)</label>
+                    <select id="price-filter" class="filter-select">
+                        <option value="">ทั้งหมด</option>
+                        <option value="0-100">0-100 บาท</option>
+                        <option value="101-200">101-200 บาท</option>
+                        <option value="201-300">201-300 บาท</option>
+                        <option value="301+">301+ บาท</option>
+                    </select>
+                </div>
+                
+                <!-- Status Filter -->
+                <div class="filter-group">
+                    <label>สถานะ</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="">ทั้งหมด</option>
+                        <option value="available">ว่าง</option>
+                        <option value="occupied">ใช้งาน</option>
+                        <option value="maintenance">ปรับปรุง</option>
                     </select>
                 </div>
                 
@@ -91,6 +149,47 @@
             <!-- Room cards will be populated by JavaScript -->
         </div>
         
+        <!-- Room Cards Template (for JavaScript rendering) -->
+        <template id="room-card-template">
+            <div class="room-card" data-room-id="">
+                <div class="room-status-badge"></div>
+                <div class="room-image">
+                    <img src="/assets/images/room-placeholder.jpg" alt="Room Image" loading="lazy">
+                    <div class="room-type-badge"></div>
+                </div>
+                <div class="room-info">
+                    <div class="room-header">
+                        <h3 class="room-name"></h3>
+                        <div class="room-capacity">
+                            <i class="fas fa-users"></i>
+                            <span class="capacity-text"></span>
+                        </div>
+                    </div>
+                    <div class="room-details">
+                        <div class="room-price">
+                            <span class="price-amount"></span>
+                            <span class="price-unit">บาท/ชั่วโมง</span>
+                        </div>
+                        <div class="room-features">
+                            <span class="feature"><i class="fas fa-microphone"></i> ไมโครโฟน</span>
+                            <span class="feature"><i class="fas fa-tv"></i> จอแสดงผล</span>
+                            <span class="feature"><i class="fas fa-volume-up"></i> เสียงคุณภาพ</span>
+                        </div>
+                    </div>
+                    <div class="room-actions">
+                        <button class="btn btn-outline btn-small room-details-btn">
+                            <i class="fas fa-info-circle"></i>
+                            รายละเอียด
+                        </button>
+                        <button class="btn btn-primary room-book-btn">
+                            <i class="fas fa-calendar-plus"></i>
+                            จองห้อง
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        
         <!-- Pagination -->
         <div id="rooms-pagination" class="pagination-wrapper" style="display: none;">
             <div class="pagination">
@@ -132,6 +231,97 @@
         <div class="modal-footer">
             <button class="btn btn-outline" id="modal-close-btn">ปิด</button>
             <button class="btn btn-primary" id="modal-book-btn">จองห้องนี้</button>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Modal -->
+<div id="booking-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop" id="booking-modal-backdrop"></div>
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h2>จองห้อง: <span id="booking-room-name"></span></h2>
+            <button class="modal-close" id="close-booking-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <form id="booking-form" class="booking-form">
+                <input type="hidden" id="booking-room-id" name="room_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="booking-date">วันที่จอง <span class="required">*</span></label>
+                        <input type="date" id="booking-date" name="booking_date" required 
+                               min="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="booking-duration">ระยะเวลา (ชั่วโมง) <span class="required">*</span></label>
+                        <select id="booking-duration" name="duration" required>
+                            <option value="">เลือกระยะเวลา</option>
+                            <option value="1">1 ชั่วโมง</option>
+                            <option value="2">2 ชั่วโมง</option>
+                            <option value="3">3 ชั่วโมง</option>
+                            <option value="4">4 ชั่วโมง</option>
+                            <option value="5">5 ชั่วโมง</option>
+                            <option value="6">6 ชั่วโมง</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="booking-start-time">เวลาเริ่มต้น <span class="required">*</span></label>
+                        <select id="booking-start-time" name="start_time" required>
+                            <option value="">เลือกเวลา</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="booking-guests">จำนวนผู้ใช้งาน</label>
+                        <input type="number" id="booking-guests" name="guests" min="1" placeholder="จำนวนคน">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="booking-notes">หมายเหตุ (ถ้ามี)</label>
+                    <textarea id="booking-notes" name="notes" rows="3" 
+                              placeholder="ความต้องการพิเศษหรือหมายเหตุเพิ่มเติม"></textarea>
+                </div>
+                
+                <!-- Booking Summary -->
+                <div class="booking-summary">
+                    <h4>สรุปการจอง</h4>
+                    <div class="summary-row">
+                        <span>ห้อง:</span>
+                        <span id="summary-room-name">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>วันที่:</span>
+                        <span id="summary-date">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>เวลา:</span>
+                        <span id="summary-time">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>ระยะเวลา:</span>
+                        <span id="summary-duration">-</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>ราคารวม:</span>
+                        <span id="summary-total">0 บาท</span>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancel-booking">ยกเลิก</button>
+            <button class="btn btn-primary" id="confirm-booking" type="submit" form="booking-form">
+                <i class="fas fa-credit-card"></i>
+                ยืนยันและชำระเงิน
+            </button>
         </div>
     </div>
 </div>

@@ -1,0 +1,264 @@
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1><i class="fas fa-credit-card"></i> ชำระเงิน</h1>
+            <p>เลือกวิธีการชำระเงินที่สะดวกสำหรับคุณ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Page -->
+<section class="payment-section">
+    <div class="container">
+        <div class="payment-layout">
+            <!-- Booking Summary -->
+            <div class="booking-summary-card">
+                <div class="summary-header">
+                    <h3><i class="fas fa-receipt"></i> สรุปการจอง</h3>
+                </div>
+                <div class="summary-content" id="bookingSummary">
+                    <div class="summary-item">
+                        <span class="label">ห้อง:</span>
+                        <span class="value" id="summary-room">Loading...</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">วันที่:</span>
+                        <span class="value" id="summary-booking-date">Loading...</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">เวลา:</span>
+                        <span class="value" id="summary-booking-time">Loading...</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">ระยะเวลา:</span>
+                        <span class="value" id="summary-booking-duration">Loading...</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">จำนวนคน:</span>
+                        <span class="value" id="summary-guests">Loading...</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item total">
+                        <span class="label">ราคารวม:</span>
+                        <span class="value" id="summary-total-amount">0 บาท</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="payment-methods-card">
+                <div class="payment-header">
+                    <h3><i class="fas fa-money-check-alt"></i> เลือกวิธีการชำระเงิน</h3>
+                </div>
+                
+                <div class="payment-methods">
+                    <!-- Stripe Payment -->
+                    <div class="payment-method" data-method="stripe">
+                        <div class="method-header">
+                            <div class="method-icon">
+                                <i class="fab fa-cc-stripe"></i>
+                            </div>
+                            <div class="method-info">
+                                <h4>บัตรเครดิต/เดบิต</h4>
+                                <p>ชำระด้วย Stripe - ปลอดภัยและรวดเร็ว</p>
+                            </div>
+                            <div class="method-radio">
+                                <input type="radio" name="payment_method" value="stripe" id="method-stripe">
+                                <label for="method-stripe"></label>
+                            </div>
+                        </div>
+                        <div class="method-content" id="stripe-content" style="display: none;">
+                            <div class="stripe-form">
+                                <div id="card-element">
+                                    <!-- Stripe Elements will create form elements here -->
+                                </div>
+                                <div id="card-errors" role="alert" class="error-message"></div>
+                            </div>
+                            <div class="accepted-cards">
+                                <span>รองรับ:</span>
+                                <i class="fab fa-cc-visa"></i>
+                                <i class="fab fa-cc-mastercard"></i>
+                                <i class="fab fa-cc-amex"></i>
+                                <i class="fab fa-cc-jcb"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer -->
+                    <div class="payment-method" data-method="transfer">
+                        <div class="method-header">
+                            <div class="method-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="method-info">
+                                <h4>โอนเงินผ่านธนาคาร</h4>
+                                <p>โอนเงินเข้าบัญชีธนาคารและแนบหลักฐาน</p>
+                            </div>
+                            <div class="method-radio">
+                                <input type="radio" name="payment_method" value="transfer" id="method-transfer">
+                                <label for="method-transfer"></label>
+                            </div>
+                        </div>
+                        <div class="method-content" id="transfer-content" style="display: none;">
+                            <div class="bank-accounts">
+                                <h5>ข้อมูลบัญชีสำหรับโอนเงิน:</h5>
+                                <div class="bank-account">
+                                    <div class="bank-logo">
+                                        <img src="/assets/images/banks/kasikorn.png" alt="กสิกรไทย" onerror="this.style.display='none'">
+                                        <i class="fas fa-university" style="display: none;"></i>
+                                    </div>
+                                    <div class="bank-details">
+                                        <div class="bank-name">ธนาคารกสิกรไทย</div>
+                                        <div class="account-number">123-4-56789-0</div>
+                                        <div class="account-name">บริษัท จุนราย คาราโอเกะ จำกัด</div>
+                                    </div>
+                                </div>
+                                <div class="bank-account">
+                                    <div class="bank-logo">
+                                        <img src="/assets/images/banks/scb.png" alt="ไทยพาณิชย์" onerror="this.style.display='none'">
+                                        <i class="fas fa-university" style="display: none;"></i>
+                                    </div>
+                                    <div class="bank-details">
+                                        <div class="bank-name">ธนาคารไทยพาณิชย์</div>
+                                        <div class="account-number">987-6-54321-0</div>
+                                        <div class="account-name">บริษัท จุนราย คาราโอเกะ จำกัด</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="transfer-upload">
+                                <h5>แนบหลักฐานการโอนเงิน:</h5>
+                                <div class="file-upload-area" id="transfer-upload-area">
+                                    <input type="file" id="transfer-receipt" name="transfer_receipt" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>คลิกเพื่อเลือกไฟล์หรือลากวางที่นี่</p>
+                                        <span class="file-types">รองรับ: JPG, PNG, PDF (ขนาดไม่เกิน 5MB)</span>
+                                    </div>
+                                    <div class="upload-preview" style="display: none;">
+                                        <img id="transfer-preview" src="" alt="Preview">
+                                        <div class="upload-info">
+                                            <span id="transfer-filename"></span>
+                                            <button type="button" class="remove-file" id="remove-transfer">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Payment -->
+                    <div class="payment-method" data-method="qrcode">
+                        <div class="method-header">
+                            <div class="method-icon">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div class="method-info">
+                                <h4>QR Code</h4>
+                                <p>สแกน QR Code และแนบหลักฐานการชำระเงิน</p>
+                            </div>
+                            <div class="method-radio">
+                                <input type="radio" name="payment_method" value="qrcode" id="method-qrcode">
+                                <label for="method-qrcode"></label>
+                            </div>
+                        </div>
+                        <div class="method-content" id="qrcode-content" style="display: none;">
+                            <div class="qr-payment-options">
+                                <div class="qr-option">
+                                    <div class="qr-header">
+                                        <img src="/assets/images/promptpay.png" alt="PromptPay" class="qr-logo" onerror="this.style.display='none'">
+                                        <h5>PromptPay</h5>
+                                    </div>
+                                    <div class="qr-code-container">
+                                        <img src="/assets/images/qr-promptpay.png" alt="PromptPay QR Code" class="qr-code" onerror="this.innerHTML='<i class=&quot;fas fa-qrcode&quot;></i><p>QR Code</p>'">
+                                        <div class="qr-phone">เบอร์: 098-765-4321</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="qr-option">
+                                    <div class="qr-header">
+                                        <img src="/assets/images/truemoney.png" alt="TrueMoney" class="qr-logo" onerror="this.style.display='none'">
+                                        <h5>TrueMoney Wallet</h5>
+                                    </div>
+                                    <div class="qr-code-container">
+                                        <img src="/assets/images/qr-truemoney.png" alt="TrueMoney QR Code" class="qr-code" onerror="this.innerHTML='<i class=&quot;fas fa-qrcode&quot;></i><p>QR Code</p>'">
+                                        <div class="qr-phone">เบอร์: 098-765-4321</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="qr-upload">
+                                <h5>แนบหลักฐานการชำระเงิน:</h5>
+                                <div class="file-upload-area" id="qr-upload-area">
+                                    <input type="file" id="qr-receipt" name="qr_receipt" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <i class="fas fa-camera"></i>
+                                        <p>ถ่ายภาพหลักฐานการชำระเงิน</p>
+                                        <span class="file-types">รองรับ: JPG, PNG (ขนาดไม่เกิน 5MB)</span>
+                                    </div>
+                                    <div class="upload-preview" style="display: none;">
+                                        <img id="qr-preview" src="" alt="Preview">
+                                        <div class="upload-info">
+                                            <span id="qr-filename"></span>
+                                            <button type="button" class="remove-file" id="remove-qr">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer Information -->
+                <div class="customer-info">
+                    <h4><i class="fas fa-user"></i> ข้อมูลลูกค้า</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ชื่อ-นามสกุล <span class="required">*</span></label>
+                            <input type="text" id="customer-name" name="customer_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>เบอร์โทรศัพท์ <span class="required">*</span></label>
+                            <input type="tel" id="customer-phone" name="customer_phone" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>อีเมล</label>
+                        <input type="email" id="customer-email" name="customer_email">
+                    </div>
+                </div>
+                
+                <!-- Payment Actions -->
+                <div class="payment-actions">
+                    <button type="button" class="btn btn-outline" id="back-to-booking">
+                        <i class="fas fa-arrow-left"></i>
+                        กลับไปแก้ไขการจอง
+                    </button>
+                    <button type="button" class="btn btn-primary" id="process-payment" disabled>
+                        <i class="fas fa-credit-card"></i>
+                        ดำเนินการชำระเงิน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Payment Processing Modal -->
+<div id="payment-processing-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-body text-center">
+            <div class="processing-animation">
+                <div class="spinner"></div>
+            </div>
+            <h3>กำลังดำเนินการชำระเงิน</h3>
+            <p>กรุณารอสักครู่...</p>
+        </div>
+    </div>
+</div>

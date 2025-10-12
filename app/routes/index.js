@@ -169,6 +169,18 @@ router.get('/admin', requireAdmin, function(req, res, next) {
     });
 });
 
+// Payment routes
+router.get('/payment', requireLogin, function(req, res, next) {
+    res.render('pages/payment', { 
+        title: 'ชำระเงิน - Junrai Karaoke',
+        currentPage: 'payment',
+        pageCSS: 'payment',
+        pageScript: 'payment',
+        user: req.session.user,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
+});
+
 router.get('/payment/success', function(req, res, next) {
     res.render('payment-success');
 });

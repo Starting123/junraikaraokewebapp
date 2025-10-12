@@ -73,7 +73,7 @@ router.post('/register', registerLimiter, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     
-    const { name, email, password } = req.body;
+    const { firstname, lastname, name, email, phone, password } = req.body;
     
     // Check if user already exists
     const [existing] = await db.query('SELECT user_id FROM users WHERE email = ? LIMIT 1', [email]);
@@ -82,8 +82,16 @@ router.post('/register', registerLimiter, [
     // Hash password
     const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
     
+    // Handle name fields (support both formats)
+    const actualFirstname = firstname || (name ? name.split(' ')[0] : '');
+    const actualLastname = lastname || (name ? name.split(' ').slice(1).join(' ') : '');
+    const fullName = name || `${firstname || ''} ${lastname || ''}`.trim();
+    
     // Create user with role_id 3 (customer)
-    const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, hashed, 3]);
+    const [result] = await db.query(
+      'INSERT INTO users (firstname, lastname, name, email, phone, password, role_id) VALUES (?,?,?,?,?,?,?)', 
+      [actualFirstname, actualLastname, fullName, email, phone || null, hashed, 3]
+    );
     
     // Generate JWT token
     const token = jwt.sign(
@@ -96,8 +104,11 @@ router.post('/register', registerLimiter, [
       message: 'สมัครสมาชิกสำเร็จ',
       user: {
         user_id: result.insertId, 
-        name, 
+        firstname: actualFirstname,
+        lastname: actualLastname,
+        name: fullName, 
         email,
+        phone,
         role_id: 3
       },
       token

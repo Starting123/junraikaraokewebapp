@@ -1,23 +1,31 @@
 const db = require('../db');
 
 async function findById(user_id) {
-  const [rows] = await db.query('SELECT user_id, name, email, role_id, status, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1', [user_id]);
+  const [rows] = await db.query('SELECT user_id, firstname, lastname, name, email, phone, role_id, status, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1', [user_id]);
   return rows.length ? rows[0] : null;
 }
 
 async function findByEmail(email) {
-  const [rows] = await db.query('SELECT user_id, name, email, password, role_id, status FROM users WHERE email = ? LIMIT 1', [email]);
+  const [rows] = await db.query('SELECT user_id, firstname, lastname, name, email, phone, password, role_id, status FROM users WHERE email = ? LIMIT 1', [email]);
   return rows.length ? rows[0] : null;
 }
 
-async function create({ name, email, password, role_id = 3 }) {
+async function create({ firstname, lastname, name, email, phone, password, role_id = 3 }) {
   // Password should already be hashed by the controller
-  const [result] = await db.query('INSERT INTO users (name, email, password, role_id) VALUES (?,?,?,?)', [name, email, password, role_id]);
+  // Support both old 'name' format and new 'firstname/lastname' format
+  const actualFirstname = firstname || (name ? name.split(' ')[0] : '');
+  const actualLastname = lastname || (name ? name.split(' ').slice(1).join(' ') : '');
+  const fullName = name || `${firstname} ${lastname}`.trim();
+  
+  const [result] = await db.query(
+    'INSERT INTO users (firstname, lastname, name, email, phone, password, role_id) VALUES (?,?,?,?,?,?,?)', 
+    [actualFirstname, actualLastname, fullName, email, phone || null, password, role_id]
+  );
   return result.insertId;
 }
 
 async function getById(user_id) {
-  const [rows] = await db.query('SELECT user_id, name, email, role_id, status, phone, address, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1', [user_id]);
+  const [rows] = await db.query('SELECT user_id, firstname, lastname, name, email, phone, role_id, status, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1', [user_id]);
   return rows.length ? rows[0] : null;
 }
 
@@ -25,9 +33,30 @@ async function updateLastLogin(user_id) {
   await db.query('UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', [user_id]);
 }
 
-async function updateProfile(user_id, { name, phone, address }) {
+async function updateProfile(user_id, { firstname, lastname, name, phone }) {
   const updates = [];
   const values = [];
+  
+  // Handle firstname/lastname updates
+  if (firstname !== undefined) {
+    updates.push('firstname = ?');
+    values.push(firstname);
+  }
+  if (lastname !== undefined) {
+    updates.push('lastname = ?');
+    values.push(lastname);
+  }
+  // Update full name if firstname/lastname provided
+  if (firstname !== undefined || lastname !== undefined) {
+    const fullName = name || `${firstname || ''} ${lastname || ''}`.trim();
+    updates.push('name = ?');
+    values.push(fullName);
+  }
+  // Handle legacy name update
+  if (name !== undefined && firstname === undefined && lastname === undefined) {
+    updates.push('name = ?');
+    values.push(name);
+  }
   
   if (name !== undefined) {
     updates.push('name = ?');

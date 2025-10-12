@@ -53,6 +53,57 @@
     <div class="container">
         <!-- Overview Tab -->
         <div id="overview-content" class="tab-content active">
+            <!-- Today's Summary -->
+            <div class="today-summary">
+                <div class="summary-header">
+                    <h3><i class="fas fa-calendar-day"></i> สรุปวันนี้ (<span id="today-date"></span>)</h3>
+                    <div class="live-time" id="live-time"></div>
+                </div>
+                <div class="today-stats-grid">
+                    <div class="today-stat-card income">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="today-income">0</div>
+                            <div class="stat-label">รายได้วันนี้ (บาท)</div>
+                            <div class="stat-subtitle" id="today-bookings-count">0 การจอง</div>
+                        </div>
+                        <div class="stat-trend" id="income-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="today-stat-card customers">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="today-new-customers">0</div>
+                            <div class="stat-label">ลูกค้าใหม่วันนี้</div>
+                            <div class="stat-subtitle" id="total-active-customers">0 คนทั้งหมด</div>
+                        </div>
+                        <div class="stat-trend" id="customers-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="today-stat-card rooms-usage">
+                        <div class="stat-icon">
+                            <i class="fas fa-door-closed"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="rooms-occupied">0</div>
+                            <div class="stat-label">ห้องที่ใช้งาน</div>
+                            <div class="stat-subtitle" id="rooms-available">0 ห้องว่าง</div>
+                        </div>
+                        <div class="usage-percentage" id="usage-percentage">0%</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Grid -->
             <div class="admin-stats-grid">
                 <div class="admin-stat-card">

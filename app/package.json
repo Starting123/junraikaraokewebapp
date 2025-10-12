@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development npx nodemon ./bin/www",
-    "start": "cross-env NODE_ENV=production node ./bin/www", 
+    "start": "cross-env NODE_ENV=production node ./bin/www",
     "debug": "cross-env NODE_ENV=development node --inspect ./bin/www",
     "win-dev": "set NODE_ENV=development && npx nodemon ./bin/www",
     "win-start": "set NODE_ENV=production && node ./bin/www"
@@ -18,6 +18,7 @@
     "dotenv": "^16.0.0",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
+    "express-ejs-layouts": "^2.5.1",
     "express-rate-limit": "^8.1.0",
     "express-session": "^1.18.2",
     "express-validator": "^6.14.3",
