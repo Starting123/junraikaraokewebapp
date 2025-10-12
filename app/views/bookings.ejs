@@ -865,27 +865,41 @@ if (bookingForm) {
 
         // Load my bookings
         async function loadMyBookings() {
+            console.log('🔄 Loading my bookings...');
             try {
                 const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
                 const response = await fetch(`${API_BASE}/bookings`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 
+                console.log('📡 Bookings API Response Status:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
-                    myBookings = data.bookings;
+                    console.log('📋 Bookings Data:', data);
+                    
+                    myBookings = data.data?.bookings || data.bookings || [];
+                    console.log('📊 Processed Bookings Array:', myBookings);
+                    
                     displayBookings(myBookings, 'myBookingsList');
                 } else {
-                    throw new Error('Failed to load bookings');
+                    const errorData = await response.text();
+                    console.error('❌ API Error Response:', errorData);
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
                 }
             } catch (error) {
-                console.error('Error loading my bookings:', error);
+                console.error('❌ Error loading my bookings:', error);
                 document.getElementById('myBookingsList').innerHTML = `
                     <div class="error-message">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <p>ไม่สามารถโหลดการจองได้</p>
+                        <p>ไม่สามารถโหลดการจองได้: ${error.message}</p>
+                        <button onclick="loadMyBookings()" class="retry-btn">ลองใหม่</button>
                     </div>
                 `;
             }

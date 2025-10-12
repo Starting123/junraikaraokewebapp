@@ -9,6 +9,7 @@ const usersModel = require('../../models/users');
 const roomsModel = require('../../models/rooms');
 const adminLogsModel = require('../../models/adminLogs');
 const cacheService = require('../../services/cacheService');
+const adminRoomsController = require('../../controllers/adminRoomsController');
 
 // Helper function to get total rooms count for pagination
 async function getTotalRoomsCount(params = {}) {

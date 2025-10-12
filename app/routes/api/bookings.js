@@ -180,16 +180,11 @@ router.get('/', authMiddleware, [
 
     console.log('Debug - fetched bookings:', rows);
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: isAdmin
-          ? 'No bookings found for the given filters.'
-          : 'You do not have any bookings matching the criteria.',
-      });
-    }
-
-    res.json({ bookings: rows });
+    // Always return 200 with success:true, even for empty results
+    return ApiResponse.success(res, { 
+      bookings: rows,
+      count: rows.length 
+    }, rows.length === 0 ? 'No bookings found' : `Found ${rows.length} booking${rows.length > 1 ? 's' : ''}`);
   } catch (err) {
     console.error('Error fetching bookings:', err.message);
     next(err);
@@ -459,19 +454,36 @@ router.get('/:id/payment-slip', authMiddleware, [
     const fileStream = fs.createWriteStream(filepath);
     doc.pipe(fileStream);
 
+    // Parse customer details from notes
+    let customerDetails = { fullname: 'N/A', phone: 'N/A', address: 'N/A' };
+    if (booking.notes) {
+      try {
+        customerDetails = JSON.parse(booking.notes);
+      } catch (e) {
+        console.log('Could not parse booking notes as JSON:', e);
+      }
+    }
+
     // Add content to the PDF
-    doc.fontSize(20).text('Payment Receipt', { align: 'center' });
+    doc.fontSize(20).text('Payment Receipt - Junrai Karaoke', { align: 'center' });
     doc.moveDown();
-    doc.fontSize(14).text(`Booking ID: ${booking.booking_id}`);
-    doc.text(`Customer Name: ${booking.customer_name}`);
-    doc.text(`Customer Email: ${booking.customer_email}`);
+    doc.fontSize(14);
+    doc.text(`Booking ID: ${booking.booking_id}`);
+    doc.text(`Customer Name: ${customerDetails.fullname || booking.user_name || 'N/A'}`);
+    doc.text(`Customer Phone: ${customerDetails.phone || 'N/A'}`);
+    doc.text(`Customer Address: ${customerDetails.address || 'N/A'}`);
+    doc.moveDown();
     doc.text(`Room Name: ${booking.room_name}`);
-    doc.text(`Room Type: ${booking.room_type}`);
-    doc.text(`Room Capacity: ${booking.capacity}`);
-    doc.text(`Start Time: ${new Date(booking.start_time).toLocaleString()}`);
-    doc.text(`End Time: ${new Date(booking.end_time).toLocaleString()}`);
-    doc.text(`Total Price: ${booking.total_price} THB`);
-    doc.text(`Payment Status: ${booking.payment_status}`);
+    doc.text(`Room Type: ${booking.type_name || 'Standard'}`);
+    doc.text(`Room Capacity: ${booking.capacity || 'N/A'} people`);
+    doc.moveDown();
+    doc.text(`Start Time: ${new Date(booking.start_time).toLocaleString('th-TH')}`);
+    doc.text(`End Time: ${new Date(booking.end_time).toLocaleString('th-TH')}`);
+    doc.text(`Duration: ${booking.duration_hours || 1} hours`);
+    doc.moveDown();
+    doc.fontSize(16).text(`Total Price: ฿${booking.total_price}`, { align: 'right' });
+    doc.fontSize(14).text(`Payment Status: ${booking.payment_status.toUpperCase()}`, { align: 'right' });
+    doc.text(`Receipt Generated: ${new Date().toLocaleString('th-TH')}`, { align: 'right' });
     doc.end();
 
     // Send the PDF file to the client after writing is complete
