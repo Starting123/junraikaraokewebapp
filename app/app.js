@@ -17,6 +17,7 @@ var apiAuth = require('./routes/api/auth');
 var apiBookings = require('./routes/api/bookings');
 var apiAdmin = require('./routes/api/admin');
 var apiOrders = require('./routes/api/orders');
+var apiTimeslots = require('./routes/api/timeslots');
 var debugRouter = require('./routes/debug');
 
 
@@ -120,6 +121,7 @@ app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', apiAdmin);
 app.use('/api/orders', apiOrders);
+app.use('/api/timeslots', apiTimeslots);
 app.use('/debug', debugRouter);
 app.use('/api/payments', require('./routes/api/payments'));
 

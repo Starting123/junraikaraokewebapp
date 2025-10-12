@@ -1,14 +1,14 @@
 const db = require('../db');
 
-async function create({ user_id, room_id, start_time, end_time, duration_hours = 1, notes = null }) {
+async function create({ user_id, room_id, start_time, end_time, duration_hours = 1 }) {
   // ดึงราคาห้อง
   const [roomData] = await db.query('SELECT rt.price_per_hour FROM rooms r JOIN room_types rt ON r.type_id = rt.type_id WHERE r.room_id = ?', [room_id]);
   const pricePerHour = roomData.length ? roomData[0].price_per_hour : 0;
   const totalPrice = pricePerHour * duration_hours;
   
   const [result] = await db.query(
-    'INSERT INTO bookings (user_id, room_id, start_time, end_time, status, total_price, duration_hours, payment_status, notes) VALUES (?,?,?,?,?,?,?,?,?)', 
-    [user_id, room_id, start_time, end_time, 'active', totalPrice, duration_hours, 'pending', notes]
+    'INSERT INTO bookings (user_id, room_id, start_time, end_time, status, total_price, duration_hours, payment_status) VALUES (?,?,?,?,?,?,?,?)', 
+    [user_id, room_id, start_time, end_time, 'active', totalPrice, duration_hours, 'pending']
   );
   
   const [rows] = await db.query(

@@ -19,6 +19,46 @@ button, .btn, .tab-btn, .payment-method, .file-upload-area {
   min-width: 44px;
 }
 
+/* Booking Footer Mobile Fixes */
+.booking-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--gray);
+}
+
+.booking-footer .btn {
+  flex: 0 1 auto;
+  white-space: nowrap;
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.85rem;
+  min-width: 80px;
+}
+
+.payment-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.payment-status.paid {
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--success);
+}
+
+.payment-status.pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+}
+
 /* Improve text readability on mobile */
 @media (max-width: 768px) {
   body {
@@ -725,7 +765,24 @@ button, .btn, .tab-btn, .payment-method, .file-upload-area {
   }
   
   .booking-footer {
-    flex-direction: column-reverse;
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: stretch;
+  }
+  
+  .booking-footer .btn {
+    flex: 1;
+    text-align: center;
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+  
+  .payment-status {
+    align-self: stretch;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
   }
   
   .filter-controls {
@@ -1749,9 +1806,31 @@ button, .btn, .tab-btn, .payment-method, .file-upload-area {
     padding-bottom: var(--space-xl);
   }
   
-  .booking-card-actions .btn {
-    font-size: 0.75rem;
-    padding: var(--space-xs) var(--space-sm);
+  .booking-card-actions .btn,
+  .booking-footer .btn {
+    font-size: 0.8rem;
+    padding: var(--space-sm);
+    min-height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Stack buttons vertically on very small screens */
+  .booking-footer {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  
+  .booking-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .payment-status {
+    width: 100%;
+    justify-content: center;
+    margin: var(--space-xs) 0;
   }
   
   .form-actions .btn {

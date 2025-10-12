@@ -86,24 +86,16 @@ router.post('/', authMiddleware, [
       user_id = customer_id;
     }
     
-    // Store customer details in notes field for guest bookings
-    const customerDetails = {
-      fullname: fullname,
-      phone: phone,
-      address: address
-    };
-    
+    // Create booking without notes field
     const booking = await bookingsModel.create({ 
       user_id, 
       room_id, 
       start_time, 
       end_time, 
-      duration_hours, 
-      notes: JSON.stringify(customerDetails) 
+      duration_hours
     });
     
-    // อัปเดตสถานะห้อง
-    await roomsModel.updateRoomStatus();
+    // Note: updateRoomStatus() เรียกโดย cron job แทน เพื่อป้องกันการ auto-complete booking ทันที
     
     return ApiResponse.success(res, { booking }, 'Booking created successfully', 201);
   } catch (err) {

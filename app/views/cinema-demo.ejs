@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Cinema-Style Time Slot Booking - Junrai Karaoke</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    <link rel="stylesheet" href="/stylesheets/bookings.css">
+    <link rel="stylesheet" href="/stylesheets/cinema-timeslots.css">
+    <link rel="stylesheet" href="/stylesheets/responsive-fixes.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* Page-specific styles */
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+            border-radius: 15px;
+            color: var(--white);
+            box-shadow: 0 8px 32px rgba(224, 123, 57, 0.3);
+        }
+        
+        .demo-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .demo-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .demo-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-item i {
+            font-size: 1.5rem;
+            color: var(--cinema-gold);
+        }
+        
+        .booking-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, var(--cinema-accent), #b91c1c);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.3);
+        }
+        
+        .action-btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .demo-info {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .demo-info h3 {
+            color: var(--primary-orange);
+            margin: 0 0 1rem 0;
+        }
+        
+        .demo-info p {
+            margin: 0.5rem 0;
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-title {
+                font-size: 2rem;
+            }
+            
+            .demo-subtitle {
+                font-size: 1rem;
+            }
+            
+            .page-container {
+                padding: 1rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
+                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                    <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
+                    <li><a href="/admin" class="nav-link" id="adminLink" style="display: none;">ผู้ดูแลระบบ</a></li>
+                    <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                    <li style="display: none;" id="logoutBtn">
+                        <button onclick="logout()" class="nav-link" style="background: none; border: none; color: inherit;">
+                            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="page-container">
+        <!-- Demo Header -->
+        <div class="demo-header">
+            <h1 class="demo-title">
+                <i class="fas fa-film"></i>
+                Cinema-Style Time Slot Booking
+            </h1>
+            <p class="demo-subtitle">
+                Experience our revolutionary movie theater-inspired booking interface
+            </p>
+            
+            <div class="demo-features">
+                <div class="feature-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Interactive Date Selection</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Real-time Availability</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Responsive</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Auto-refresh Updates</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demo Information -->
+        <div class="demo-info">
+            <h3><i class="fas fa-info-circle"></i> How to Use</h3>
+            <p><strong>1.</strong> Select your preferred date from the date picker</p>
+            <p><strong>2.</strong> Choose a room from the dropdown menu</p>
+            <p><strong>3.</strong> Click on available time slots (shown in green)</p>
+            <p><strong>4.</strong> Review your selection and proceed to book</p>
+            <p><strong>Note:</strong> Red slots are already booked, golden slots are your selections</p>
+        </div>
+
+        <!-- Cinema Time Slot Booking System -->
+        <div id="cinema-timeslot-container">
+            <!-- Cinema booking interface will be rendered here -->
+        </div>
+        
+        <!-- Booking Actions -->
+        <div class="booking-actions">
+            <button class="action-btn" id="proceedBooking" disabled>
+                <i class="fas fa-ticket-alt"></i>
+                Proceed to Booking
+            </button>
+            <button class="action-btn" id="clearSelection">
+                <i class="fas fa-times"></i>
+                Clear Selection
+            </button>
+            <button class="action-btn" id="refreshSlots">
+                <i class="fas fa-sync-alt"></i>
+                Refresh Slots
+            </button>
+        </div>
+        
+        <!-- Selection Details -->
+        <div id="selection-details" style="display: none;">
+            <div class="demo-info">
+                <h3><i class="fas fa-clipboard-list"></i> Selection Details</h3>
+                <div id="selection-json">
+                    <!-- Selection data will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/javascripts/modules/cinema-timeslots.js"></script>
+    <script src="/javascripts/shared/auth.js"></script>
+    
+    <script>
+        // Global variables
+        let cinemaManager = null;
+        let selectedData = null;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavbar();
+            requireAuth(); // Require authentication
+            initializeCinemaBooking();
+            bindActionButtons();
+        });
+
+        /**
+         * Initialize cinema booking system
+         */
+        function initializeCinemaBooking() {
+            try {
+                // Initialize cinema timeslot manager
+                cinemaManager = new CinemaTimeslotManager('cinema-timeslot-container', {
+                    apiBase: '/api',
+                    autoRefresh: true,
+                    refreshInterval: 30000,
+                    showLegend: true,
+                    allowMultiSelect: false
+                });
+
+                // Listen for selection events
+                document.getElementById('cinema-timeslot-container').addEventListener('cinema:slotSelected', (e) => {
+                    handleSlotSelection(e.detail);
+                });
+
+                console.log('Cinema booking system initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize cinema booking system:', error);
+                showNotification('Failed to initialize booking system', 'error');
+            }
+        }
+
+        /**
+         * Handle slot selection
+         */
+        function handleSlotSelection(data) {
+            selectedData = data;
+            const proceedBtn = document.getElementById('proceedBooking');
+            const selectionDetails = document.getElementById('selection-details');
+            const selectionJson = document.getElementById('selection-json');
+
+            if (data.selectedSlots.length > 0) {
+                proceedBtn.disabled = false;
+                selectionDetails.style.display = 'block';
+                
+                // Display selection data
+                selectionJson.innerHTML = `
+                    <pre style="background: #f5f5f5; padding: 1rem; border-radius: 5px; overflow-x: auto; font-size: 0.9rem;">
+${JSON.stringify(data, null, 2)}
+                    </pre>
+                `;
+            } else {
+                proceedBtn.disabled = true;
+                selectionDetails.style.display = 'none';
+            }
+        }
+
+        /**
+         * Bind action buttons
+         */
+        function bindActionButtons() {
+            // Proceed to booking
+            document.getElementById('proceedBooking').addEventListener('click', () => {
+                if (selectedData && selectedData.selectedSlots.length > 0) {
+                    proceedToBooking();
+                }
+            });
+
+            // Clear selection
+            document.getElementById('clearSelection').addEventListener('click', () => {
+                if (cinemaManager) {
+                    cinemaManager.clearSelection();
+                    selectedData = null;
+                    document.getElementById('proceedBooking').disabled = true;
+                    document.getElementById('selection-details').style.display = 'none';
+                    showNotification('Selection cleared', 'info');
+                }
+            });
+
+            // Refresh slots
+            document.getElementById('refreshSlots').addEventListener('click', () => {
+                if (cinemaManager) {
+                    cinemaManager.refresh();
+                    showNotification('Time slots refreshed', 'info');
+                }
+            });
+        }
+
+        /**
+         * Proceed to booking
+         */
+        function proceedToBooking() {
+            if (!selectedData || selectedData.selectedSlots.length === 0) {
+                showNotification('Please select a time slot first', 'warning');
+                return;
+            }
+
+            // Here you would integrate with your existing booking form
+            // For now, we'll show a confirmation
+            const slot = selectedData.slotData[0];
+            const room = selectedData.room;
+            const date = selectedData.date;
+
+            const confirmMessage = `
+                Proceed with booking?
+                
+                Room: ${room.name}
+                Date: ${new Date(date).toLocaleDateString('th-TH')}
+                Time: ${slot.formatted_time}
+                Price: ${room.price_per_hour}฿/hour
+            `;
+
+            if (confirm(confirmMessage)) {
+                // Redirect to existing booking form with pre-selected data
+                const params = new URLSearchParams({
+                    room_id: room.room_id,
+                    date: date,
+                    start_time: slot.start_time,
+                    end_time: slot.end_time
+                });
+                
+                window.location.href = `/bookings?${params.toString()}`;
+            }
+        }
+
+        /**
+         * Show notification
+         */
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `cinema-notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+                <button class="notification-close">&times;</button>
+            `;
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Auto remove
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+            
+            // Close button
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            });
+        }
+
+        // Error handling
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+    </script>
+</body>
+</html>

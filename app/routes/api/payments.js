@@ -163,6 +163,14 @@ router.get('/my-payments', authenticateToken, async (req, res) => {
  * @access Public
  */
 router.get('/config', (req, res) => {
+    // ตรวจสอบว่ามี Stripe configuration หรือไม่
+    if (!stripeConfig.publishableKey) {
+        return res.status(500).json({
+            success: false,
+            message: 'Stripe configuration missing: STRIPE_PUBLISHABLE_KEY not found in environment variables'
+        });
+    }
+
     res.json({
         success: true,
         publishableKey: stripeConfig.publishableKey,

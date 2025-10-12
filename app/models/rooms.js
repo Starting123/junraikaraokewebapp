@@ -55,6 +55,9 @@ async function getAvailableRooms(start_time, end_time) {
 
 // ตรวจสอบความพร้อมของห้องพร้อมข้อมูลการจองที่ขัดแย้ง
 async function checkRoomAvailability(room_id, start_time, end_time) {
+  console.log('🔍 Checking availability for room:', room_id);
+  console.log('🕒 Time range:', { start_time, end_time });
+  
   // ตรวจสอบการจองที่ขัดแย้ง
   const conflictSql = `
     SELECT b.*, u.name as user_name
@@ -65,6 +68,7 @@ async function checkRoomAvailability(room_id, start_time, end_time) {
     ORDER BY b.start_time ASC
   `;
   const [conflicts] = await db.query(conflictSql, [room_id, start_time, end_time]);
+  console.log('❌ Found conflicts:', conflicts.length, conflicts);
   
   if (conflicts.length === 0) {
     return { available: true };

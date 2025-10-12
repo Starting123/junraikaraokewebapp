@@ -152,4 +152,12 @@ router.get('/payment/cancel', function(req, res, next) {
     res.render('payment-cancel');
 });
 
+// Cinema-Style Time Slot Demo (Requires login)
+router.get('/cinema-demo', requireLogin, function(req, res, next) {
+    res.render('cinema-demo', { 
+        user: req.session.user,
+        title: 'Cinema-Style Time Slot Booking Demo'
+    });
+});
+
 module.exports = router;
