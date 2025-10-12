@@ -25,17 +25,21 @@ const {
     requestId 
 } = require('./src/middleware/logging');
 
-// Import routes
-const authRoutes = require('./src/routes/auth');
-const bookingRoutes = require('./src/routes/bookings');
-const paymentRoutes = require('./src/routes/payments');
+// Import new modular routes
+const authRoutes = require('./routes/auth');
+const bookingRoutes = require('./routes/bookings');
+const paymentRoutes = require('./routes/payments');
+const roomRoutes = require('./routes/rooms');
+const userRoutes = require('./routes/users');
+const adminRoutes = require('./routes/admin');
+const orderRoutes = require('./routes/orders');
 
 // Import old routes (temporary for compatibility)
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/api/users');
-const roomsRouter = require('./routes/api/rooms');
-const apiAdmin = require('./routes/api/admin');
-const apiOrders = require('./routes/api/orders');
+const indexRouter = require('../routes/index');
+const legacyUsersRouter = require('../routes/api/users');
+const legacyRoomsRouter = require('../routes/api/rooms');
+const legacyApiAdmin = require('../routes/api/admin');
+const legacyApiOrders = require('../routes/api/orders');
 
 const app = express();
 
@@ -71,16 +75,20 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes (New modular structure)
-app.use('/api/auth', authRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/v2/auth', authRoutes);
+app.use('/api/v2/bookings', bookingRoutes);
+app.use('/api/v2/payments', paymentRoutes);
+app.use('/api/v2/rooms', roomRoutes);
+app.use('/api/v2/users', userRoutes);
+app.use('/api/v2/admin', adminRoutes);
+app.use('/api/v2/orders', orderRoutes);
 
 // Legacy routes (for backward compatibility)
 app.use('/', indexRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/rooms', roomsRouter);
-app.use('/api/admin', apiAdmin);
-app.use('/api/orders', apiOrders);
+app.use('/api/users', legacyUsersRouter);
+app.use('/api/rooms', legacyRoomsRouter);
+app.use('/api/admin', legacyApiAdmin);
+app.use('/api/orders', legacyApiOrders);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -98,15 +106,24 @@ app.get('/api', (req, res) => {
         message: 'Junrai Karaoke API',
         version: '2.0.0',
         endpoints: {
-            auth: '/api/auth',
-            bookings: '/api/bookings',
-            payments: '/api/payments',
-            users: '/api/users',
-            rooms: '/api/rooms',
-            admin: '/api/admin',
-            orders: '/api/orders'
+            v2: {
+                auth: '/api/v2/auth',
+                bookings: '/api/v2/bookings', 
+                payments: '/api/v2/payments',
+                rooms: '/api/v2/rooms',
+                users: '/api/v2/users',
+                admin: '/api/v2/admin',
+                orders: '/api/v2/orders'
+            },
+            legacy: {
+                users: '/api/users',
+                rooms: '/api/rooms',
+                admin: '/api/admin',
+                orders: '/api/orders'
+            }
         },
-        documentation: '/api-docs'
+        documentation: '/api-docs',
+        migration_guide: '/docs/MODULAR_ARCHITECTURE.md'
     });
 });
 
