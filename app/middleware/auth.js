@@ -17,7 +17,7 @@ function requireLogin(req, res, next) {
         return next();
     }
     
-    // Fallback to JWT token
+    // Fallback to JWT token for API requests
     const auth = req.headers.authorization;
     if (auth && auth.startsWith('Bearer ')) {
         const token = auth.slice(7);
@@ -30,19 +30,39 @@ function requireLogin(req, res, next) {
         }
     }
     
-    return res.status(401).json({ error: 'Login required' });
+    // Handle different response types
+    if (req.path.startsWith('/api/')) {
+        return res.status(401).json({ error: 'Login required' });
+    }
+    
+    // For web routes, redirect to login with return URL
+    return res.redirect('/auth?redirect=' + encodeURIComponent(req.originalUrl));
 }
 
 /**
  * Admin role requirement middleware - ALWAYS enforced
  */
 function requireAdmin(req, res, next) {
-    requireLogin(req, res, () => {
-        if (!req.user || req.user.role_id !== 1) {
+    // Check session first
+    if (!req.session || !req.session.user) {
+        if (req.path.startsWith('/api/')) {
+            return res.status(401).json({ error: 'Login required' });
+        }
+        return res.redirect('/auth?redirect=' + encodeURIComponent(req.originalUrl));
+    }
+    
+    if (req.session.user.role_id !== 1) {
+        if (req.path.startsWith('/api/')) {
             return res.status(403).json({ error: 'Admin access required' });
         }
-        next();
-    });
+        return res.status(403).render('error', { 
+            message: 'ต้องการสิทธิ์ผู้ดูแลระบบ',
+            error: { status: 403 }
+        });
+    }
+    
+    req.user = req.session.user;
+    next();
 }
 
 /**

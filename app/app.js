@@ -95,8 +95,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
+
+// Critical: Body parser middleware MUST be before routes
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Changed to true for nested objects
 app.use(cookieParser());
 
 // CSRF Protection setup (will be applied later)

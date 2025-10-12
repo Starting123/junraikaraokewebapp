@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const db = require('../db');
+const { requireLogin, requireAdmin } = require('../middleware/auth');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -34,23 +35,61 @@ router.get('/api-tester', function(req, res, next) {
 });
 
 router.get('/auth', function(req, res, next) {
-    res.render('auth');
+    // If already logged in, redirect to appropriate dashboard
+    if (req.session && req.session.user) {
+        const redirectUrl = req.query.redirect || (req.session.user.role_id === 1 ? '/admin' : '/dashboard');
+        return res.redirect(redirectUrl);
+    }
+    
+    res.render('auth', {
+        redirectUrl: req.query.redirect || '/dashboard'
+    });
+});
+
+// Web-based logout route
+router.post('/logout', function(req, res, next) {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Logout error:', err);
+        }
+        res.redirect('/');
+    });
+});
+
+router.get('/logout', function(req, res, next) {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Logout error:', err);
+        }
+        res.redirect('/');
+    });
 });
 
 router.get('/rooms', function(req, res, next) {
     res.render('rooms');
 });
 
-router.get('/bookings', function(req, res, next) {
-    res.render('bookings');
+// Protected routes - require login
+router.get('/bookings', requireLogin, function(req, res, next) {
+    res.render('bookings', { 
+        user: req.session.user,
+        title: 'การจองของฉั๑' 
+    });
 });
 
-router.get('/dashboard', function(req, res, next) {
-    res.render('dashboard');
+router.get('/dashboard', requireLogin, function(req, res, next) {
+    res.render('dashboard', { 
+        user: req.session.user,
+        title: 'แดชบอร์ด'
+    });
 });
 
-router.get('/admin', function(req, res, next) {
-    res.render('admin');
+// Admin only route
+router.get('/admin', requireAdmin, function(req, res, next) {
+    res.render('admin', { 
+        user: req.session.user,
+        title: 'ผู้ดูแลระบบ'
+    });
 });
 
 router.get('/payment/success', function(req, res, next) {
