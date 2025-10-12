@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ชำระเงินด้วยบัตรเครดิต - Junrai Karaoke</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/payment.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .stripe-payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .payment-form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .payment-form-container h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #payment-element {
+            transition: all 0.3s ease;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <ul class="navbar-nav">
+                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
+                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="payment-page">
+            <div class="page-header">
+                <h1><i class="fas fa-credit-card"></i> ชำระเงินด้วยบัตรเครดิต</h1>
+                <p>ปลอดภัยด้วยระบบ Stripe</p>
+            </div>
+
+            <!-- Stripe Payment Form -->
+            <div class="payment-container">
+                <div class="booking-summary" id="bookingSummary">
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                        <h3><i class="fas fa-calendar-check"></i> รายละเอียดการจอง</h3>
+                        <div id="booking-details">
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                กำลังโหลดข้อมูลการจอง...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stripe-payment-container">
+                    <div class="payment-form-container">
+                        <h2><i class="fas fa-shield-alt"></i> ชำระเงินอย่างปลอดภัย</h2>
+                        
+                        <div id="payment-element" style="margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">
+                            <div style="text-align: center; color: #666; padding: 20px;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                กำลังโหลดฟอร์มการชำระเงิน...
+                            </div>
+                        </div>
+                        
+                        <div class="loading-message" id="loading" style="display: none; text-align: center; padding: 20px; background: #e3f2fd; border-radius: 8px; color: #1976d2;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            กำลังประมวลผลการชำระเงิน...
+                        </div>
+                        
+                        <div class="error-message" id="error-message" style="display: none; color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #d32f2f;">
+                            <!-- Error messages จะแสดงที่นี่ -->
+                        </div>
+                        
+                        <div class="success-message" id="success-message" style="display: none; color: #388e3c; background: #e8f5e8; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #388e3c;">
+                            <i class="fas fa-check-circle"></i>
+                            การชำระเงินสำเร็จ! กำลังนำคุณไปยังหน้าใบเสร็จ...
+                        </div>
+                        
+                        <div class="form-actions" style="margin-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="goBack()">
+                                <i class="fas fa-arrow-left"></i>
+                                ย้อนกลับ
+                            </button>
+                            <button type="button" id="submit-payment" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i>
+                                ชำระเงิน
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ส่งข้อมูลจาก server ไป client
+        const paymentData = '<%= paymentIntentId %>'; // นี่จริงๆ แล้วคือ client_secret
+        const bookingId = '<%= bookingId %>';
+        
+        // Initialize Stripe
+        const stripe = Stripe('<%= stripePublishableKey %>');
+        let elements, paymentElement;
+        
+        // Initialize Stripe Elements
+        async function initializeStripe() {
+            try {
+                // สร้าง Stripe Elements
+                elements = stripe.elements({
+                    clientSecret: paymentData // ใช้ client secret จาก Payment Intent
+                });
+                
+                // สร้าง Payment Element
+                paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+                
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+                showError('เกิดข้อผิดพลาดในการโหลดฟอร์มการชำระเงิน');
+            }
+        }
+        
+        // Handle payment submission
+        document.getElementById('submit-payment').addEventListener('click', async () => {
+            showLoading(true);
+            
+            try {
+                const { error: submitError } = await elements.submit();
+                if (submitError) {
+                    showError(submitError.message);
+                    showLoading(false);
+                    return;
+                }
+                
+                // Confirm payment
+                const { error } = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: {
+                        return_url: `${window.location.origin}/payment/success?booking_id=${bookingId}&payment_intent=${paymentData}`
+                    }
+                });
+                
+                if (error) {
+                    showError(error.message);
+                } else {
+                    // Payment succeeded - Stripe will redirect automatically
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError('เกิดข้อผิดพลาดในการชำระเงิน');
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('submit-payment').disabled = show;
+            
+            if (show) {
+                hideError();
+                hideSuccess();
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            errorDiv.style.display = 'block';
+            hideSuccess();
+        }
+        
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message || 'การชำระเงินสำเร็จ!'}`;
+            successDiv.style.display = 'block';
+            hideError();
+        }
+        
+        function hideSuccess() {
+            document.getElementById('success-message').style.display = 'none';
+        }
+        
+        function goBack() {
+            window.history.back();
+        }
+        
+        // Load booking details
+        async function loadBookingDetails() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showError('กรุณาเข้าสู่ระบบ');
+                    return;
+                }
+                
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayBookingDetails(data.booking);
+                } else {
+                    throw new Error('ไม่สามารถโหลดข้อมูลการจองได้');
+                }
+            } catch (error) {
+                console.error('Error loading booking:', error);
+                document.getElementById('booking-details').innerHTML = `
+                    <div style="color: #d32f2f; text-align: center; padding: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        ไม่สามารถโหลดข้อมูลการจองได้
+                    </div>
+                `;
+            }
+        }
+        
+        function displayBookingDetails(booking) {
+            const startDate = new Date(booking.start_time);
+            const endDate = new Date(booking.end_time);
+            
+            document.getElementById('booking-details').innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <strong>ห้อง:</strong> ${booking.room_name || 'ไม่ระบุ'}
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>วันที่:</strong> ${startDate.toLocaleDateString('th-TH')}
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>เวลา:</strong> ${startDate.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} - ${endDate.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>ระยะเวลา:</strong> ${booking.duration_hours || 1} ชั่วโมง
+                </div>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+                <div style="font-size: 1.2em; font-weight: bold; color: #28a745;">
+                    <strong>ยอดรวม:</strong> ฿${parseFloat(booking.total_price || 0).toLocaleString()}
+                </div>
+            `;
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStripe();
+            loadBookingDetails();
+        });
+    </script>
+</body>
+</html>

@@ -4,53 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจองห้อง - Junrai Karaoke</title>
-    <link rel="stylesheet" href="/stylesheets/global.css">
-    <link rel="stylesheet" href="/stylesheets/bookings.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/bookings.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="/javascripts/timeSlotBooking.js"></script>
+    <script src="/js/legacy/timeSlotBooking.js"></script>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-content">
-                <a href="/" class="navbar-brand">
-                    <i class="fas fa-microphone-alt"></i>
-                    Junrai Karaoke
-                </a>
-                
-                <div class="navbar-main">
-                    <ul class="navbar-nav">
-                        <li><a href="/" class="nav-link">หน้าหลัก</a></li>
-                        <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                        <li><a href="/bookings" class="nav-link active" id="bookingsLink">การจอง</a></li>
-                        <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-                        <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
-                    </ul>
-                    
-                    <!-- Store Hours Info -->
-                    <div class="store-hours-info" id="storeHoursInfo">
-                        <div class="hours-display">
-                            <i class="fas fa-clock"></i>
-                            <div class="hours-text">
-                                <span class="hours-time">11.00 - 21.00</span>
-                                <span class="hours-duration">10 ชม</span>
-                            </div>
-                        </div>
-                        <div class="days-display">
-                            <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
-                            <span class="closed-day">(หยุด) จันทร์</span>
-                        </div>
-                        <div class="store-status" id="storeStatus">
-                            <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
-                        </div>
-                    </div>
+    <!-- Navigation -->
+    <%- include('partials/navbar') %>
+    
+    <!-- Store Hours Info Section -->
+    <div class="container">
+        <div class="store-hours-info" id="storeHoursInfo">
+            <div class="hours-display">
+                <i class="fas fa-clock"></i>
+                <div class="hours-text">
+                    <span class="hours-time">11.00 - 21.00</span>
+                    <span class="hours-duration">10 ชม</span>
                 </div>
             </div>
+            <div class="days-display">
+                <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
+                <span class="closed-day">(หยุด) จันทร์</span>
+            </div>
+            <div class="store-status" id="storeStatus">
+                <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
+            </div>
         </div>
-    </nav>
+    </div>
 
     <div class="container mt-4">
         <!-- Page Header -->

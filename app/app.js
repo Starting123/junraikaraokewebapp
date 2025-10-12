@@ -5,13 +5,14 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/api/users');
-const roomsRouter = require('./routes/api/rooms');
-var apiAuth = require('./routes/api/auth');
-var apiBookings = require('./routes/api/bookings');
-var apiAdmin = require('./routes/api/admin');
-var apiOrders = require('./routes/api/orders');
+// Legacy routes (migrated to src/routes/legacy)
+const indexRouter = require('./src/routes/legacy/index');
+const usersRouter = require('./src/routes/legacy/api/users');
+const roomsRouter = require('./src/routes/legacy/api/rooms');
+var apiAuth = require('./src/routes/legacy/api/auth');
+var apiBookings = require('./src/routes/legacy/api/bookings');
+var apiAdmin = require('./src/routes/legacy/api/admin');
+var apiOrders = require('./src/routes/legacy/api/orders');
 
 var app = express();
 
@@ -23,6 +24,13 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Static file serving - new modular structure
+app.use('/css', express.static(path.join(__dirname, 'src/public/css')));
+app.use('/js', express.static(path.join(__dirname, 'src/public/js')));
+app.use('/receipts', express.static(path.join(__dirname, 'public/receipts')));
+
+// Keep original structure for backward compatibility
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
@@ -32,7 +40,9 @@ app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', apiAdmin);
 app.use('/api/orders', apiOrders);
-app.use('/api/payments', require('./routes/api/payments'));
+app.use('/api/payments', require('./src/routes/legacy/api/payments'));
+app.use('/api/legacy/payments', require('./src/routes/legacy/api/payments'));
+app.use('/api/receipts', require('./src/routes/legacy/api/receipts'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

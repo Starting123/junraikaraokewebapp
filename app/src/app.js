@@ -6,9 +6,9 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 // Import configuration and utilities
-const config = require('./src/config');
-const logger = require('./src/utils/Logger');
-const { testConnection } = require('./src/config/database');
+const config = require('./config');
+const logger = require('./utils/Logger');
+const { testConnection } = require('./config/database');
 
 // Import middleware
 const { 
@@ -17,13 +17,13 @@ const {
     createRateLimiter, 
     errorHandler, 
     notFound 
-} = require('./src/middleware/security');
+} = require('./middleware/security');
 
 const { 
     requestLogger, 
     responseTime, 
     requestId 
-} = require('./src/middleware/logging');
+} = require('./middleware/logging');
 
 // Import new modular routes
 const authRoutes = require('./routes/auth');
@@ -155,5 +155,15 @@ process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
     process.exit(1);
 });
+
+// Start server if this file is run directly
+if (require.main === module) {
+    const port = config.server.port;
+    app.listen(port, () => {
+        logger.info(`🚀 Server running on port ${port} in ${config.server.env} mode`);
+        logger.info(`📊 Health check: http://localhost:${port}/health`);
+        logger.info(`📚 API docs: http://localhost:${port}/api`);
+    });
+}
 
 module.exports = app;

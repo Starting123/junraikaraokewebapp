@@ -1,0 +1,87 @@
+<!-- Navbar Partial - ใช้ร่วมกันทุกหน้า -->
+<nav class="navbar">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-microphone-alt"></i>
+                Junrai Karaoke
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link" data-page="home">หน้าหลัก</a></li>
+                <li><a href="/rooms" class="nav-link" data-page="rooms">ห้องคาราโอเกะ</a></li>
+                <li><a href="/bookings" class="nav-link" data-page="bookings">การจอง</a></li>
+                <!-- ปุ่มใบเสร็จ - แสดงเฉพาะเมื่อล็อกอิน -->
+                <li><a href="/receipts" class="nav-link" id="receiptsLink" data-page="receipts" style="display: none;">ใบเสร็จ</a></li>
+                <li><a href="/contact" class="nav-link" data-page="contact">ติดต่อเรา</a></li>
+                <!-- Links สำหรับผู้ใช้ที่ล็อกอิน -->
+                <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
+                <!-- Authentication Links -->
+                <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Script สำหรับจัดการ Navbar Authentication -->
+<script>
+    // ฟังก์ชันอัพเดต navbar ตามสถานะการล็อกอิน
+    function updateNavbarAuth() {
+        const token = localStorage.getItem('token');
+        const authLink = document.getElementById('authLink');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const dashboardLink = document.getElementById('dashboardLink');
+        const receiptsLink = document.getElementById('receiptsLink');
+        
+        if (token) {
+            // ผู้ใช้ล็อกอินแล้ว
+            if (authLink) authLink.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'block';
+            if (dashboardLink) dashboardLink.style.display = 'block';
+            if (receiptsLink) receiptsLink.style.display = 'block'; // แสดงปุ่มใบเสร็จ
+        } else {
+            // ผู้ใช้ยังไม่ล็อกอิน
+            if (authLink) authLink.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            if (dashboardLink) dashboardLink.style.display = 'none';
+            if (receiptsLink) receiptsLink.style.display = 'none'; // ซ่อนปุ่มใบเสร็จ
+        }
+    }
+
+    // ฟังก์ชันออกจากระบบ
+    function logout() {
+        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            updateNavbarAuth();
+            window.location.href = '/';
+        }
+    }
+
+    // ตั้งค่า active link ตาม URL
+    function setActiveNavLink() {
+        const currentPath = window.location.pathname;
+        const links = document.querySelectorAll('.nav-link[data-page]');
+        
+        links.forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            if (currentPath === href || (currentPath === '/' && href === '/')) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    // เรียกใช้เมื่อหน้าโหลด
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNavbarAuth();
+        setActiveNavLink();
+    });
+
+    // ฟังการเปลี่ยนแปลง localStorage (สำหรับ multi-tab)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'token') {
+            updateNavbarAuth();
+        }
+    });
+</script>

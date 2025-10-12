@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ชำระเงินสำเร็จ - Junrai Karaoke</title>
-    <link rel="stylesheet" href="/stylesheets/global.css">
+    <link rel="stylesheet" href="/css/global.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .success-container {
@@ -27,6 +27,45 @@
             padding: 2rem;
             box-shadow: var(--shadow-light);
             margin-bottom: 2rem;
+        }
+        
+        .receipt-highlight {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        .receipt-btn {
+            background: white;
+            color: #27ae60;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .receipt-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .loading-receipt {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 15px 0;
         }
         
         .success-title {
@@ -54,6 +93,54 @@
             border-bottom: none;
             font-weight: bold;
             color: var(--primary-orange);
+        }
+        
+        .receipt-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .receipt-number {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .view-receipt-link {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .view-receipt-link .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .view-receipt-link .btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
         }
         
         .actions {
@@ -107,6 +194,7 @@
                 </div>
                 
                 <h1 class="success-title">ชำระเงินสำเร็จ!</h1>
+
                 <p class="text-muted">การชำระเงินของคุณได้รับการยืนยันแล้ว</p>
                 
                 <div class="booking-info" id="bookingInfo">
@@ -118,9 +206,32 @@
                     </div>
                 </div>
                 
+                <!-- Receipt Section -->
+                <div class="loading-receipt" id="receiptLoading">
+                    <div style="margin: 10px 0;">
+                        <i class="fas fa-file-pdf fa-2x" style="color: #3498db; margin-bottom: 10px;"></i>
+                    </div>
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">กำลังเตรียมใบเสร็จ...</h4>
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> กำลังสร้างใบเสร็จ PDF
+                    </div>
+                    <p style="font-size: 14px; color: #7f8c8d; margin-top: 10px;">
+                        กรุณารอสักครู่ ระบบกำลังเตรียมใบเสร็จสำหรับคุณ
+                    </p>
+                </div>
+                
+                <div class="booking-info" id="receiptInfo" style="display: none;">
+                    <div id="receiptDetails">
+                        <div id="receiptLinks"></div>
+                    </div>
+                </div>
+
                 <div class="actions">
                     <a href="/bookings" class="btn btn-primary">
                         <i class="fas fa-list"></i> ดูการจองของฉัน
+                    </a>
+                    <a href="/receipts" class="btn btn-primary">
+                        <i class="fas fa-receipt"></i> ดูใบเสร็จทั้งหมด
                     </a>
                     <a href="/rooms" class="btn btn-secondary">
                         <i class="fas fa-plus"></i> จองห้องใหม่
@@ -133,14 +244,63 @@
         </div>
     </div>
 
+    <!-- Server-side data injection -->
     <script>
+        <% if (typeof booking !== 'undefined' && booking) { %>
+        window.serverBooking = <%- JSON.stringify(booking) %>;
+        console.log('🔍 Server Booking Data:', window.serverBooking);
+        <% } else { %>
+        window.serverBooking = null;
+        <% } %>
+        
+        <% if (typeof receiptInfo !== 'undefined' && receiptInfo) { %>
+        window.serverReceiptInfo = <%- JSON.stringify(receiptInfo) %>;
+        console.log('🔍 Server Receipt Info:', window.serverReceiptInfo);
+        <% } else { %>
+        window.serverReceiptInfo = null;
+        <% } %>
+    </script>
+    
+    <script>
+        console.log('🔍 URL Parameters:', {
+            booking_id: new URLSearchParams(window.location.search).get('booking_id'),
+            payment_intent: new URLSearchParams(window.location.search).get('payment_intent')
+        });
+    </script>
+    
+    <script>
+        // ป้องกันการออกจากหน้าโดยไม่ตั้งใจ
+        window.addEventListener('beforeunload', function(e) {
+            const message = 'คุณแน่ใจว่าต้องการออกจากหน้านี้? ใบเสร็จอาจยังไม่ได้บันทึก';
+            e.returnValue = message;
+            return message;
+        });
+
         // ดึงพารามิเตอร์จาก URL
         const urlParams = new URLSearchParams(window.location.search);
         const paymentIntentId = urlParams.get('payment_intent');
         const bookingId = urlParams.get('booking_id');
         
-        // ถ้าไม่มีพารามิเตอร์ ให้แสดงข้อมูลทั่วไป
-        if (!paymentIntentId && !bookingId) {
+        // ใช้ข้อมูลจาก server หรือ URL parameters
+        if (window.serverBooking) {
+            // มีข้อมูลการจองจาก server
+            displayBookingDetails(window.serverBooking);
+            
+            if (window.serverReceiptInfo) {
+                // มีใบเสร็จพร้อมแล้ว - แสดงทันทีตามแนวคิดตัวอย่าง
+                setTimeout(() => {
+                    displayReceiptInfo(window.serverReceiptInfo);
+                    // เพิ่มลิงก์ดูใบเสร็จในหน้าใหม่ (ตามแนวคิดตัวอย่าง)
+                    addViewReceiptLink();
+                }, 300); // เร็วขึ้นเป็น 0.3 วินาที
+            } else {
+                // ไม่มีใบเสร็จ แสดงข้อความแจ้ง
+                setTimeout(() => {
+                    displayNoReceipt();
+                }, 1500); // เร็วขึ้น
+            }
+        } else if (!paymentIntentId && !bookingId) {
+            // ถ้าไม่มีพารามิเตอร์ ให้แสดงข้อมูลทั่วไป
             document.getElementById('bookingDetails').innerHTML = `
                 <div class="info-row">
                     <span>สถานะ:</span>
@@ -232,14 +392,147 @@
                     <span>${amount.toFixed(2)} บาท</span>
                 </div>
             `;
+
+            // แสดงข้อมูลใบเสร็จถ้ามี
+            if (booking.receipt) {
+                displayReceiptInfo(booking.receipt);
+            } else {
+                // ถ้าไม่มีใบเสร็จ แสดงข้อความแทน
+                setTimeout(() => {
+                    document.getElementById('receiptLoading').innerHTML = `
+                        <div style="margin: 10px 0;">
+                            <i class="fas fa-exclamation-triangle fa-2x" style="color: #f39c12; margin-bottom: 10px;"></i>
+                        </div>
+                        <h4 style="margin: 0 0 10px 0; color: #e67e22;">ใบเสร็จยังไม่พร้อม</h4>
+                        <p style="font-size: 14px; color: #7f8c8d;">
+                            ใบเสร็จอาจใช้เวลาสักครู่ในการสร้าง<br>
+                            คุณสามารถดูใบเสร็จได้ในหน้า <a href="/receipts" style="color: #3498db;">รวมใบเสร็จ</a> ภายหลัง
+                        </p>
+                        <a href="/receipts" class="btn btn-primary" style="margin-top: 10px;">
+                            <i class="fas fa-receipt"></i> ดูใบเสร็จทั้งหมด
+                        </a>
+                    `;
+                }, 3000); // รอ 3 วินาที
+            }
+        }
+
+        function displayReceiptInfo(receipt) {
+            // ซ่อน loading และแสดงใบเสร็จ
+            document.getElementById('receiptLoading').style.display = 'none';
+            document.getElementById('receiptInfo').style.display = 'block';
+            
+            // เปลี่ยนเป็น highlight box ที่โดดเด่น
+            document.getElementById('receiptInfo').className = 'receipt-highlight';
+            document.getElementById('receiptInfo').innerHTML = `
+                <h3 style="margin: 0 0 15px 0;">
+                    <i class="fas fa-file-pdf" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    🎉 ใบเสร็จของคุณพร้อมแล้ว!
+                </h3>
+                <p style="margin-bottom: 20px; font-size: 16px;">
+                    ใบเสร็จได้ถูกสร้างเรียบร้อยแล้ว สามารถดูและดาวน์โหลดได้ทันที
+                </p>
+                <div style="margin: 20px 0;">
+                    <a href="${receipt.downloadUrl}" class="receipt-btn" target="_blank">
+                        <i class="fas fa-eye"></i> ดูใบเสร็จ PDF
+                    </a>
+                    <a href="${receipt.downloadUrl}" class="receipt-btn" download>
+                        <i class="fas fa-download"></i> ดาวน์โหลด
+                    </a>
+                </div>
+                <p style="font-size: 14px; opacity: 0.9; margin: 10px 0 0 0;">
+                    <i class="fas fa-receipt"></i> เลขที่ใบเสร็จ: ${receipt.receiptNumber || 'ไม่ระบุ'}
+                </p>
+            `;
         }
         
-        // Auto redirect after 30 seconds
-        setTimeout(() => {
-            if (confirm('คุณต้องการไปยังหน้าการจองของคุณหรือไม่?')) {
-                window.location.href = '/bookings';
+        function displayNoReceipt() {
+            // ซ่อน loading และแสดงข้อความเมื่อไม่มีใบเสร็จ
+            document.getElementById('receiptLoading').style.display = 'none';
+            document.getElementById('receiptInfo').style.display = 'block';
+            document.getElementById('receiptInfo').innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; color: #856404;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <h4>ใบเสร็จยังไม่พร้อม</h4>
+                    <p>ระบบกำลังประมวลผลใบเสร็จ กรุณาตรวจสอบในภายหลัง</p>
+                    <a href="/receipts" class="btn btn-primary" style="margin-top: 10px;">
+                        <i class="fas fa-receipt"></i> ดูใบเสร็จทั้งหมด
+                    </a>
+                </div>
+            `;
+        }
+        
+        // เพิ่ม countdown timer
+        let countdown = 60; // เปลี่ยนเป็น 60 วินาที
+        const countdownElement = document.createElement('div');
+        countdownElement.id = 'countdown';
+        countdownElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(countdownElement);
+
+        const updateCountdown = () => {
+            countdownElement.innerHTML = `
+                <i class="fas fa-clock"></i> 
+                จะไปหน้าการจองใน ${countdown} วินาที
+                <button onclick="clearTimeout(redirectTimer); countdownElement.remove();" 
+                        style="margin-left: 10px; background: #e74c3c; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer;">
+                    ยกเลิก
+                </button>
+            `;
+            countdown--;
+        };
+
+        updateCountdown();
+        const countdownInterval = setInterval(() => {
+            updateCountdown();
+            if (countdown < 0) {
+                clearInterval(countdownInterval);
             }
-        }, 30000);
+        }, 1000);
+
+        // Auto redirect after 60 seconds
+        const redirectTimer = setTimeout(() => {
+            if (confirm('เวลาหมดแล้ว! คุณต้องการไปยังหน้าการจองของคุณหรือไม่?')) {
+                window.location.href = '/bookings';
+            } else {
+                countdownElement.remove();
+            }
+        }, 60000);
+        
+        // ฟังก์ชันเพิ่มลิงก์ดูใบเสร็จ (ตามแนวคิดตัวอย่าง)
+        function addViewReceiptLink() {
+            if (!window.serverReceiptInfo || !window.serverReceiptInfo.receipt_number) return;
+            
+            const receiptContainer = document.querySelector('.receipt-container');
+            if (receiptContainer) {
+                // ตรวจสอบว่ามีลิงก์แล้วหรือยัง
+                if (!receiptContainer.querySelector('.view-receipt-link')) {
+                    const linkDiv = document.createElement('div');
+                    linkDiv.className = 'mt-3 text-center view-receipt-link';
+                    linkDiv.innerHTML = `
+                        <a href="/api/receipts/view/${window.serverReceiptInfo.receipt_number}" 
+                           target="_blank" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 
+                            เปิดใบเสร็จในหน้าใหม่
+                        </a>
+                        <small class="d-block mt-1 text-muted">
+                            เลขที่ใบเสร็จ: ${window.serverReceiptInfo.receipt_number}
+                        </small>
+                    `;
+                    receiptContainer.appendChild(linkDiv);
+                }
+            }
+        }
     </script>
 </body>
 </html>

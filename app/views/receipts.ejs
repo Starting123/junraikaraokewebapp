@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ใบเสร็จของฉัน - Junrai Karaoke</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .receipts-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .header-section h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+        
+        .header-section p {
+            margin: 1rem 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .receipts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .receipt-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            border-left: 5px solid #28a745;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .receipt-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #28a745, #20c997, #17a2b8);
+        }
+        
+        .receipt-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .receipt-number {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .receipt-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .receipt-details {
+            margin: 1rem 0;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.3rem 0;
+        }
+        
+        .detail-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .receipt-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-receipt {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-view {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #0056b3;
+            transform: scale(1.02);
+        }
+        
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #1e7e34;
+            transform: scale(1.02);
+        }
+        
+        .no-receipts {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .no-receipts i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+        
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .receipts-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            .receipts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <%- include('partials/navbar') %>
+
+    <div class="container">
+        <div class="receipts-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <h1><i class="fas fa-receipt"></i> ใบเสร็จของฉัน</h1>
+                <p>ดูและดาวน์โหลดใบเสร็จการชำระเงินทั้งหมดของคุณ</p>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="dateFrom">จากวันที่:</label>
+                        <input type="date" id="dateFrom">
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateTo">ถึงวันที่:</label>
+                        <input type="date" id="dateTo">
+                    </div>
+                    <div class="filter-group">
+                        <label for="paymentMethod">วิธีชำระ:</label>
+                        <select id="paymentMethod">
+                            <option value="">ทั้งหมด</option>
+                            <option value="cash">เงินสด</option>
+                            <option value="bank_transfer">โอนเงิน</option>
+                            <option value="qr_code">QR Code</option>
+                            <option value="credit_card">บัตรเครดิต</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-primary" onclick="filterReceipts()">
+                            <i class="fas fa-filter"></i> กรอง
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipts Grid -->
+            <div id="receiptsContainer">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>กำลังโหลดใบเสร็จ...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipts Script -->
+    <script>
+        // ตรวจสอบการเข้าสู่ระบบและโหลดใบเสร็จ
+        const token = localStorage.getItem('token');
+        if (token) {
+            // โหลดใบเสร็จ
+            loadReceipts();
+        } else {
+            // Redirect ไปหน้า login
+            alert('กรุณาเข้าสู่ระบบก่อน');
+            window.location.href = '/auth';
+        }
+
+        // ฟังก์ชันโหลดใบเสร็จ
+        async function loadReceipts() {
+            try {
+                const response = await fetch('/api/legacy/payments/receipts', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.receipts) {
+                    displayReceipts(result.receipts);
+                } else {
+                    displayNoReceipts();
+                }
+
+            } catch (error) {
+                console.error('Error loading receipts:', error);
+                displayError();
+            }
+        }
+
+        // แสดงใบเสร็จ
+        function displayReceipts(receipts) {
+            const container = document.getElementById('receiptsContainer');
+            
+            if (receipts.length === 0) {
+                displayNoReceipts();
+                return;
+            }
+
+            const receiptsHtml = receipts.map(receipt => `
+                <div class="receipt-card">
+                    <div class="receipt-header">
+                        <div class="receipt-number">#${receipt.receiptNumber || receipt.booking_id}</div>
+                        <div class="receipt-date">${new Date(receipt.created_at || receipt.booking_date).toLocaleDateString('th-TH')}</div>
+                    </div>
+                    
+                    <div class="receipt-details">
+                        <div class="detail-row">
+                            <span class="detail-label">ห้อง:</span>
+                            <span class="detail-value">${receipt.room_name || 'ไม่ระบุ'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">วิธีชำระ:</span>
+                            <span class="detail-value">${getPaymentMethodText(receipt.payment_method || 'cash')}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">ยอดชำระ:</span>
+                            <span class="detail-value">${parseFloat(receipt.total_price || receipt.amount || 0).toFixed(2)} บาท</span>
+                        </div>
+                    </div>
+                    
+                    <div class="receipt-actions">
+                        <a href="${receipt.receiptUrl || '/receipts/' + (receipt.receipt_filename || `Receipt_${receipt.booking_id}.pdf`)}" 
+                           class="btn-receipt btn-view" target="_blank">
+                            <i class="fas fa-eye"></i> ดู PDF
+                        </a>
+                        <a href="${receipt.receiptUrl || '/receipts/' + (receipt.receipt_filename || `Receipt_${receipt.booking_id}.pdf`)}" 
+                           class="btn-receipt btn-download" download>
+                            <i class="fas fa-download"></i> ดาวน์โหลด
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="receipts-grid">${receiptsHtml}</div>`;
+        }
+
+        // แสดงข้อความเมื่อไม่มีใบเสร็จ
+        function displayNoReceipts() {
+            document.getElementById('receiptsContainer').innerHTML = `
+                <div class="no-receipts">
+                    <i class="fas fa-receipt"></i>
+                    <h3>ยังไม่มีใบเสร็จ</h3>
+                    <p>คุณยังไม่มีใบเสร็จการชำระเงิน</p>
+                    <a href="/bookings" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> จองห้องเลย
+                    </a>
+                </div>
+            `;
+        }
+
+        // แสดงข้อความ error
+        function displayError() {
+            document.getElementById('receiptsContainer').innerHTML = `
+                <div class="no-receipts">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>เกิดข้อผิดพลาด</h3>
+                    <p>ไม่สามารถโหลดใบเสร็จได้ในขณะนี้</p>
+                    <button onclick="loadReceipts()" class="btn btn-primary">
+                        <i class="fas fa-refresh"></i> ลองอีกครั้ง
+                    </button>
+                </div>
+            `;
+        }
+
+        // แปลงรูปแบบการชำระเงิน
+        function getPaymentMethodText(method) {
+            const methods = {
+                'cash': 'เงินสด',
+                'bank_transfer': 'โอนเงิน',
+                'qr_code': 'QR Code',
+                'credit_card': 'บัตรเครดิต',
+                'stripe': 'บัตรเครดิต (Stripe)'
+            };
+            return methods[method] || method;
+        }
+
+        // กรองใบเสร็จ
+        function filterReceipts() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            
+            // สร้าง query parameters
+            const params = new URLSearchParams();
+            if (dateFrom) params.append('date_from', dateFrom);
+            if (dateTo) params.append('date_to', dateTo);
+            if (paymentMethod) params.append('payment_method', paymentMethod);
+            
+            // เรียก API กับ filters
+            loadReceiptsWithFilter(params.toString());
+        }
+
+        // โหลดใบเสร็จพร้อมกรอง
+        async function loadReceiptsWithFilter(queryString) {
+            try {
+                document.getElementById('receiptsContainer').innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>กำลังค้นหาใบเสร็จ...</p>
+                    </div>
+                `;
+
+                const url = queryString ? 
+                    `/api/legacy/payments/receipts?${queryString}` : 
+                    '/api/legacy/payments/receipts';
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.receipts) {
+                    displayReceipts(result.receipts);
+                } else {
+                    displayNoReceipts();
+                }
+
+            } catch (error) {
+                console.error('Error loading filtered receipts:', error);
+                displayError();
+            }
+        }
+
+        // ฟังก์ชันออกจากระบบ - ใช้จาก navbar partial แล้ว
+
+        // Set default dates (last 30 days)
+        window.addEventListener('load', function() {
+            const today = new Date();
+            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = monthAgo.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>

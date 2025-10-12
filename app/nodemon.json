@@ -1,0 +1,26 @@
+{
+  "watch": [
+    "src/",
+    "views/",
+    "app.js",
+    "bin/",
+    "config/",
+    "middleware/",
+    "services/"
+  ],
+  "ext": "js,json,ejs",
+  "ignore": [
+    "node_modules/",
+    "logs/",
+    "backup/",
+    "tests/",
+    "docs/",
+    "*.md"
+  ],
+  "exec": "node bin/www",
+  "env": {
+    "NODE_ENV": "development",
+    "DEBUG": "junraikaraokewebapp:*"
+  },
+  "verbose": true
+}

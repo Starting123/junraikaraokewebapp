@@ -1,0 +1,34 @@
+JUNRAI KARAOKE - PAYMENT & RECEIPT FILES QUICK REFERENCE
+========================================================
+
+🔥 MAIN ACTIVE FILES (ไฟล์หลักที่ใช้งานจริง):
+- src/services/SimpleReceiptService.js      → สร้างใบเสร็จ PDF (ฟอนต์ไทย)
+- src/services/legacy/PaymentService.js     → ระบบชำระเงินหลัก
+- src/routes/legacy/api/payments.js         → API การชำระเงิน
+- views/payment-success.ejs                 → หน้าแสดงผลชำระเงินสำเร็จ
+- src/public/js/payment.js                  → JavaScript ฝั่ง Client
+
+📁 STORAGE:
+- public/receipts/*.pdf                     → ใบเสร็จ PDF จริง
+- assets/fonts/THSarabun*.ttf              → ฟอนต์ไทยสำหรับ PDF
+
+🧪 SECONDARY FILES (ไฟล์รอง/ทดสอบ):
+- src/services/ReceiptService.js            → ใช้บางส่วน (download only)
+- src/services/UnicodeReceiptService.js     → ทดสอบ Unicode
+- src/routes/legacy/api/receipts.js         → API ทดสอบใบเสร็จ
+
+📋 NAMING FORMAT (รูปแบบชื่อไฟล์ใบเสร็จ):
+receipt_RC{TIMESTAMP}{RANDOM}_U{USER_ID}_{DATE}_{TIME}.pdf
+
+ตัวอย่าง:
+receipt_RC20251012235902210_U12345_20251012_235902.pdf
+
+🔍 SEARCH PATTERNS:
+- หาตาม User: receipt_*_U123_*.pdf
+- หาตามวันที่: receipt_*_*_20251012_*.pdf
+
+⚡ QUICK STATUS:
+✅ Payment System: Working (Stripe)
+✅ Receipt PDF: Thai Font Support
+✅ File Storage: Organized
+✅ API: V2 + Legacy Hybrid
