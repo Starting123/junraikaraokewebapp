@@ -1,0 +1,373 @@
+<!-- Page Header -->
+<div class="page-header admin-header">
+    <div class="container">
+        <div class="page-header-content">
+            <div class="admin-welcome">
+                <h1>ผู้ดูแลระบบ</h1>
+                <p>จัดการระบบและข้อมูลทั้งหมด</p>
+            </div>
+            <div class="admin-actions">
+                <button class="btn btn-primary" id="refresh-dashboard">
+                    <i class="fas fa-sync-alt"></i>
+                    รีเฟรชข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Tabs -->
+<section class="admin-tabs-section">
+    <div class="container">
+        <div class="admin-tabs" id="admin-tabs">
+            <button class="admin-tab active" data-tab="overview" id="overview-tab">
+                <i class="fas fa-chart-bar"></i>
+                ภาพรวม
+            </button>
+            <button class="admin-tab" data-tab="bookings" id="bookings-tab">
+                <i class="fas fa-calendar-alt"></i>
+                การจอง
+            </button>
+            <button class="admin-tab" data-tab="rooms" id="rooms-tab">
+                <i class="fas fa-door-open"></i>
+                ห้อง
+            </button>
+            <button class="admin-tab" data-tab="users" id="users-tab">
+                <i class="fas fa-users"></i>
+                ผู้ใช้
+            </button>
+            <button class="admin-tab" data-tab="payments" id="payments-tab">
+                <i class="fas fa-credit-card"></i>
+                การชำระเงิน
+            </button>
+            <button class="admin-tab" data-tab="settings" id="settings-tab">
+                <i class="fas fa-cog"></i>
+                ตั้งค่า
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Admin Content -->
+<section class="admin-content">
+    <div class="container">
+        <!-- Overview Tab -->
+        <div id="overview-content" class="tab-content active">
+            <!-- Stats Grid -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="stat-icon bookings">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-bookings-admin">-</div>
+                        <div class="stat-label">การจองทั้งหมด</div>
+                        <div class="stat-change positive" id="bookings-change">+0%</div>
+                    </div>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="stat-icon users">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-users-admin">-</div>
+                        <div class="stat-label">ผู้ใช้ทั้งหมด</div>
+                        <div class="stat-change positive" id="users-change">+0%</div>
+                    </div>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="stat-icon revenue">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-revenue-admin">-</div>
+                        <div class="stat-label">รายได้รวม</div>
+                        <div class="stat-change positive" id="revenue-change">+0%</div>
+                    </div>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="stat-icon rooms">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-rooms-admin">-</div>
+                        <div class="stat-label">ห้องทั้งหมد</div>
+                        <div class="stat-change neutral" id="rooms-change">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="admin-charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>การจองรายเดือน</h3>
+                        <select id="bookings-chart-period" class="chart-period-select">
+                            <option value="6months">6 เดือนล่าสุด</option>
+                            <option value="year">ปีนี้</option>
+                            <option value="custom">กำหนดเอง</option>
+                        </select>
+                    </div>
+                    <div class="chart-content">
+                        <div id="bookings-chart" class="chart-placeholder">
+                            <i class="fas fa-chart-bar"></i>
+                            <p>กราฟการจองรายเดือน</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>อัตราการใช้งานห้อง</h3>
+                    </div>
+                    <div class="chart-content">
+                        <div id="room-usage-chart" class="chart-placeholder">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>กราฟอัตราการใช้งานห้อง</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activities -->
+            <div class="admin-activities">
+                <div class="activities-header">
+                    <h3>กิจกรรมล่าสุด</h3>
+                    <button class="btn btn-outline btn-small" id="view-all-activities">ดูทั้งหมด</button>
+                </div>
+                
+                <div class="activities-list" id="recent-activities">
+                    <div class="loading-state">
+                        <div class="loading-spinner small"></div>
+                        <p>กำลังโหลดกิจกรรม...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bookings Management Tab -->
+        <div id="bookings-content" class="tab-content">
+            <div class="tab-header">
+                <h2>จัดการการจอง</h2>
+                <div class="tab-actions">
+                    <select id="booking-status-filter" class="filter-select">
+                        <option value="">สถานะทั้งหมด</option>
+                        <option value="pending">รอการยืนยัน</option>
+                        <option value="confirmed">ยืนยันแล้ว</option>
+                        <option value="completed">เสร็จสิ้น</option>
+                        <option value="cancelled">ยกเลิก</option>
+                    </select>
+                    
+                    <input type="date" id="booking-date-filter" class="filter-input">
+                    
+                    <button class="btn btn-primary" id="export-bookings">
+                        <i class="fas fa-download"></i>
+                        ส่งออกข้อมูล
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-table-container">
+                <div id="bookings-table-loading" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>กำลังโหลดข้อมูลการจอง...</p>
+                </div>
+                
+                <div id="bookings-table-content" style="display: none;">
+                    <!-- Bookings table will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rooms Management Tab -->
+        <div id="rooms-content" class="tab-content">
+            <div class="tab-header">
+                <h2>จัดการห้อง</h2>
+                <div class="tab-actions">
+                    <button class="btn btn-primary" id="add-room-btn">
+                        <i class="fas fa-plus"></i>
+                        เพิ่มห้องใหม่
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-rooms-grid" id="admin-rooms-grid">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>กำลังโหลดข้อมูลห้อง...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Users Management Tab -->
+        <div id="users-content" class="tab-content">
+            <div class="tab-header">
+                <h2>จัดการผู้ใช้</h2>
+                <div class="tab-actions">
+                    <select id="user-role-filter" class="filter-select">
+                        <option value="">บทบาททั้งหมด</option>
+                        <option value="1">ผู้ดูแลระบบ</option>
+                        <option value="2">ผู้ใช้ทั่วไป</option>
+                    </select>
+                    
+                    <input type="text" id="user-search" class="filter-input" placeholder="ค้นหาผู้ใช้...">
+                    
+                    <button class="btn btn-primary" id="export-users">
+                        <i class="fas fa-download"></i>
+                        ส่งออกข้อมูล
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-table-container">
+                <div id="users-table-loading" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>กำลังโหลดข้อมูลผู้ใช้...</p>
+                </div>
+                
+                <div id="users-table-content" style="display: none;">
+                    <!-- Users table will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payments Management Tab -->
+        <div id="payments-content" class="tab-content">
+            <div class="tab-header">
+                <h2>จัดการการชำระเงิน</h2>
+                <div class="tab-actions">
+                    <select id="payment-status-filter" class="filter-select">
+                        <option value="">สถานะทั้งหมด</option>
+                        <option value="pending">รอการชำระ</option>
+                        <option value="paid">ชำระแล้ว</option>
+                        <option value="failed">ชำระไม่สำเร็จ</option>
+                        <option value="refunded">คืนเงิน</option>
+                    </select>
+                    
+                    <input type="date" id="payment-date-filter" class="filter-input">
+                    
+                    <button class="btn btn-primary" id="export-payments">
+                        <i class="fas fa-download"></i>
+                        ส่งออกข้อมูล
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-table-container">
+                <div id="payments-table-loading" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>กำลังโหลดข้อมูลการชำระเงิน...</p>
+                </div>
+                
+                <div id="payments-table-content" style="display: none;">
+                    <!-- Payments table will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings-content" class="tab-content">
+            <div class="tab-header">
+                <h2>ตั้งค่าระบบ</h2>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <h3>การจอง</h3>
+                    </div>
+                    <div class="settings-content">
+                        <div class="setting-item">
+                            <label>เวลาเปิดให้บริการ</label>
+                            <div class="time-range">
+                                <input type="time" id="opening-time" value="10:00">
+                                <span>ถึง</span>
+                                <input type="time" id="closing-time" value="24:00">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>จำนวนวันล่วงหน้าที่อนุญาต</label>
+                            <input type="number" id="advance-booking-days" value="30" min="1" max="365">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="auto-confirm-bookings">
+                                <span class="checkmark"></span>
+                                ยืนยันการจองอัตโนมัติ
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <h3>การแจ้งเตือน</h3>
+                    </div>
+                    <div class="settings-content">
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="email-notifications" checked>
+                                <span class="checkmark"></span>
+                                แจ้งเตือนทางอีเมล
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sms-notifications">
+                                <span class="checkmark"></span>
+                                แจ้งเตือนทาง SMS
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>เวลาส่งการแจ้งเตือนล่วงหน้า (ชั่วโมง)</label>
+                            <input type="number" id="notification-hours" value="2" min="1" max="48">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <h3>การชำระเงิน</h3>
+                    </div>
+                    <div class="settings-content">
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="require-deposit" checked>
+                                <span class="checkmark"></span>
+                                เรียกเก็บเงินมัดจำ
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>เปอร์เซ็นต์เงินมัดจำ</label>
+                            <input type="number" id="deposit-percentage" value="50" min="0" max="100">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label>ระยะเวลายกเลิกฟรี (ชั่วโมง)</label>
+                            <input type="number" id="free-cancellation-hours" value="24" min="0" max="168">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button class="btn btn-outline" id="reset-settings">รีเซ็ตการตั้งค่า</button>
+                <button class="btn btn-primary" id="save-settings">
+                    <span class="btn-text">บันทึกการตั้งค่า</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        กำลังบันทึก...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>

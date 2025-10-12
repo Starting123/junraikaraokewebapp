@@ -112,6 +112,12 @@ const csrfProtection = csrf({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Make session user available to all templates (server-side rendering)
+app.use((req, res, next) => {
+  res.locals.user = req.session && req.session.user ? req.session.user : null;
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/rooms', roomsRouter);

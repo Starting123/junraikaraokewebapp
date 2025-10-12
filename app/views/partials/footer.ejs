@@ -1,54 +1,51 @@
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- Global JavaScript -->
-    <script src="/javascripts/shared/auth.js"></script>
-    <script src="/javascripts/shared/utils.js"></script>
-    
-    <!-- Page-specific JavaScript -->
-    <% if (typeof pageJS !== 'undefined') { %>
-        <script src="/javascripts/<%= pageJS %>.js"></script>
-    <% } %>
-    
-    <!-- Global Auth Check -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthStatus();
-        });
-        
-        function checkAuthStatus() {
-            const token = localStorage.getItem('token');
-            const authLink = document.getElementById('authLink');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const dashboardLink = document.getElementById('dashboardLink');
-            const adminLink = document.getElementById('adminLink');
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Junrai Karaoke</h3>
+                <p>ระบบจองห้องคาราโอเกะออนไลน์ที่ทันสมัยและสะดวกสบาย</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-line"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
             
-            if (token) {
-                authLink.style.display = 'none';
-                logoutBtn.style.display = 'inline-block';
-                dashboardLink.style.display = 'inline-block';
-                
-                // Check if user is admin
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    if (payload.role_id === 1) {
-                        adminLink.style.display = 'inline-block';
-                    }
-                } catch (e) {
-                    console.error('Error parsing token:', e);
-                }
-            } else {
-                authLink.style.display = 'inline-block';
-                logoutBtn.style.display = 'none';
-                dashboardLink.style.display = 'none';
-                adminLink.style.display = 'none';
-            }
-        }
+            <div class="footer-section">
+                <h4>ลิงก์ด่วน</h4>
+                <ul class="footer-links">
+                    <li><a href="/">หน้าหลัก</a></li>
+                    <li><a href="/rooms">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings">การจอง</a></li>
+                    <li><a href="/contact">ติดต่อเรา</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>ติดต่อเรา</h4>
+                <div class="contact-info">
+                    <p><i class="fas fa-phone"></i> 02-xxx-xxxx</p>
+                    <p><i class="fas fa-envelope"></i> info@junraikaraoke.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> กรุงเทพมหานคร</p>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h4>เวลาทำการ</h4>
+                <div class="hours-info">
+                    <p>จันทร์ - อาทิตย์</p>
+                    <p>10:00 - 24:00 น.</p>
+                </div>
+            </div>
+        </div>
         
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = '/';
-        }
-    </script>
-</body>
-</html>
+        <div class="footer-bottom">
+            <p>&copy; <%= new Date().getFullYear() %> Junrai Karaoke. สงวนลิขสิทธิ์.</p>
+            <div class="footer-bottom-links">
+                <a href="/privacy">นโยบายความเป็นส่วนตัว</a>
+                <a href="/terms">ข้อกำหนดการใช้งาน</a>
+            </div>
+        </div>
+    </div>
+</footer>

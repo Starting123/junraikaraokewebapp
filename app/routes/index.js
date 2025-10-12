@@ -32,20 +32,26 @@ router.get('/', async function(req, res, next) {
     
     const stats = roomStats[0] || { total_rooms: 0, available_rooms: 0, occupied_rooms: 0 };
     
-    res.render('index', { 
+    res.render('home-new', { 
       title: 'Junrai Karaoke - ระบบจองห้องคาราโอเกะออนไลน์',
+      currentPage: 'home',
+      pageCSS: ['index', 'responsive-fixes'],
       roomStats: stats,
       featuredRooms: featuredRooms || [],
-      user: req.session?.user || null
+      user: req.session?.user || null,
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   } catch (err) {
     console.error('Homepage error:', err);
     // Fallback to basic render on database error
-    res.render('index', { 
+    res.render('home-new', { 
       title: 'Junrai Karaoke',
+      currentPage: 'home',
+      pageCSS: ['index', 'responsive-fixes'],
       roomStats: { total_rooms: 0, available_rooms: 0, occupied_rooms: 0 },
       featuredRooms: [],
-      user: req.session?.user || null
+      user: req.session?.user || null,
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
 });
@@ -60,7 +66,13 @@ router.get('/roomForm', async function(req, res, next) {
 }); 
 
 router.get('/contact', function(req, res, next) {
-  res.render('contact',);
+  res.render('contact-new', { 
+    title: 'ติดต่อเรา - Junrai Karaoke',
+    currentPage: 'contact',
+    pageCSS: 'contact',
+    user: req.session?.user || null,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
 });
 
 router.get('/loginform', function(req, res, next) {
@@ -78,8 +90,14 @@ router.get('/auth', function(req, res, next) {
         return res.redirect(redirectUrl);
     }
     
-    res.render('auth', {
-        redirectUrl: req.query.redirect || '/dashboard'
+    res.render('auth-new', {
+        title: 'เข้าสู่ระบบ - Junrai Karaoke',
+        currentPage: 'auth',
+        pageCSS: 'auth',
+        pageScript: 'auth',
+        redirectUrl: req.query.redirect || '/dashboard',
+        user: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 
@@ -103,29 +121,46 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.get('/rooms', function(req, res, next) {
-    res.render('rooms');
+    res.render('rooms-new', {
+        title: 'ห้องคาราโอเกะ - Junrai Karaoke',
+        currentPage: 'rooms',
+        pageCSS: 'rooms',
+        user: req.session?.user || null,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+    });
 });
 
 // Protected routes - require login
 router.get('/bookings', requireLogin, function(req, res, next) {
-    res.render('bookings', { 
+    res.render('bookings-new', { 
+        title: 'การจองของฉัน - Junrai Karaoke',
+        currentPage: 'bookings',
+        pageCSS: 'bookings',
+        pageScript: 'bookings',
         user: req.session.user,
-        title: 'การจองของฉั๑' 
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 
 router.get('/dashboard', requireLogin, function(req, res, next) {
-    res.render('dashboard', { 
+    res.render('dashboard-new', { 
+        title: 'แดชบอร์ด - Junrai Karaoke',
+        currentPage: 'dashboard',
+        pageCSS: 'dashboard',
         user: req.session.user,
-        title: 'แดชบอร์ด'
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 
 // Admin only route
 router.get('/admin', requireAdmin, function(req, res, next) {
-    res.render('admin', { 
+    res.render('admin-new', { 
+        title: 'ผู้ดูแลระบบ - Junrai Karaoke',
+        currentPage: 'admin',
+        pageCSS: 'admin',
+        pageScript: 'admin',
         user: req.session.user,
-        title: 'ผู้ดูแลระบบ'
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 

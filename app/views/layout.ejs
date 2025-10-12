@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Junrai Karaoke' %></title>
+    
+    <!-- CSRF Token Meta -->
+    <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="/stylesheets/global.css">
+    
+    <!-- Page-specific Styles -->
+    <% if (typeof pageCSS !== 'undefined') { %>
+        <% if (Array.isArray(pageCSS)) { %>
+            <% pageCSS.forEach(function(css) { %>
+                <link rel="stylesheet" href="/stylesheets/<%= css %>.css">
+            <% }); %>
+        <% } else { %>
+            <link rel="stylesheet" href="/stylesheets/<%= pageCSS %>.css">
+        <% } %>
+    <% } %>
+    
+    <!-- Additional Head Content -->
+    <% if (typeof additionalHead !== 'undefined') { %>
+        <%- additionalHead %>
+    <% } %>
+</head>
+<body data-current-page="<%= typeof currentPage !== 'undefined' ? currentPage : '' %>">
+    <!-- Include Header/Navigation -->
+    <%- include('partials/header') %>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <%- body %>
+    </main>
+    
+    <!-- Include Footer -->
+    <%- include('partials/footer') %>
+    
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- Expose Server Data to Client -->
+    <script>
+        window.serverData = {
+            user: <%- JSON.stringify(typeof user !== 'undefined' ? user : null) %>,
+            isAuthenticated: <%= typeof user !== 'undefined' && user ? 'true' : 'false' %>,
+            csrfToken: '<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>',
+            currentPage: '<%= typeof currentPage !== 'undefined' ? currentPage : '' %>',
+            environment: '<%= typeof process !== 'undefined' && process.env.NODE_ENV ? process.env.NODE_ENV : 'production' %>'
+        };
+    </script>
+    
+    <!-- Core JavaScript Modules (Load Order Important) -->
+    <script type="module" src="/js/core/dom.js"></script>
+    <script type="module" src="/js/core/events.js"></script>
+    <script type="module" src="/js/core/api.js"></script>
+    
+    <!-- Main Application -->
+    <script type="module" src="/js/main.js"></script>
+    
+    <!-- Page-specific JavaScript Module -->
+    <% if (typeof pageScript !== 'undefined') { %>
+        <script type="module" src="/js/modules/<%= pageScript %>.js" defer></script>
+    <% } %>
+    
+    <!-- Additional Footer Scripts -->
+    <% if (typeof additionalFooter !== 'undefined') { %>
+        <%- additionalFooter %>
+    <% } %>
+</body>
+</html>

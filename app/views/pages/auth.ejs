@@ -1,0 +1,291 @@
+<!-- Page Header -->
+<div class="page-header auth-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1 id="auth-title">เข้าสู่ระบบ</h1>
+            <p id="auth-subtitle">เข้าสู่ระบบเพื่อจองห้องคาราโอเกะและจัดการการจองของคุณ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Auth Content -->
+<section class="auth-content">
+    <div class="container">
+        <div class="auth-wrapper">
+            <!-- Auth Form Container -->
+            <div class="auth-form-container">
+                <!-- Tab Navigation -->
+                <div class="auth-tabs" id="auth-tabs">
+                    <button class="auth-tab active" data-tab="login" id="login-tab">
+                        <i class="fas fa-sign-in-alt"></i>
+                        เข้าสู่ระบบ
+                    </button>
+                    <button class="auth-tab" data-tab="register" id="register-tab">
+                        <i class="fas fa-user-plus"></i>
+                        สมัครสมาชิก
+                    </button>
+                </div>
+                
+                <!-- Success Message -->
+                <div id="auth-success" class="alert alert-success" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h4 id="auth-success-title">สำเร็จ!</h4>
+                        <p id="auth-success-message"></p>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="auth-error" class="alert alert-error" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h4>เกิดข้อผิดพลาด</h4>
+                        <p id="auth-error-message"></p>
+                    </div>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form-container" class="auth-form-wrapper active">
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="login-email">อีเมล</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="login-email" name="email" class="form-control" 
+                                       placeholder="กรอกอีเมลของคุณ" required>
+                            </div>
+                            <div class="form-error" id="login-email-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="login-password">รหัสผ่าน</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="login-password" name="password" class="form-control" 
+                                       placeholder="กรอกรหัสผ่านของคุณ" required>
+                                <button type="button" class="password-toggle" id="login-password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-error" id="login-password-error"></div>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="login-remember" name="remember">
+                                <span class="checkmark"></span>
+                                จดจำการเข้าสู่ระบบ
+                            </label>
+                            
+                            <a href="#" class="forgot-password-link" id="forgot-password-link">
+                                ลืมรหัสผ่าน?
+                            </a>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full" id="login-submit-btn">
+                            <span class="btn-text">เข้าสู่ระบบ</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                กำลังเข้าสู่ระบบ...
+                            </span>
+                        </button>
+                    </form>
+                    
+                    <div class="auth-footer">
+                        <p>ยังไม่มีบัญชี? <a href="#" id="switch-to-register">สมัครสมาชิกเลย</a></p>
+                    </div>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="register-form-container" class="auth-form-wrapper">
+                    <form id="register-form" class="auth-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="register-firstname">ชื่อ</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="register-firstname" name="firstname" class="form-control" 
+                                           placeholder="ชื่อจริง" required>
+                                </div>
+                                <div class="form-error" id="register-firstname-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="register-lastname">นามสกุล</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="register-lastname" name="lastname" class="form-control" 
+                                           placeholder="นามสกุล" required>
+                                </div>
+                                <div class="form-error" id="register-lastname-error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-email">อีเมล</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="register-email" name="email" class="form-control" 
+                                       placeholder="กรอกอีเมลของคุณ" required>
+                            </div>
+                            <div class="form-error" id="register-email-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-phone">เบอร์โทรศัพท์</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" id="register-phone" name="phone" class="form-control" 
+                                       placeholder="08x-xxx-xxxx" required>
+                            </div>
+                            <div class="form-error" id="register-phone-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-password">รหัสผ่าน</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="register-password" name="password" class="form-control" 
+                                       placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร" required>
+                                <button type="button" class="password-toggle" id="register-password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-error" id="register-password-error"></div>
+                            <div class="password-strength" id="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <span class="strength-text">ความแข็งแกร่งของรหัสผ่าน</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-confirm-password">ยืนยันรหัสผ่าน</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="register-confirm-password" name="confirmPassword" class="form-control" 
+                                       placeholder="กรอกรหัสผ่านอีกครั้ง" required>
+                                <button type="button" class="password-toggle" id="register-confirm-password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-error" id="register-confirm-password-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="register-terms" name="terms" required>
+                                <span class="checkmark"></span>
+                                ฉันยอมรับ <a href="/terms" target="_blank">ข้อกำหนดการใช้งาน</a> และ 
+                                <a href="/privacy" target="_blank">นโยบายความเป็นส่วนตัว</a>
+                            </label>
+                            <div class="form-error" id="register-terms-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="register-newsletter" name="newsletter">
+                                <span class="checkmark"></span>
+                                รับข่าวสารและโปรโมชั่นจากเรา
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-full" id="register-submit-btn">
+                            <span class="btn-text">สมัครสมาชิก</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                กำลังสมัครสมาชิก...
+                            </span>
+                        </button>
+                    </form>
+                    
+                    <div class="auth-footer">
+                        <p>มีบัญชีแล้ว? <a href="#" id="switch-to-login">เข้าสู่ระบบ</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Auth Info Panel -->
+            <div class="auth-info-panel">
+                <div class="auth-info-content">
+                    <div class="auth-icon">
+                        <i class="fas fa-microphone-alt"></i>
+                    </div>
+                    
+                    <h3>ยินดีต้อนรับสู่ Junrai Karaoke</h3>
+                    <ul class="auth-benefits">
+                        <li>
+                            <i class="fas fa-check"></i>
+                            จองห้องคาราโอเกะออนไลน์ได้ตลอด 24 ชั่วโมง
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            ติดตามสถานะการจองแบบเรียลไทม์
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            รับส่วนลดและโปรโมชั่นสุดพิเศษ
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            ประวัติการจองและการชำระเงิน
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            บริการลูกค้าออนไลน์ตลอด 24 ชั่วโมง
+                        </li>
+                    </ul>
+                    
+                    <div class="auth-stats">
+                        <div class="stat">
+                            <div class="stat-number">1000+</div>
+                            <div class="stat-label">ลูกค้าที่พึงพอใจ</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">ห้องคาราโอเกะ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Forgot Password Modal -->
+<div id="forgot-password-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop" id="forgot-password-modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>ลืมรหัสผ่าน</h2>
+            <button class="modal-close" id="close-forgot-password-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p>กรอกอีเมลของคุณ เราจะส่งลิงก์รีเซ็ตรหัสผ่านให้คุณ</p>
+            
+            <form id="forgot-password-form">
+                <div class="form-group">
+                    <label for="forgot-email">อีเมล</label>
+                    <input type="email" id="forgot-email" name="email" class="form-control" 
+                           placeholder="กรอกอีเมลของคุณ" required>
+                    <div class="form-error" id="forgot-email-error"></div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="forgot-password-cancel-btn">ยกเลิก</button>
+            <button class="btn btn-primary" id="forgot-password-submit-btn">
+                <span class="btn-text">ส่งลิงก์รีเซ็ต</span>
+                <span class="btn-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    กำลังส่ง...
+                </span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,137 @@
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1>ห้องคาราโอเกะ</h1>
+            <p>เลือกห้องที่เหมาะสมกับความต้องการของคุณ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Section -->
+<section class="filters-section">
+    <div class="container">
+        <div class="filters-wrapper">
+            <div class="filters-header">
+                <h3>กรองห้อง</h3>
+                <button class="btn btn-outline btn-small" id="clear-filters">ล้างตัวกรอง</button>
+            </div>
+            
+            <div class="filters-grid">
+                <!-- Capacity Filter -->
+                <div class="filter-group">
+                    <label>จำนวนคน</label>
+                    <select id="capacity-filter" class="filter-select">
+                        <option value="">ทั้งหมด</option>
+                        <option value="1-5">1-5 คน</option>
+                        <option value="6-10">6-10 คน</option>
+                        <option value="11-15">11-15 คน</option>
+                        <option value="16+">16+ คน</option>
+                    </select>
+                </div>
+                
+                <!-- Price Filter -->
+                <div class="filter-group">
+                    <label>ราคาต่อชั่วโมง</label>
+                    <select id="price-filter" class="filter-select">
+                        <option value="">ทั้งหมด</option>
+                        <option value="0-500">0-500 บาท</option>
+                        <option value="501-1000">501-1,000 บาท</option>
+                        <option value="1001-1500">1,001-1,500 บาท</option>
+                        <option value="1501+">1,501+ บาท</option>
+                    </select>
+                </div>
+                
+                <!-- Availability Filter -->
+                <div class="filter-group">
+                    <label>วันที่</label>
+                    <input type="date" id="date-filter" class="filter-input" min="<%= new Date().toISOString().split('T')[0] %>">
+                </div>
+                
+                <!-- Search -->
+                <div class="filter-group">
+                    <label>ค้นหา</label>
+                    <input type="text" id="search-filter" class="filter-input" placeholder="ชื่อห้อง หรือคำอธิบาย">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Grid -->
+<section class="rooms-section">
+    <div class="container">
+        <!-- Loading State -->
+        <div id="rooms-loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>กำลังโหลดข้อมูลห้อง...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div id="rooms-error" class="error-state" style="display: none;">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>เกิดข้อผิดพลาด</h3>
+            <p>ไม่สามารถโหลดข้อมูลห้องได้ กรุณาลองใหม่อีกครั้ง</p>
+            <button class="btn btn-primary" id="retry-load-rooms">ลองใหม่</button>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="rooms-empty" class="empty-state" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3>ไม่พบห้องที่ตรงตามเงื่อนไข</h3>
+            <p>ลองปรับเปลี่ยนตัวกรองหรือค้นหาด้วยคำใหม่</p>
+        </div>
+        
+        <!-- Rooms Grid -->
+        <div id="rooms-grid" class="rooms-grid" style="display: none;">
+            <!-- Room cards will be populated by JavaScript -->
+        </div>
+        
+        <!-- Pagination -->
+        <div id="rooms-pagination" class="pagination-wrapper" style="display: none;">
+            <div class="pagination">
+                <button class="pagination-btn" id="prev-page" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                    ก่อนหน้า
+                </button>
+                
+                <div class="pagination-info">
+                    <span id="current-page">1</span> / <span id="total-pages">1</span>
+                </div>
+                
+                <button class="pagination-btn" id="next-page">
+                    ถัดไป
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Room Details Modal -->
+<div id="room-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop" id="room-modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-room-name">รายละเอียดห้อง</h2>
+            <button class="modal-close" id="close-room-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="modal-room-content">
+                <!-- Room details will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="modal-close-btn">ปิด</button>
+            <button class="btn btn-primary" id="modal-book-btn">จองห้องนี้</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,233 @@
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1>ติดต่อเรา</h1>
+            <p>พร้อมให้บริการและตอบคำถามทุกข้อสงสัยของคุณ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Content -->
+<section class="contact-content">
+    <div class="container">
+        <div class="contact-grid">
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h2>ข้อมูลติดต่อ</h2>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>ที่อยู่</h3>
+                        <p>123 ถนนราชดำเนิน<br>
+                        เขตพระนคร กรุงเทพมหานคร 10200</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>โทรศัพท์</h3>
+                        <p><a href="tel:+6620001234">02-000-1234</a></p>
+                        <p><a href="tel:+66890001234">089-000-1234</a></p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>อีเมล</h3>
+                        <p><a href="mailto:info@junraikaraoke.com">info@junraikaraoke.com</a></p>
+                        <p><a href="mailto:booking@junraikaraoke.com">booking@junraikaraoke.com</a></p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>เวลาทำการ</h3>
+                        <p>จันทร์ - อาทิตย์<br>
+                        10:00 - 24:00 น.</p>
+                    </div>
+                </div>
+                
+                <!-- Social Media -->
+                <div class="social-section">
+                    <h3>ติดตามเรา</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-link facebook" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link line" aria-label="LINE">
+                            <i class="fab fa-line"></i>
+                        </a>
+                        <a href="#" class="social-link instagram" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link twitter" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="contact-form-section">
+                <h2>ส่งข้อความถึงเรา</h2>
+                
+                <!-- Success Message -->
+                <div id="contact-success" class="alert alert-success" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h4>ส่งข้อความสำเร็จ!</h4>
+                        <p>เราได้รับข้อความของคุณแล้ว และจะติดต่อกลับโดยเร็วที่สุด</p>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="contact-error" class="alert alert-error" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h4>เกิดข้อผิดพลาด</h4>
+                        <p id="contact-error-message">ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง</p>
+                    </div>
+                </div>
+                
+                <form id="contact-form" class="contact-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-name">ชื่อ-นามสกุล *</label>
+                            <input type="text" id="contact-name" name="name" class="form-control" required>
+                            <div class="form-error" id="name-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-email">อีเมล *</label>
+                            <input type="email" id="contact-email" name="email" class="form-control" required>
+                            <div class="form-error" id="email-error"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-phone">เบอร์โทรศัพท์</label>
+                            <input type="tel" id="contact-phone" name="phone" class="form-control">
+                            <div class="form-error" id="phone-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-subject">หัวข้อ *</label>
+                            <select id="contact-subject" name="subject" class="form-control" required>
+                                <option value="">เลือกหัวข้อ...</option>
+                                <option value="booking">สอบถามการจอง</option>
+                                <option value="payment">ปัญหาการชำระเงิน</option>
+                                <option value="complaint">ข้อร้องเรียน</option>
+                                <option value="suggestion">ข้อเสนอแนะ</option>
+                                <option value="other">อื่นๆ</option>
+                            </select>
+                            <div class="form-error" id="subject-error"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact-message">ข้อความ *</label>
+                        <textarea id="contact-message" name="message" class="form-control" rows="6" 
+                                placeholder="โปรดระบุรายละเอียดที่ต้องการสอบถาม..." required></textarea>
+                        <div class="form-error" id="message-error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="contact-privacy" name="privacy" required>
+                            <span class="checkmark"></span>
+                            ฉันยอมรับ <a href="/privacy" target="_blank">นโยบายความเป็นส่วนตัว</a> และ <a href="/terms" target="_blank">ข้อกำหนดการใช้งาน</a>
+                        </label>
+                        <div class="form-error" id="privacy-error"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="contact-clear-btn">ล้างข้อมูล</button>
+                        <button type="submit" class="btn btn-primary" id="contact-submit-btn">
+                            <span class="btn-text">ส่งข้อความ</span>
+                            <span class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                กำลังส่ง...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Contact -->
+<section class="quick-contact">
+    <div class="container">
+        <div class="quick-contact-content">
+            <h2>ต้องการความช่วยเหลือเร่งด่วน?</h2>
+            <p>ติดต่อเราได้ทันทีผ่านช่องทางด้านล่าง</p>
+            
+            <div class="quick-contact-actions">
+                <a href="tel:+6620001234" class="quick-action call">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="quick-action-text">
+                        <h3>โทรเลย</h3>
+                        <p>02-000-1234</p>
+                    </div>
+                </a>
+                
+                <a href="#" class="quick-action line">
+                    <div class="quick-action-icon">
+                        <i class="fab fa-line"></i>
+                    </div>
+                    <div class="quick-action-text">
+                        <h3>LINE</h3>
+                        <p>@junraikaraoke</p>
+                    </div>
+                </a>
+                
+                <a href="mailto:info@junraikaraoke.com" class="quick-action email">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="quick-action-text">
+                        <h3>อีเมล</h3>
+                        <p>info@junraikaraoke.com</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="map-section">
+    <div class="container">
+        <h2>แผนที่</h2>
+        <div class="map-container">
+            <div class="map-placeholder">
+                <div class="map-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3>Junrai Karaoke</h3>
+                <p>123 ถนนราชดำเนิน เขตพระนคร กรุงเทพมหานคร 10200</p>
+                <a href="https://maps.google.com/?q=Junrai+Karaoke" target="_blank" class="btn btn-outline">
+                    <i class="fas fa-external-link-alt"></i>
+                    เปิดใน Google Maps
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

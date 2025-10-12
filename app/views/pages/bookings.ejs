@@ -1,0 +1,183 @@
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1>การจองของฉัน</h1>
+            <p>จัดการและติดตามสถานะการจองห้องคาราโอเกะ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Actions -->
+<section class="booking-actions">
+    <div class="container">
+        <div class="actions-wrapper">
+            <div class="actions-left">
+                <h3>การจองทั้งหมด</h3>
+                <span id="total-bookings-count" class="count-badge">0 รายการ</span>
+            </div>
+            
+            <div class="actions-right">
+                <select id="status-filter" class="filter-select">
+                    <option value="">สถานะทั้งหมด</option>
+                    <option value="pending">รอการยืนยัน</option>
+                    <option value="confirmed">ยืนยันแล้ว</option>
+                    <option value="completed">เสร็จสิ้น</option>
+                    <option value="cancelled">ยกเลิก</option>
+                </select>
+                
+                <select id="date-range-filter" class="filter-select">
+                    <option value="">ช่วงเวลาทั้งหมด</option>
+                    <option value="today">วันนี้</option>
+                    <option value="this-week">สัปดาห์นี้</option>
+                    <option value="this-month">เดือนนี้</option>
+                    <option value="past">ที่ผ่านมา</option>
+                </select>
+                
+                <a href="/rooms" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    จองใหม่
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Guest Notice (for non-authenticated users) -->
+<section class="guest-notice" id="guest-notice" style="display: none;">
+    <div class="container">
+        <div class="notice-card">
+            <div class="notice-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="notice-content">
+                <h3>เข้าสู่ระบบเพื่อดูการจอง</h3>
+                <p>กรุณาเข้าสู่ระบบเพื่อดูและจัดการการจองห้องคาราโอเกะของคุณ</p>
+                <div class="notice-actions">
+                    <a href="/auth" class="btn btn-primary">เข้าสู่ระบบ</a>
+                    <a href="/rooms" class="btn btn-outline">จองใหม่</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bookings Content -->
+<section class="bookings-content" id="bookings-content">
+    <div class="container">
+        <!-- Loading State -->
+        <div id="bookings-loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>กำลังโหลดข้อมูลการจอง...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div id="bookings-error" class="error-state" style="display: none;">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>เกิดข้อผิดพลาด</h3>
+            <p>ไม่สามารถโหลดข้อมูลการจองได้ กรุณาลองใหม่อีกครั้ง</p>
+            <button class="btn btn-primary" id="retry-load-bookings">ลองใหม่</button>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="bookings-empty" class="empty-state" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3>ยังไม่มีการจอง</h3>
+            <p>คุณยังไม่มีการจองห้องคาราโอเกะ เริ่มต้นจองห้องแรกของคุณเลย!</p>
+            <a href="/rooms" class="btn btn-primary">เลือกห้องคาราโอเกะ</a>
+        </div>
+        
+        <!-- Bookings List -->
+        <div id="bookings-list" class="bookings-list" style="display: none;">
+            <!-- Booking cards will be populated by JavaScript -->
+        </div>
+        
+        <!-- Pagination -->
+        <div id="bookings-pagination" class="pagination-wrapper" style="display: none;">
+            <div class="pagination">
+                <button class="pagination-btn" id="prev-bookings-page" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                    ก่อนหน้า
+                </button>
+                
+                <div class="pagination-info">
+                    <span id="current-bookings-page">1</span> / <span id="total-bookings-pages">1</span>
+                </div>
+                
+                <button class="pagination-btn" id="next-bookings-page">
+                    ถัดไป
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Details Modal -->
+<div id="booking-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop" id="booking-modal-backdrop"></div>
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>รายละเอียดการจอง</h2>
+            <button class="modal-close" id="close-booking-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="modal-booking-content">
+                <!-- Booking details will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="modal-booking-close-btn">ปิด</button>
+            <div class="modal-booking-actions">
+                <!-- Actions will be populated based on booking status -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div id="cancel-booking-modal" class="modal" style="display: none;">
+    <div class="modal-backdrop" id="cancel-booking-modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>ยืนยันการยกเลิก</h2>
+            <button class="modal-close" id="close-cancel-booking-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="cancel-booking-content">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>คุณแน่ใจหรือไม่?</h3>
+                <p>การยกเลิกการจองนี้ไม่สามารถย้อนกลับได้ หากชำระเงินแล้วจะมีการคืนเงินตามนโยบาย</p>
+                
+                <div class="cancel-reason">
+                    <label for="cancel-reason-select">เหตุผลในการยกเลิก (ไม่บังคับ)</label>
+                    <select id="cancel-reason-select" class="form-control">
+                        <option value="">เลือกเหตุผล...</option>
+                        <option value="schedule-change">เปลี่ยนแปลงตารางเวลา</option>
+                        <option value="emergency">เหตุฉุกเฉิน</option>
+                        <option value="duplicate-booking">จองซ้ำ</option>
+                        <option value="other">อื่นๆ</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancel-booking-cancel-btn">ไม่ยกเลิก</button>
+            <button class="btn btn-danger" id="confirm-cancel-booking-btn">ยืนยันการยกเลิก</button>
+        </div>
+    </div>
+</div>
