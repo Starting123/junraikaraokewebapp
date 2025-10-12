@@ -11,8 +11,16 @@ if (!JWT_SECRET || JWT_SECRET.length < 32) {
  * Session-based authentication middleware
  */
 function requireLogin(req, res, next) {
+    console.log('🔒 requireLogin middleware called for:', req.path);
+    
+    // Prevent redirect loops
+    if (req.path === '/auth' || req.path === '/') {
+        return next();
+    }
+    
     // Check session first
     if (req.session && req.session.user) {
+        console.log('✅ Session user found:', req.session.user.email);
         req.user = req.session.user;
         return next();
     }
@@ -23,35 +31,88 @@ function requireLogin(req, res, next) {
         const token = auth.slice(7);
         try {
             const payload = jwt.verify(token, JWT_SECRET);
+            console.log('✅ JWT token valid for user:', payload.email);
             req.user = payload;
+            
+            // For API requests with valid JWT, also populate session
+            if (req.path.startsWith('/api/') && !req.session.user) {
+                req.session.user = payload;
+            }
             return next();
         } catch (err) {
-            // Token invalid, continue to rejection
+            console.log('❌ JWT token invalid:', err.message);
         }
     }
+    
+    console.log('❌ No valid authentication found');
     
     // Handle different response types
     if (req.path.startsWith('/api/')) {
         return res.status(401).json({ error: 'Login required' });
     }
     
-    // For web routes, redirect to login with return URL
-    return res.redirect('/auth?redirect=' + encodeURIComponent(req.originalUrl));
+    // For web routes, redirect to login with return URL (prevent loops)
+    if (!req.path.includes('/auth')) {
+        return res.redirect('/auth?redirect=' + encodeURIComponent(req.originalUrl));
+    }
+    
+    return next();
 }
 
 /**
  * Admin role requirement middleware - ALWAYS enforced
  */
 function requireAdmin(req, res, next) {
+    console.log('🔐 requireAdmin middleware called for:', req.path);
+    console.log('🔐 Session exists:', !!req.session);
+    console.log('🔐 Session ID:', req.session?.id);
+    console.log('🔐 Session user:', req.session?.user ? 'exists' : 'not found');
+    console.log('🔐 Full session:', JSON.stringify(req.session, null, 2));
+    
+    // Prevent redirect loops by checking if already on auth page
+    if (req.path === '/auth') {
+        console.log('⚠️ Already on auth page, skipping admin check');
+        return next();
+    }
+
+    // Check if this request is part of a redirect loop
+    const redirectCount = req.session.redirectCount || 0;
+    if (redirectCount > 3) {
+        console.log('🛑 Redirect loop detected, breaking cycle');
+        req.session.redirectCount = 0; // Reset counter
+        return res.status(403).render('error', { 
+            message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาล็อกอินใหม่',
+            error: { status: 403 }
+        });
+    }
+    
     // Check session first
     if (!req.session || !req.session.user) {
+        console.log('❌ No session/user found');
+        
+        // Clear broken session data if session exists but no user
+        if (req.session && !req.session.user) {
+            console.log('🧹 Clearing broken session data');
+            req.session.destroy((err) => {
+                if (err) console.error('Session destroy error:', err);
+            });
+        }
+        
         if (req.path.startsWith('/api/')) {
             return res.status(401).json({ error: 'Login required' });
         }
-        return res.redirect('/auth?redirect=' + encodeURIComponent(req.originalUrl));
+        
+        // Redirect to auth without redirect parameter to force fresh login
+        return res.redirect('/auth');
     }
     
+    console.log('✅ User found, role_id:', req.session.user.role_id);
+    
+    // Reset redirect count on successful auth
+    req.session.redirectCount = 0;
+    
     if (req.session.user.role_id !== 1) {
+        console.log('❌ User is not admin, access denied');
         if (req.path.startsWith('/api/')) {
             return res.status(403).json({ error: 'Admin access required' });
         }
@@ -61,6 +122,7 @@ function requireAdmin(req, res, next) {
         });
     }
     
+    console.log('✅ Admin access granted');
     req.user = req.session.user;
     next();
 }

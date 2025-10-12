@@ -156,6 +156,7 @@
     </div>
   </section>
 
+  <script src="/javascripts/shared/auth.js"></script>
   <script>
     // Global variables
     let currentUser = null;
@@ -167,30 +168,25 @@
       loadPopularRooms();
     });
 
-    // Check authentication
+    // Check authentication and setup navbar
     function checkAuth() {
-      const token = localStorage.getItem('token');
-      const user = localStorage.getItem('user');
+      initializeNavbar();
       
-      if (token && user) {
-        currentUser = JSON.parse(user);
-        document.getElementById('authLink').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'block';
-        document.getElementById('dashboardLink').style.display = 'block';
-        document.getElementById('heroBookingBtn').style.display = 'inline-flex';
-        
-        // Show admin link for admin users
-        if (currentUser.role_id === 1) {
-          document.getElementById('adminLink').style.display = 'block';
+      const user = getCurrentUser();
+      const userFromStorage = localStorage.getItem('user');
+      
+      let currentUser = user;
+      if (userFromStorage) {
+        try {
+          currentUser = JSON.parse(userFromStorage);
+        } catch (e) {
+          console.warn('Failed to parse user from localStorage');
         }
       }
-    }
-
-    // Logout function
-    function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.reload();
+      
+      if (isAuthenticated() && currentUser) {
+        document.getElementById('heroBookingBtn').style.display = 'inline-flex';
+      }
     }
 
     // Load popular rooms

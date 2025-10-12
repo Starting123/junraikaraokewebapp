@@ -72,12 +72,19 @@ router.get('/api-tester', function(req, res, next) {
 });
 
 router.get('/auth', function(req, res, next) {
-    // If already logged in, redirect to appropriate dashboard
-    if (req.session && req.session.user) {
-        const redirectUrl = req.query.redirect || (req.session.user.role_id === 1 ? '/admin' : '/dashboard');
-        return res.redirect(redirectUrl);
+    console.log('🔐 Auth route accessed, session user:', req.session?.user ? 'exists' : 'not found');
+    console.log('🔐 Redirect parameter:', req.query.redirect);
+    
+    // Clear any broken session data
+    if (req.session && req.session.redirectCount > 0) {
+        console.log('🧹 Clearing redirect count from session');
+        delete req.session.redirectCount;
     }
     
+    // ALWAYS show login page - no auto redirects
+    console.log('🛑 Showing auth page - no auto redirects');
+    
+    console.log('📄 Rendering auth page');
     res.render('auth', {
         redirectUrl: req.query.redirect || '/dashboard'
     });
@@ -123,10 +130,18 @@ router.get('/dashboard', requireLogin, function(req, res, next) {
 
 // Admin only route
 router.get('/admin', requireAdmin, function(req, res, next) {
-    res.render('admin', { 
-        user: req.session.user,
-        title: 'ผู้ดูแลระบบ'
-    });
+    console.log('🏛️ Admin route accessed by user:', req.session.user?.email);
+    
+    try {
+        res.render('admin', { 
+            user: req.session.user,
+            title: 'ผู้ดูแลระบบ'
+        });
+        console.log('✅ Admin page rendered successfully');
+    } catch (error) {
+        console.error('❌ Error rendering admin page:', error);
+        next(error);
+    }
 });
 
 router.get('/payment/success', function(req, res, next) {

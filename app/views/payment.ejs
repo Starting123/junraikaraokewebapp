@@ -162,6 +162,22 @@
     </div>
 
     <!-- JavaScript -->
+    <script src="/javascripts/shared/auth.js"></script>
+    <script>
+    // Initialize navbar when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeNavbar();
+    });
+
+    // Navigation functions
+    function goToDashboard() {
+        window.location.href = '/dashboard';
+    }
+
+    function goToBookings() {
+        window.location.href = '/bookings';
+    }
+    </script>
     <script src="/stylesheets/payment.js"></script>
 </body>
 </html>

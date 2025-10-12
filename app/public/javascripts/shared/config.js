@@ -190,24 +190,36 @@ window.APP_UTILS = {
     }
 };
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 App configuration loaded successfully');
-    
-    // Set up global error handler
-    window.addEventListener('unhandledrejection', function(event) {
-        console.error('Unhandled promise rejection:', event.reason);
-        APP_UTILS.showNotification('เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง', 'error');
+// Initialize app when DOM is ready (run only once)
+if (!window.appConfigInitialized) {
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.appConfigInitialized) return;
+        window.appConfigInitialized = true;
+        
+        console.log('🚀 App configuration loaded successfully');
+        
+        // Set up global error handler
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            if (typeof showToast === 'function') {
+                showToast('เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง', 'error');
+            }
+        });
+        
+        // Set up global click handler for auth links
+        document.addEventListener('click', function(event) {
+            if (event.target.matches('[data-auth-required]') && !localStorage.getItem('token')) {
+                event.preventDefault();
+                if (typeof showToast === 'function') {
+                    showToast('กรุณาเข้าสู่ระบบก่อนดำเนินการ', 'error');
+                }
+                // Prevent redirect loops
+                if (window.location.pathname !== '/auth') {
+                    window.location.replace('/auth');
+                }
+            }
+        });
     });
-    
-    // Set up global click handler for auth links
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('[data-auth-required]') && !localStorage.getItem('token')) {
-            event.preventDefault();
-            APP_UTILS.showNotification('กรุณาเข้าสู่ระบบก่อนดำเนินการ', 'error');
-            window.location.href = '/auth';
-        }
-    });
-});
+}
 
 console.log('📁 App configuration module loaded');

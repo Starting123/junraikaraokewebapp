@@ -74,20 +74,31 @@ function auditLog(action, target_type) {
           query: req.query
         };
         
-        // Log admin action
-        adminLogsModel.logAdminAction({
-          admin_id: req.user.user_id,
-          action,
-          target_type,
-          target_id: req.params.id || null,
-          ip_address: req.ip || req.connection.remoteAddress,
-          user_agent: req.get('User-Agent'),
-          details
-        }).catch(err => console.error('Audit log error:', err));
+        // Log admin action with full request context (optional)
+        try {
+          adminLogsModel.logAdminAction({
+            admin_id: req.user.user_id,
+            action,
+            target_type,
+            target_id: req.params.id || null,
+            ip_address: req.ip || req.connection.remoteAddress,
+            user_agent: req.get('User-Agent'),
+            details
+          }).catch(err => console.warn('Audit log warning (non-critical):', err.message));
+        } catch (error) {
+          console.warn('Audit logging disabled - table may not exist:', error.message);
+        }
 
         // Invalidate relevant caches
         if (['CREATE', 'UPDATE', 'DELETE'].includes(action)) {
-          cacheService.invalidateAdminCache(target_type + 's'); // pluralize
+          try {
+            // Use pattern-based cache invalidation
+            cacheService.delByPattern(`admin:${target_type}s:*`);
+            cacheService.delByPattern('admin:dashboard:*');
+            console.log(`Cache invalidated for admin:${target_type}s`);
+          } catch (error) {
+            console.warn('Cache invalidation failed:', error.message);
+          }
         }
       }
       return originalJson.call(this, data);
@@ -111,6 +122,53 @@ router.get('/users/:id', adminOnly, [ param('id').isInt({ gt: 0 }) ], async (req
     if (!user) return res.status(404).json({ error: 'user not found' });
     res.json({ user });
   } catch (err) { next(err); }
+});
+
+router.post('/users', adminOnly, auditLog('CREATE', 'user'), [
+  body('name').notEmpty().trim().isLength({ min: 2, max: 100 }),
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 6 }),
+  body('role_id').optional().isInt({ min: 1, max: 2 }).toInt(),
+  body('status').optional().isIn(['active', 'inactive'])
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, email, password, role_id = 2, status = 'active' } = req.body;
+
+    // Check if email already exists
+    const [existingUsers] = await require('../../db').query('SELECT user_id FROM users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    // Hash password
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const [result] = await require('../../db').query(
+      'INSERT INTO users (name, email, password, role_id, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [name, email, hashedPassword, role_id, status]
+    );
+
+    // Get created user (without password)
+    const [newUser] = await require('../../db').query(
+      'SELECT user_id, name, email, role_id, status, created_at FROM users WHERE user_id = ?',
+      [result.insertId]
+    );
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'User created successfully',
+      user: newUser[0]
+    });
+  } catch (err) { 
+    next(err); 
+  }
 });
 
 router.put('/users/:id', adminOnly, auditLog('UPDATE', 'user'), [ param('id').isInt({ gt: 0 }), body('role_id').optional().isInt(), body('status').optional().isIn(['active','inactive']) ], async (req, res, next) => {

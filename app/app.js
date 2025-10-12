@@ -17,6 +17,7 @@ var apiAuth = require('./routes/api/auth');
 var apiBookings = require('./routes/api/bookings');
 var apiAdmin = require('./routes/api/admin');
 var apiOrders = require('./routes/api/orders');
+var debugRouter = require('./routes/debug');
 
 
 var app = express();
@@ -119,6 +120,7 @@ app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', apiAdmin);
 app.use('/api/orders', apiOrders);
+app.use('/debug', debugRouter);
 app.use('/api/payments', require('./routes/api/payments'));
 
 // Apply CSRF protection to web routes (exclude API routes)

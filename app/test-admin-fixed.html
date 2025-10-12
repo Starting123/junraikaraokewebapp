@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin - No Redirect Loop</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .test-btn { 
+            background: #007bff; color: white; border: none; 
+            padding: 10px 20px; margin: 10px 5px; border-radius: 5px; cursor: pointer; 
+        }
+        .test-btn:hover { background: #0056b3; }
+        #logs { background: white; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; }
+        .log-entry { margin: 3px 0; padding: 3px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Admin Page - Redirect Loop Fixed</h1>
+    
+    <div class="status info">
+        <strong>🛡️ Protected Admin Page Test</strong><br>
+        หน้านี้มีการป้องกันการ redirect loop และการเรียก API ซ้ำๆ
+    </div>
+
+    <div class="status" id="currentStatus">
+        <strong>📊 Current Status:</strong> <span id="statusText">กำลังตรวจสอบ...</span>
+    </div>
+
+    <h3>🔧 Test Functions</h3>
+    <button class="test-btn" onclick="testAuth()">Test Auth Check</button>
+    <button class="test-btn" onclick="testAdminAuth()">Test Admin Auth</button>
+    <button class="test-btn" onclick="testLoadStats()">Test Load Stats</button>
+    <button class="test-btn" onclick="clearLogs()">Clear Logs</button>
+    <button class="test-btn" onclick="goToRealAdmin()">Go to Real Admin</button>
+
+    <h3>📋 Test Results & Logs</h3>
+    <div id="logs"></div>
+
+    <!-- Include the scripts with protection -->
+    <script src="/javascripts/shared/anti-redirect-loop.js"></script>
+    <script src="/javascripts/shared/auth.js"></script>
+    <script src="/javascripts/shared/utils.js"></script>
+    
+    <script>
+        const logs = document.getElementById('logs');
+        const statusText = document.getElementById('statusText');
+        const currentStatus = document.getElementById('currentStatus');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusText.textContent = message;
+            currentStatus.className = `status ${type}`;
+        }
+
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            originalLog.apply(console, arguments);
+            addLog(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, arguments);
+            addLog('ERROR: ' + args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, arguments);
+            addLog('WARNING: ' + args.join(' '), 'warning');
+        };
+
+        // Test functions
+        async function testAuth() {
+            addLog('=== Testing Authentication ===', 'info');
+            updateStatus('กำลังทดสอบ Authentication...', 'info');
+            
+            try {
+                const isAuth = isAuthenticated();
+                const currentUser = getCurrentUser();
+                const isAdminUser = isAdmin();
+                
+                addLog(`Authentication Status: ${isAuth}`, isAuth ? 'success' : 'error');
+                addLog(`Current User: ${JSON.stringify(currentUser)}`, 'info');
+                addLog(`Is Admin: ${isAdminUser}`, isAdminUser ? 'success' : 'error');
+                
+                updateStatus(`Auth: ${isAuth}, Admin: ${isAdminUser}`, isAuth ? 'success' : 'error');
+            } catch (error) {
+                addLog(`Auth Test Error: ${error.message}`, 'error');
+                updateStatus('Auth Test Failed', 'error');
+            }
+        }
+
+        async function testAdminAuth() {
+            addLog('=== Testing Admin Authentication ===', 'info');
+            updateStatus('กำลังทดสอบ Admin Auth...', 'info');
+            
+            if (typeof checkAdminAuth === 'function') {
+                try {
+                    await checkAdminAuth();
+                    addLog('Admin auth check completed', 'success');
+                    updateStatus('Admin Auth Test Completed', 'success');
+                } catch (error) {
+                    addLog(`Admin Auth Error: ${error.message}`, 'error');
+                    updateStatus('Admin Auth Test Failed', 'error');
+                }
+            } else {
+                addLog('checkAdminAuth function not available', 'error');
+                updateStatus('checkAdminAuth ไม่พร้อมใช้งาน', 'error');
+            }
+        }
+
+        async function testLoadStats() {
+            addLog('=== Testing Load Statistics ===', 'info');
+            updateStatus('กำลังทดสอบ Load Stats...', 'info');
+            
+            if (typeof loadAdminStats === 'function') {
+                try {
+                    await loadAdminStats(true); // Force reload
+                    addLog('Load stats completed', 'success');
+                    updateStatus('Load Stats Test Completed', 'success');
+                } catch (error) {
+                    addLog(`Load Stats Error: ${error.message}`, 'error');
+                    updateStatus('Load Stats Test Failed', 'error');
+                }
+            } else {
+                addLog('loadAdminStats function not available', 'error');
+                updateStatus('loadAdminStats ไม่พร้อมใช้งาน', 'error');
+            }
+        }
+
+        function clearLogs() {
+            logs.innerHTML = '';
+            updateStatus('Logs cleared', 'success');
+        }
+
+        function goToRealAdmin() {
+            addLog('Redirecting to real admin page...', 'info');
+            window.location.href = '/admin';
+        }
+
+        // Initial status
+        addLog('🛡️ Test page loaded with redirect protection', 'success');
+        updateStatus('Test page ready', 'success');
+
+        // Track redirect attempts
+        window.addEventListener('beforeunload', function() {
+            addLog('Page unloading...', 'info');
+        });
+    </script>
+
+    <!-- Load admin.js for testing -->
+    <script>
+        // Simulate being on admin page for testing
+        const originalPathname = window.location.pathname;
+        Object.defineProperty(window.location, 'pathname', {
+            value: '/admin',
+            writable: false
+        });
+    </script>
+    <script src="/javascripts/admin.js"></script>
+    
+    <script>
+        // Restore original pathname
+        setTimeout(() => {
+            Object.defineProperty(window.location, 'pathname', {
+                value: originalPathname,
+                writable: false
+            });
+        }, 100);
+    </script>
+</body>
+</html>

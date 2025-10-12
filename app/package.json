@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development npx nodemon ./bin/www",
-    "start": "cross-env NODE_ENV=production node ./bin/www", 
+    "start": "cross-env NODE_ENV=production node ./bin/www",
     "debug": "cross-env NODE_ENV=development node --inspect ./bin/www",
     "win-dev": "set NODE_ENV=development && npx nodemon ./bin/www",
     "win-start": "set NODE_ENV=production && node ./bin/www"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",

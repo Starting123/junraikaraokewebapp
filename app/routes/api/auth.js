@@ -175,7 +175,8 @@ router.post('/login', authLimiter, [
         res.json({
           message: 'เข้าสู่ระบบสำเร็จ',
           user: req.session.user,
-          token
+          token,
+          redirectUrl: user.role_id === 1 ? '/admin' : '/dashboard'
         });
       });
     });

@@ -408,7 +408,9 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            initializeNavbar();
+            requireAuth(); // Redirect to login if not authenticated
+            checkBookingAccess(); // Check booking-specific access
             loadAvailableRooms();
             setDefaultDateTime();
             initializeStripe();
@@ -416,47 +418,21 @@
             loadRoomInfo();
         });
 
-        // Authentication check
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            
-            if (token && user) {
-                currentUser = JSON.parse(user);
-                document.getElementById('authLink').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'block';
-                document.getElementById('dashboardLink').style.display = 'block';
+        // Booking-specific access check
+        function checkBookingAccess() {
+            const user = getCurrentUser();
+            if (user) {
+                currentUser = user;
                 document.getElementById('myBookingsTab').style.display = 'block';
                 
-                // Show admin tab and admin link
-                if (currentUser.role_id === 1) {
+                // Show admin-only booking features
+                if (isAdmin()) {
                     document.getElementById('allBookingsTab').style.display = 'block';
-                    document.getElementById('adminLink').style.display = 'block';
                 }
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = '/auth';
             }
         }
 
-        // Logout function
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/auth';
-        }
 
-        // Handle authentication errors
-        function handleAuthError(response) {
-            if (response.status === 401 || response.status === 403) {
-                showError('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
-                setTimeout(() => {
-                    logout();
-                }, 2000);
-                return true;
-            }
-            return false;
-        }
 
         // Enhanced fetch with auth error handling
         async function fetchWithAuth(url, options = {}) {
@@ -470,7 +446,11 @@
                 }
             });
 
-            if (handleAuthError(response)) {
+            if (response.status === 401 || response.status === 403) {
+                showError('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+                setTimeout(() => {
+                    logout();
+                }, 2000);
                 throw new Error('Authentication failed');
             }
 
@@ -1839,5 +1819,8 @@ if (bookingForm) {
 
     <!-- Mobile Enhancements Script -->
     <script src="/stylesheets/mobile-enhancements.js"></script>
+    
+    <!-- Shared authentication functions -->
+    <script src="/javascripts/shared/auth.js"></script>
 </body>
 </html>

@@ -13,31 +13,33 @@
     <link rel="stylesheet" href="/stylesheets/admin.css">
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Admin Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="navbar-content">
                 <a href="/" class="navbar-brand">
                     <i class="fas fa-microphone-alt"></i>
                     Junrai Karaoke
                 </a>
-                <ul class="navbar-nav">
-                    <li><a href="/" class="nav-link">หน้าหลัก</a></li>
-                    <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                    <li><a href="/bookings" class="nav-link">การจอง</a></li>
-                    <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-                    <li><a href="/dashboard" class="nav-link" id="dashboardLink">แดชบอร์ด</a></li>
-                    <li><a href="/admin" class="nav-link active" id="adminLink">ผู้ดูแลระบบ</a></li>
-                    <li><a href="/auth" class="nav-link" id="authLink" style="display: none;">เข้าสู่ระบบ</a></li>
-                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn">ออกจากระบบ</button></li>
+                
+                <ul class="navbar-nav" id="navMenu">
+                    <li><a href="/dashboard" class="nav-link" id="dashboardLink">แดชบอร์ดผู้ใช้</a></li>
+                    <li><a href="/admin" class="nav-link active" id="adminLink">จัดการระบบ</a></li>
+                    <li>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">ผู้ดูแลระบบ</span>
+                            <button class="btn btn-outline" onclick="logout()" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                            </button>
+                        </div>
+                    </li>
                 </ul>
-            </div>
-        </div>
-            
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
+                
+                <div class="nav-toggle" id="navToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
         </div>
     </nav>
@@ -70,9 +72,11 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="totalUsers">-</h3>
+                        <h3 id="totalUsers">
+                            <i class="fas fa-spinner fa-spin" style="color: #ccc;"></i>
+                        </h3>
                         <p>ผู้ใช้ทั้งหมด</p>
-                        <small class="stat-change" id="usersChange">+0 ใหม่วันนี้</small>
+                        <small class="stat-change" id="usersChange">กำลังโหลด...</small>
                     </div>
                 </div>
                 
@@ -81,9 +85,11 @@
                         <i class="fas fa-door-open"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="totalRooms">-</h3>
+                        <h3 id="totalRooms">
+                            <i class="fas fa-spinner fa-spin" style="color: #ccc;"></i>
+                        </h3>
                         <p>ห้องทั้งหมด</p>
-                        <small class="stat-change" id="roomsAvailable">0 ห้องว่าง</small>
+                        <small class="stat-change" id="roomsAvailable">กำลังโหลด...</small>
                     </div>
                 </div>
                 
@@ -92,9 +98,11 @@
                         <i class="fas fa-calendar-check"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="totalBookings">-</h3>
+                        <h3 id="totalBookings">
+                            <i class="fas fa-spinner fa-spin" style="color: #ccc;"></i>
+                        </h3>
                         <p>การจองวันนี้</p>
-                        <small class="stat-change" id="bookingsChange">+0 ใหม่วันนี้</small>
+                        <small class="stat-change" id="bookingsChange">กำลังโหลด...</small>
                     </div>
                 </div>
                 
@@ -103,11 +111,22 @@
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="totalRevenue">-</h3>
+                        <h3 id="totalRevenue">
+                            <i class="fas fa-spinner fa-spin" style="color: #ccc;"></i>
+                        </h3>
                         <p>รายได้วันนี้</p>
-                        <small class="stat-change" id="revenueChange">฿0 เพิ่มขึ้น</small>
+                        <small class="stat-change" id="revenueChange">กำลังโหลด...</small>
                     </div>
                 </div>
+            </div>
+
+            <!-- Refresh Button -->
+            <div class="section-header">
+                <h2>สถิติระบบ</h2>
+                <button class="btn btn-outline" onclick="refreshStats()" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i>
+                    รีเฟรชข้อมูล
+                </button>
             </div>
 
             <!-- Admin Actions -->
@@ -324,13 +343,13 @@
     <!-- Modal Forms -->
     
     <!-- Add/Edit Room Modal -->
-    <div id="roomModal" class="modal">
+    <div id="roomModal" class="modal" onclick="if(event.target === this) closeRoomModal()">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="roomModalTitle">เพิ่มห้องใหม่</h2>
                 <span class="close" onclick="closeRoomModal()">&times;</span>
             </div>
-            <form id="roomForm" class="modal-form">
+            <form id="roomForm" class="modal-form" onsubmit="submitRoomForm(event)">
                 <input type="hidden" id="roomId" name="roomId">
                 
                 <div class="form-group">
@@ -411,56 +430,70 @@
         </div>
     </div>
 
+    <!-- Delete Room Modal -->
+    <div id="deleteRoomModal" class="modal" onclick="if(event.target === this) closeDeleteRoomModal()">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>ยืนยันการลบห้อง</h2>
+                <span class="close" onclick="closeDeleteRoomModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>คุณต้องการลบห้อง <strong id="deleteRoomName"></strong> หรือไม่?</p>
+                <p class="text-warning">การดำเนินการนี้ไม่สามารถยกเลิกได้</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeDeleteRoomModal()">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteRoom()">
+                    <i class="fas fa-trash"></i>
+                    ลบห้อง
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Add/Edit User Modal -->
-    <div id="userModal" class="modal">
+    <div id="userModal" class="modal" onclick="if(event.target === this) closeUserModal()">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="userModalTitle">เพิ่มผู้ใช้ใหม่</h2>
                 <span class="close" onclick="closeUserModal()">&times;</span>
             </div>
-            <form id="userForm" class="modal-form">
+            <form id="userForm" class="modal-form" onsubmit="submitUserForm(event)">
                 <input type="hidden" id="userId" name="userId">
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="userName">ชื่อ-นามสกุล *</label>
-                        <input type="text" id="userName" name="name" required>
+                        <input type="text" id="userName" name="name" required maxlength="100">
                     </div>
                     <div class="form-group">
                         <label for="userEmail">อีเมล *</label>
-                        <input type="email" id="userEmail" name="email" required>
+                        <input type="email" id="userEmail" name="email" required maxlength="150">
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="userPhone">เบอร์โทรศัพท์</label>
-                        <input type="tel" id="userPhone" name="phone">
+                        <label for="userRole">บทบาท *</label>
+                        <select id="userRole" name="role_id" required>
+                            <option value="">เลือกบทบาท</option>
+                            <option value="1">ผู้ดูแลระบบ (Admin)</option>
+                            <option value="2">ลูกค้า (Customer)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="userRole">ประเภทผู้ใช้ *</label>
-                        <select id="userRole" name="role_id" required>
-                            <option value="">เลือกประเภท</option>
-                            <option value="1">ผู้ดูแลระบบ</option>
-                            <option value="2">พนักงาน</option>
-                            <option value="3">ลูกค้า</option>
+                        <label for="userStatus">สถานะ</label>
+                        <select id="userStatus" name="status">
+                            <option value="active">ใช้งาน</option>
+                            <option value="inactive">ไม่ใช้งาน</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="form-group" id="passwordGroup">
-                    <label for="userPassword">รหัสผ่าน *</label>
+                    <label for="userPassword" id="passwordLabel">รหัสผ่าน *</label>
                     <input type="password" id="userPassword" name="password" minlength="6">
-                    <small class="form-hint">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="userStatus">สถานะ</label>
-                    <select id="userStatus" name="status">
-                        <option value="active">ใช้งาน</option>
-                        <option value="inactive">ไม่ใช้งาน</option>
-                        <option value="suspended">ระงับการใช้งาน</option>
-                    </select>
+                    <small class="form-hint" id="passwordHint">รหัsผ่านต้องมีอย่างน้อย 6 ตัวอักษร</small>
                 </div>
                 
                 <div class="modal-actions">
@@ -550,6 +583,8 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- JavaScript -->
+    <script src="/javascripts/shared/anti-redirect-loop.js"></script>
+    <script src="/javascripts/shared/request-manager.js"></script>
     <script src="/javascripts/shared/auth.js"></script>
     <script src="/javascripts/shared/utils.js"></script>
     <script src="/javascripts/admin.js"></script>

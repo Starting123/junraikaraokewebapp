@@ -166,6 +166,39 @@
     </section>
 
     <!-- JavaScript -->
+    <script src="/javascripts/shared/auth.js"></script>
+    <script>
+    // Check authentication and initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!requireAuth()) return;
+        
+        initializeNavbar();
+        loadUserData();
+    });
+
+    // Load user data for dashboard
+    function loadUserData() {
+        const user = getCurrentUser();
+        const userFromStorage = localStorage.getItem('user');
+        
+        let currentUser = user;
+        if (userFromStorage) {
+            try {
+                currentUser = JSON.parse(userFromStorage);
+            } catch (e) {
+                console.warn('Failed to parse user from localStorage');
+            }
+        }
+        
+        if (currentUser) {
+            // Update user name if element exists
+            const userNameElement = document.querySelector('.user-name');
+            if (userNameElement) {
+                userNameElement.textContent = currentUser.name || 'ผู้ใช้';
+            }
+        }
+    }
+    </script>
     <script src="/stylesheets/dashboard.js"></script>
 </body>
 </html>

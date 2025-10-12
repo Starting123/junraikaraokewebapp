@@ -157,6 +157,7 @@
         let currentUser = null;
         const API_BASE = '/api';
         let isCheckingAuth = false;
+        let isRedirecting = false; // Prevent multiple redirects
 
         // Toggle between login and register forms
         function showLogin() {
@@ -289,9 +290,33 @@
                     showResult('loginResult', 
                         `เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${data.user.name}`, 'success');
                     
-                    // Redirect after 2 seconds
+                    // Prevent multiple redirects
+                    if (isRedirecting) {
+                        console.log('Redirect already in progress, skipping');
+                        return;
+                    }
+                    
+                    isRedirecting = true;
+                    console.log('Login successful - will auto-redirect after showing success message');
+                    const redirectUrl = data.redirectUrl || (data.user.role_id === 1 ? '/admin' : '/dashboard');
+                    
+                    // Show success message first
+                    const loginResult = document.getElementById('loginResult');
+                    if (loginResult) {
+                        loginResult.innerHTML = `
+                            <div class="success-message">
+                                <i class="fas fa-check-circle"></i>
+                                <p>เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${data.user.name}</p>
+                                <p class="redirect-countdown">กำลังเข้าสู่ระบบ...</p>
+                            </div>
+                        `;
+                        loginResult.style.display = 'block';
+                    }
+                    
+                    // Auto-redirect after showing success message
                     setTimeout(() => {
-                        window.location.href = data.user.role_id === 1 ? '/admin' : '/dashboard';
+                        console.log('Auto-redirecting to:', redirectUrl);
+                        window.location.href = redirectUrl;
                     }, 2000);
                 } else {
                     showResult('loginResult', 
@@ -370,8 +395,12 @@
             }
         });
 
-        // Check if user is already logged in
+        // DISABLED: Auto redirect was causing infinite loops with server middleware
+        // Check if user is already logged in - DISABLED TO PREVENT REDIRECT LOOPS
         async function checkAuth() {
+            console.log('checkAuth called but DISABLED to prevent redirect loops');
+            return; // Exit early to prevent any redirects
+            
             // Prevent multiple simultaneous auth checks
             if (isCheckingAuth) {
                 return;
@@ -393,9 +422,10 @@
                     });
                     
                     if (response.ok) {
-                        // Token is valid, redirect to appropriate dashboard
-                        const userData = JSON.parse(user);
-                        window.location.href = userData.role_id === 1 ? '/admin' : '/dashboard';
+                        // DISABLED: Token is valid, redirect to appropriate dashboard
+                        console.log('Auth check would redirect but DISABLED');
+                        // const userData = JSON.parse(user);
+                        // window.location.href = userData.role_id === 1 ? '/admin' : '/dashboard';
                     } else {
                         // Token is invalid, clear localStorage
                         console.log('Token invalid, clearing localStorage');

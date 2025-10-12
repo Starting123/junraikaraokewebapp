@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin Page - Junrai Karaoke</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-info { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .log-entry { margin: 5px 0; padding: 5px; background: white; border-left: 3px solid #007bff; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        .success { border-left-color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>Debug Admin Page Loading</h1>
+    
+    <div class="debug-info">
+        <h3>Page Load Debug Info</h3>
+        <div id="debugLogs"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Network Requests</h3>
+        <div id="networkLogs"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Function Call Tracking</h3>
+        <div id="functionLogs"></div>
+    </div>
+
+    <script>
+        const debugLogs = document.getElementById('debugLogs');
+        const networkLogs = document.getElementById('networkLogs');
+        const functionLogs = document.getElementById('functionLogs');
+
+        function addLog(container, message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> ${message}`;
+            container.appendChild(entry);
+        }
+
+        // Track DOMContentLoaded
+        let domLoadedCount = 0;
+        document.addEventListener('DOMContentLoaded', function() {
+            domLoadedCount++;
+            addLog(debugLogs, `DOMContentLoaded fired (Count: ${domLoadedCount})`, domLoadedCount > 1 ? 'warning' : 'success');
+        });
+
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, arguments);
+            addLog(debugLogs, args.join(' '), 'info');
+        };
+
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, arguments);
+            addLog(debugLogs, args.join(' '), 'error');
+        };
+
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            originalWarn.apply(console, arguments);
+            addLog(debugLogs, args.join(' '), 'warning');
+        };
+
+        // Track fetch requests
+        const originalFetch = window.fetch;
+        let fetchCount = 0;
+        window.fetch = function(url, options) {
+            fetchCount++;
+            addLog(networkLogs, `Fetch #${fetchCount}: ${url}`, 'info');
+            return originalFetch.apply(this, arguments).then(response => {
+                addLog(networkLogs, `Response #${fetchCount}: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                return response;
+            }).catch(error => {
+                addLog(networkLogs, `Error #${fetchCount}: ${error.message}`, 'error');
+                throw error;
+            });
+        };
+
+        // Function call tracking
+        window.trackFunction = function(name) {
+            addLog(functionLogs, `Function called: ${name}`, 'info');
+        };
+
+        // Load admin scripts with tracking
+        addLog(debugLogs, 'Loading admin scripts...', 'info');
+    </script>
+
+    <!-- Load the actual admin scripts -->
+    <script src="/javascripts/shared/auth.js"></script>
+    <script src="/javascripts/shared/utils.js"></script>
+    <script src="/javascripts/shared/config.js"></script>
+    <script>
+        // Track loadAdminStats calls
+        let loadAdminStatsCount = 0;
+        const originalLoadAdminStats = window.loadAdminStats;
+        if (typeof originalLoadAdminStats === 'function') {
+            window.loadAdminStats = function(...args) {
+                loadAdminStatsCount++;
+                trackFunction(`loadAdminStats (Count: ${loadAdminStatsCount})`);
+                return originalLoadAdminStats.apply(this, arguments);
+            };
+        }
+
+        // Track checkAdminAuth calls  
+        let checkAdminAuthCount = 0;
+        const originalCheckAdminAuth = window.checkAdminAuth;
+        if (typeof originalCheckAdminAuth === 'function') {
+            window.checkAdminAuth = function(...args) {
+                checkAdminAuthCount++;
+                trackFunction(`checkAdminAuth (Count: ${checkAdminAuthCount})`);
+                return originalCheckAdminAuth.apply(this, arguments);
+            };
+        }
+    </script>
+    <script src="/javascripts/admin.js"></script>
+
+    <script>
+        // Final summary after all scripts loaded
+        setTimeout(() => {
+            addLog(debugLogs, '=== LOAD COMPLETE ===', 'success');
+            addLog(debugLogs, `Total DOMContentLoaded events: ${domLoadedCount}`, 'info');
+            addLog(debugLogs, `Total fetch requests: ${fetchCount}`, 'info');
+            addLog(debugLogs, `loadAdminStats calls: ${loadAdminStatsCount}`, 'info');
+            addLog(debugLogs, `checkAdminAuth calls: ${checkAdminAuthCount}`, 'info');
+        }, 3000);
+    </script>
+</body>
+</html>

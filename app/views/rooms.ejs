@@ -156,35 +156,40 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            initializeNavbar();
+            checkAdminControls();
             loadRoomTypes();
             loadRooms();
         });
 
-        // Authentication check
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
+        // Check admin controls visibility
+        function checkAdminControls() {
+            const user = getCurrentUser();
+            const userFromStorage = localStorage.getItem('user');
             
-            if (token && user) {
-                currentUser = JSON.parse(user);
-                document.getElementById('authLink').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'block';
-                document.getElementById('dashboardLink').style.display = 'block';
-                
-                // Show admin controls and admin link
-                if (currentUser.role_id === 1) {
-                    document.getElementById('addRoomBtn').style.display = 'block';
-                    document.getElementById('adminLink').style.display = 'block';
+            let currentUser = user;
+            if (userFromStorage) {
+                try {
+                    currentUser = JSON.parse(userFromStorage);
+                } catch (e) {
+                    console.warn('Failed to parse user from localStorage');
                 }
             }
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.reload();
+            
+            // Show admin controls ONLY for admin users
+            if (isAuthenticated() && currentUser && currentUser.role_id === 1) {
+                const addRoomBtn = document.getElementById('addRoomBtn');
+                if (addRoomBtn) {
+                    addRoomBtn.style.display = 'block';
+                }
+                console.log('🔑 Admin controls enabled in rooms page');
+            } else {
+                const addRoomBtn = document.getElementById('addRoomBtn');
+                if (addRoomBtn) {
+                    addRoomBtn.style.display = 'none';
+                }
+                console.log('👥 Customer user - admin controls hidden in rooms page');
+            }
         }
 
         // Load room types for filters and form
@@ -511,5 +516,8 @@
             }
         });
     </script>
+    
+    <!-- Shared authentication functions -->
+    <script src="/javascripts/shared/auth.js"></script>
 </body>
 </html>
