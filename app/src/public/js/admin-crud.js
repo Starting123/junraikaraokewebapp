@@ -57,7 +57,7 @@ async function loadUsers() {
                 <td>${user.role_id}</td>
                 <td>${user.created_at}</td>
                 <td>
-                    <button class="action-btn action-btn-detail" onclick="showUserDetails(${user.user_id})">รายละเอียด</button>
+                    <button class="action-btn action-btn-detail" onclick="showUserDetails(${user.user_id})">แก้ไขยศ</button>
                     <button class="action-btn action-btn-delete" onclick="deleteUser(${user.user_id})">ลบ</button>
                 </td>
             </tr>
