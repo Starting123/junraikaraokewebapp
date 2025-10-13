@@ -29,8 +29,8 @@ async function loadRooms() {
                 <td class="room-type">${room.type_name || '-'}</td>
                 <td class="room-status">${room.status}</td>
                 <td>
-                    <button onclick="editRoom(${room.room_id})">แก้ไข</button>
-                    <button onclick="deleteRoom(${room.room_id})">ลบ</button>
+                    <button class="action-btn action-btn-edit" onclick="editRoom(${room.room_id})">แก้ไข</button>
+                    <button class="action-btn action-btn-delete" onclick="deleteRoom(${room.room_id})">ลบ</button>
                 </td>
             </tr>
         `).join('') : '<tr><td colspan="6">ไม่มีข้อมูลห้อง</td></tr>';
@@ -57,8 +57,8 @@ async function loadUsers() {
                 <td>${user.role_id}</td>
                 <td>${user.created_at}</td>
                 <td>
-                    <button onclick="showUserDetails(${user.user_id})">รายละเอียด</button>
-                    <button onclick="deleteUser(${user.user_id})">ลบ</button>
+                    <button class="action-btn action-btn-detail" onclick="showUserDetails(${user.user_id})">รายละเอียด</button>
+                    <button class="action-btn action-btn-delete" onclick="deleteUser(${user.user_id})">ลบ</button>
                 </td>
             </tr>
         `).join('') : '<tr><td colspan="6">ไม่มีข้อมูลผู้ใช้</td></tr>';
@@ -187,9 +187,9 @@ async function loadBookings() {
                 <td>${b.start_time?.slice(11,16)}-${b.end_time?.slice(11,16)}</td>
                 <td>${b.status}</td>
                 <td>
-                    <button class="btn-booking-details">ดูรายละเอียด</button>
-                    <button class="btn-booking-edit">แก้ไข</button>
-                    <button onclick="deleteBooking(${b.booking_id})">ลบ</button>
+                    <button class="action-btn action-btn-detail btn-booking-details">ดูรายละเอียด</button>
+                    <button class="action-btn action-btn-edit btn-booking-edit">แก้ไข</button>
+                    <button class="action-btn action-btn-delete" onclick="deleteBooking(${b.booking_id})">ลบ</button>
                 </td>
             </tr>
         `).join('') : '<tr><td colspan="7">ไม่มีข้อมูลการจอง</td></tr>';
