@@ -1,9 +1,45 @@
-const User = require('../models/User');
-const Booking = require('../models/Booking');
-const Room = require('../models/Room');
-const Order = require('../models/Order');
+
+    const User = require('../models/User');
+    const Booking = require('../models/Booking');
+    const Room = require('../models/Room');
+    const Order = require('../models/Order');
 
 class AdminController {
+    // API: Update user role
+    static async updateUserRole(req, res) {
+        try {
+            const id = req.params.id;
+            const { role_id } = req.body;
+            if (!role_id) {
+                return res.status(400).json({ success: false, message: 'กรุณาระบุประเภทผู้ใช้ (role_id)' });
+            }
+            const user = await User.findById(id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            }
+            await User.update(id, { role_id });
+            const updatedUser = await User.findById(id);
+            res.json({ success: true, data: { user: updatedUser.toJSON ? updatedUser.toJSON() : updatedUser } });
+        } catch (error) {
+            console.error('API update user role error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
+    // API: Get user details by ID
+    static async apiGetUserById(req, res) {
+        try {
+            const User = require('../models/User');
+            const id = req.params.id;
+            const user = await User.findById(id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            }
+            res.json({ success: true, data: { user: user.toJSON ? user.toJSON() : user } });
+        } catch (error) {
+            console.error('API get user by id error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
     // API: Create a new room
     static async apiCreateRoom(req, res) {
         try {

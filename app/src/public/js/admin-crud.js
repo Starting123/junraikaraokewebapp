@@ -57,11 +57,102 @@ async function loadUsers() {
                 <td>${user.role_id}</td>
                 <td>${user.created_at}</td>
                 <td>
-                    <button onclick="editUser(${user.user_id})">แก้ไข</button>
+                    <button onclick="showUserDetails(${user.user_id})">รายละเอียด</button>
                     <button onclick="deleteUser(${user.user_id})">ลบ</button>
                 </td>
             </tr>
         `).join('') : '<tr><td colspan="6">ไม่มีข้อมูลผู้ใช้</td></tr>';
+// User details popup modal
+window.showUserDetails = async function(userId) {
+    const token = localStorage.getItem('token');
+    let user = null;
+    let errorMsg = '';
+    try {
+        const res = await fetch(`/api/admin/users/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+            errorMsg = 'ไม่พบผู้ใช้หรือเกิดข้อผิดพลาด';
+        } else {
+            const result = await res.json();
+            if (!result.success || !result.data || !result.data.user) {
+                errorMsg = result.message || 'ไม่พบข้อมูลผู้ใช้';
+            } else {
+                user = result.data.user;
+            }
+        }
+    } catch (err) {
+        errorMsg = 'เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้';
+    }
+    // Create modal if not exists
+    let modal = document.getElementById('userDetailsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'userDetailsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width:420px;">
+                <span class="close" onclick="closeUserDetailsModal()">&times;</span>
+                <h3>รายละเอียดผู้ใช้</h3>
+                <ul style="list-style:none;padding:0;">
+                    <li><strong>ID:</strong> <span id="userDetailId"></span></li>
+                    <li><strong>ชื่อ:</strong> <span id="userDetailName"></span></li>
+                    <li><strong>อีเมล:</strong> <span id="userDetailEmail"></span></li>
+                    <li><strong>ยศ:</strong> <select id="userDetailRole" style="appearance: none; background: #f9f7f3 url('data:image/svg+xml;utf8,<svg fill=\'gray\' height=\'20\' viewBox=\'0 0 20 20\' width=\'20\'><path d=\'M7 10l5 5 5-5z\'/></svg>') right 0.7em center/1em no-repeat;">
+                        <option value="1">ผู้ดูแลระบบ</option>
+                        <option value="2">พนักงาน</option>
+                        <option value="3">ลูกค้า</option>
+                    </select></li>
+                    <li><strong>วันที่สมัคร:</strong> <span id="userDetailCreated"></span></li>
+                </ul>
+                <button id="saveUserRoleBtn" class="btn btn-success" style="width:100%;margin-top:1em;">บันทึกการเปลี่ยนยศ</button>
+                <div id="userDetailError" style="color:#e74c3c;margin-top:1em;"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    // Fill details or show error
+    if (user) {
+        document.getElementById('userDetailId').textContent = user.user_id;
+        document.getElementById('userDetailName').textContent = user.name;
+        document.getElementById('userDetailEmail').textContent = user.email;
+        document.getElementById('userDetailRole').value = user.role_id;
+        document.getElementById('userDetailCreated').textContent = user.created_at;
+        document.getElementById('userDetailError').textContent = '';
+        document.getElementById('saveUserRoleBtn').disabled = false;
+        document.getElementById('saveUserRoleBtn').onclick = async function() {
+            const newRole = document.getElementById('userDetailRole').value;
+            await updateUserRole(user.user_id, newRole);
+            modal.style.display = 'none';
+            loadUsers();
+        };
+    } else {
+        document.getElementById('userDetailId').textContent = '-';
+        document.getElementById('userDetailName').textContent = '-';
+        document.getElementById('userDetailEmail').textContent = '-';
+        document.getElementById('userDetailRole').value = '3';
+        document.getElementById('userDetailCreated').textContent = '-';
+        document.getElementById('userDetailError').textContent = errorMsg;
+        document.getElementById('saveUserRoleBtn').disabled = true;
+    }
+    modal.style.display = 'flex';
+};
+window.closeUserDetailsModal = function() {
+    const modal = document.getElementById('userDetailsModal');
+    if (modal) modal.style.display = 'none';
+};
+// Update user role API
+async function updateUserRole(userId, roleId) {
+    const token = localStorage.getItem('token');
+    await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ role_id: roleId })
+    });
+}
     } catch (err) {
         document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="6">โหลดข้อมูลผู้ใช้ไม่สำเร็จ</td></tr>';
     }

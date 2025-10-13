@@ -1,7 +1,10 @@
+
 const express = require('express');
 const router = express.Router();
 
 const AdminController = require('../controllers/AdminController');
+// Get user details by ID (for popup)
+router.get('/users/:id', AdminController.apiGetUserById);
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { body, param, query } = require('express-validator');
 
@@ -26,7 +29,9 @@ router.get('/stats', AdminController.getStats);
 router.get('/dashboard', AdminController.getDashboard);
 
 // User Management
+
 router.get('/users', AdminController.getUsers);
+router.put('/users/:id/role', AdminController.updateUserRole);
 
 // Booking Management  
 router.get('/bookings', AdminController.getBookings);

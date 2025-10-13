@@ -489,7 +489,6 @@
                         </button>
                     </div>
                 </div>
-                
                 <div class="table-container">
                     <table class="admin-table" id="usersTable">
                         <thead>
@@ -514,6 +513,73 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- User Details Modal (popup, hidden by default, created by JS) -->
+                <style>
+                #userDetailsModal.modal {
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    z-index: 9999;
+                }
+                #userDetailsModal .modal-content {
+                    background: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                    padding: 2em 2em 2em 2em;
+                    min-width: 340px;
+                    max-width: 420px;
+                    position: relative;
+                }
+                #userDetailsModal .close {
+                    position: absolute;
+                    top: 18px;
+                    right: 18px;
+                    font-size: 1.5em;
+                    color: #a55a00;
+                    cursor: pointer;
+                }
+                #userDetailsModal h3 {
+                    margin-top: 0;
+                    color: #a55a00;
+                    font-size: 1.5em;
+                    font-weight: bold;
+                }
+                #userDetailsModal ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0 0 1em 0;
+                }
+                #userDetailsModal li {
+                    margin-bottom: 0.7em;
+                    font-size: 1em;
+                }
+                #userDetailRole {
+                    width: 100%;
+                    padding: 0.5em 0.7em;
+                    border-radius: 6px;
+                    border: 1px solid #d6cfc2;
+                    font-size: 1em;
+                    background: #f9f7f3;
+                    box-sizing: border-box;
+                }
+                #saveUserRoleBtn {
+                    width: 100%;
+                    background: #6bbf59;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 0.7em;
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    margin-top: 0.7em;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                #saveUserRoleBtn:hover {
+                    background: #4e9c3e;
+                }
+                </style>
             </div>
 
             <!-- Reports Section -->
