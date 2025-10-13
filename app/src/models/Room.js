@@ -79,8 +79,11 @@ class Room {
 
     static async update(room_id, updateData) {
         try {
-            const fields = Object.keys(updateData);
-            const values = Object.values(updateData);
+            // Only allow valid columns to be updated
+            const validFields = ['name', 'type_id', 'capacity', 'status', 'description', 'features'];
+            const fields = Object.keys(updateData).filter(f => validFields.includes(f));
+            const values = fields.map(f => updateData[f]);
+            if (fields.length === 0) throw new Error('No valid fields to update');
             const setClause = fields.map(field => `${field} = ?`).join(', ');
 
             const [result] = await promisePool.query(

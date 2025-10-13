@@ -14,6 +14,11 @@ router.get('/bookings', AdminController.apiGetBookings);
 router.get('/users', AdminController.apiGetUsers);
 router.get('/rooms', AdminController.apiGetRooms);
 
+// Room CRUD
+router.post('/rooms', AdminController.apiCreateRoom);
+router.put('/rooms/:id', AdminController.apiUpdateRoom);
+router.delete('/rooms/:id', AdminController.apiDeleteRoom);
+
 // Admin statistics API
 router.get('/stats', AdminController.getStats);
 

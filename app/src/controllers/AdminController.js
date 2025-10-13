@@ -4,6 +4,57 @@ const Room = require('../models/Room');
 const Order = require('../models/Order');
 
 class AdminController {
+    // API: Create a new room
+    static async apiCreateRoom(req, res) {
+        try {
+            const Room = require('../models/Room');
+            const { name, type_id, capacity, status } = req.body;
+            if (!name || !type_id || !capacity || !status) {
+                return res.status(400).json({ success: false, message: 'ข้อมูลห้องไม่ครบถ้วน' });
+            }
+            const newRoom = await Room.create({ name, type_id, capacity, status });
+            res.json({ success: true, data: { room: newRoom } });
+        } catch (error) {
+            console.error('API create room error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
+
+    // API: Update a room
+    static async apiUpdateRoom(req, res) {
+        try {
+            const Room = require('../models/Room');
+            const id = req.params.id;
+            const { name, type_id, capacity, status } = req.body;
+            const room = await Room.findById(id);
+            if (!room) {
+                return res.status(404).json({ success: false, message: 'ไม่พบห้องนี้' });
+            }
+            await Room.update(id, { name, type_id, capacity, status });
+            const updatedRoom = await Room.findById(id);
+            res.json({ success: true, data: { room: updatedRoom } });
+        } catch (error) {
+            console.error('API update room error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
+
+    // API: Delete a room
+    static async apiDeleteRoom(req, res) {
+        try {
+            const Room = require('../models/Room');
+            const id = req.params.id;
+            const room = await Room.findById(id);
+            if (!room) {
+                return res.status(404).json({ success: false, message: 'ไม่พบห้องนี้' });
+            }
+            await Room.delete(id);
+            res.json({ success: true, message: 'ลบห้องสำเร็จ' });
+        } catch (error) {
+            console.error('API delete room error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
 
     // API: Get all bookings (array)
     static async apiGetBookings(req, res) {

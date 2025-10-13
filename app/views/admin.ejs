@@ -130,12 +130,11 @@
             <div class="management-section" id="manageRooms" style="display: none;">
                 <div class="section-header">
                     <h2>จัดการห้อง</h2>
-                    <button class="btn btn-primary" onclick="showAddRoomForm()">
+                    <button class="btn btn-primary" onclick="openRoomModal('add')">
                         <i class="fas fa-plus"></i>
                         เพิ่มห้องใหม่
                     </button>
                 </div>
-                
                 <div class="table-container">
                     <table class="admin-table" id="roomsTable">
                         <thead>
@@ -159,6 +158,158 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <!-- Room Modal -->
+                <style>
+                .modal {
+                    position: fixed;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.25);
+                    z-index: 9999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
+                .modal-content {
+                    background: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                    padding: 2.5em 2em 2em 2em;
+                    min-width: 340px;
+                    max-width: 400px;
+                    position: relative;
+                    margin: auto;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                }
+                .modal-content {
+                    background: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                    padding: 2.5em 2em 2em 2em;
+                    min-width: 340px;
+                    max-width: 400px;
+                    position: relative;
+                }
+                .modal-content h3 {
+                    margin-top: 0;
+                    color: #a55a00;
+                    font-size: 1.5em;
+                    font-weight: bold;
+                }
+                .modal-content .close {
+                    position: absolute;
+                    top: 18px;
+                    right: 18px;
+                    font-size: 1.5em;
+                    color: #a55a00;
+                    cursor: pointer;
+                }
+                #roomSummary {
+                    margin-bottom: 1.5em;
+                    background: #f8f8f8;
+                    border-radius: 10px;
+                    padding: 1em 1.2em;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+                    display: none;
+                }
+                #roomSummary h4 {
+                    margin: 0 0 0.5em 0;
+                    color: #a55a00;
+                    font-size: 1.1em;
+                }
+                #roomSummary ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                #roomSummary li {
+                    margin-bottom: 0.3em;
+                    font-size: 1em;
+                }
+                #roomForm .form-group {
+                    margin-bottom: 1.1em;
+                }
+                #roomForm label {
+                    display: block;
+                    font-weight: 500;
+                    margin-bottom: 0.3em;
+                    color: #a55a00;
+                }
+                #roomForm input, #roomForm select {
+                    width: 100%;
+                    padding: 0.5em 0.7em;
+                    border-radius: 6px;
+                    border: 1px solid #d6cfc2;
+                    font-size: 1em;
+                    background: #f9f7f3;
+                    box-sizing: border-box;
+                }
+                #roomForm button[type="submit"] {
+                    width: 100%;
+                    background: #6bbf59;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 0.7em;
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    margin-top: 0.7em;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                #roomForm button[type="submit"]:hover {
+                    background: #4e9c3e;
+                }
+                </style>
+                <div id="roomModal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeRoomModal()">&times;</span>
+                        <h3 id="roomModalTitle">เพิ่ม/แก้ไขห้อง</h3>
+                        <div id="roomSummary">
+                            <h4>ข้อมูลห้องปัจจุบัน</h4>
+                            <ul>
+                                <li><strong>ID:</strong> <span id="summaryRoomId">-</span></li>
+                                <li><strong>ชื่อห้อง:</strong> <span id="summaryRoomName">-</span></li>
+                                <li><strong>ความจุ:</strong> <span id="summaryRoomCapacity">-</span></li>
+                                <li><strong>ราคา/ชม.:</strong> <span id="summaryRoomPrice">-</span></li>
+                                <li><strong>สถานะ:</strong> <span id="summaryRoomStatus">-</span></li>
+                            </ul>
+                        </div>
+                        <form id="roomForm">
+                            <input type="hidden" id="roomId">
+                            <div class="form-group">
+                                <label>ชื่อห้อง</label>
+                                <input type="text" id="roomName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>ความจุ</label>
+                                <input type="number" id="roomCapacity" required>
+                            </div>
+                            <div class="form-group">
+                                <label>ประเภทห้อง</label>
+                                <select id="roomType" required onchange="updateRoomPriceByType()">
+                                    <option value="1" data-price="99">Small (฿99/ชม.)</option>
+                                    <option value="2" data-price="199">Medium (฿199/ชม.)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ราคา/ชม.</label>
+                                <input type="number" id="roomPrice" required readonly style="background:#eee;">
+                            </div>
+                            <div class="form-group">
+                                <label>สถานะ</label>
+                                <select id="roomStatus">
+                                    <option value="available">ว่าง</option>
+                                    <option value="unavailable">ไม่ว่าง</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">บันทึก</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -206,6 +357,117 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <!-- Booking Details/Edit Modal -->
+                <style>
+                #bookingModal.modal {
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
+                .modal-booking-content {
+                    background: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                    padding: 2.5em 2em 2em 2em;
+                    min-width: 340px;
+                    max-width: 480px;
+                    position: relative;
+                    margin: auto;
+                }
+                .modal-booking-content h3 {
+                    margin-top: 0;
+                    color: #a55a00;
+                    font-size: 1.5em;
+                    font-weight: bold;
+                }
+                .modal-booking-content .close {
+                    position: absolute;
+                    top: 18px;
+                    right: 18px;
+                    font-size: 1.5em;
+                    color: #a55a00;
+                    cursor: pointer;
+                }
+                .booking-details-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0 0 1.2em 0;
+                }
+                .booking-details-list li {
+                    margin-bottom: 0.5em;
+                    font-size: 1em;
+                }
+                .booking-actions {
+                    display: flex;
+                    gap: 0.7em;
+                    margin-top: 1.2em;
+                }
+                .btn-view-pdf {
+                    background: #f7b731;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 0.6em 1.2em;
+                    font-size: 1em;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+                .btn-edit-booking {
+                    background: #6bbf59;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 0.6em 1.2em;
+                    font-size: 1em;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+                </style>
+                <div id="bookingModal" class="modal" style="display:none;visibility:hidden;">
+                    <div class="modal-booking-content">
+                        <span class="close" onclick="closeBookingModal()">&times;</span>
+                        <h3 id="bookingModalTitle">รายละเอียดการจอง</h3>
+                        <ul class="booking-details-list" id="bookingDetailsList">
+                            <li><strong>ID:</strong> <span id="modalBookingId">-</span></li>
+                            <li><strong>ลูกค้า:</strong> <span id="modalBookingUser">-</span></li>
+                            <li><strong>ห้อง:</strong> <span id="modalBookingRoom">-</span></li>
+                            <li><strong>วันที่:</strong> <span id="modalBookingDate">-</span></li>
+                            <li><strong>เวลา:</strong> <span id="modalBookingTime">-</span></li>
+                            <li><strong>สถานะ:</strong> <span id="modalBookingStatus">-</span></li>
+                            <li><strong>ราคา:</strong> <span id="modalBookingPrice">-</span></li>
+                            <li><strong>PDF ใบเสร็จ:</strong> <span id="modalBookingPDF">-</span></li>
+                        </ul>
+                        <form id="bookingEditForm" style="display:none;">
+                            <div class="form-group">
+                                <label>สถานะ</label>
+                                <select id="editBookingStatus">
+                                    <option value="pending">รอยืนยัน</option>
+                                    <option value="active">active</option>
+                                    <option value="completed">completed</option>
+                                    <option value="cancelled">cancelled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>วันที่</label>
+                                <input type="date" id="editBookingDate">
+                            </div>
+                            <div class="form-group">
+                                <label>เวลาเริ่ม</label>
+                                <input type="time" id="editBookingStart">
+                            </div>
+                            <div class="form-group">
+                                <label>เวลาสิ้นสุด</label>
+                                <input type="time" id="editBookingEnd">
+                            </div>
+                            <button type="submit" class="btn-edit-booking" style="width:100%;margin-top:1em;">บันทึกการแก้ไข</button>
+                        </form>
+                        <div class="booking-actions" id="bookingActions">
+                            <button class="btn-view-pdf" id="btnViewPDF" onclick="viewBookingPDF()">ดูใบเสร็จ PDF</button>
+                            <button class="btn-edit-booking" id="btnEditBooking" onclick="editBookingModal()">แก้ไขข้อมูล</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -252,7 +252,8 @@ async function loadRooms() {
         });
         
         if (response.ok) {
-            const rooms = await response.json();
+            const result = await response.json();
+            const rooms = result.data?.rooms || result.rooms || [];
             displayRooms(rooms);
         } else {
             throw new Error('Failed to load rooms');
@@ -275,9 +276,9 @@ function displayRooms(rooms) {
     tbody.innerHTML = rooms.map(room => `
         <tr>
             <td>${room.room_id}</td>
-            <td>${room.room_name}</td>
-            <td>${room.capacity} คน</td>
-            <td>฿${room.price_per_hour}/ชม.</td>
+            <td>${room.name || '-'}</td>
+            <td>${room.capacity ? room.capacity + ' คน' : '-'}</td>
+            <td>฿${room.price_per_hour ? Number(room.price_per_hour).toFixed(2) : '0.00'}/ชม.</td>
             <td>
                 <span class="status-badge ${room.status}">
                     ${getStatusText(room.status)}
@@ -315,7 +316,8 @@ async function loadBookings() {
         });
         
         if (response.ok) {
-            const bookings = await response.json();
+            const result = await response.json();
+            const bookings = result.data?.bookings || result.bookings || [];
             displayBookings(bookings);
         } else {
             throw new Error('Failed to load bookings');
@@ -338,10 +340,10 @@ function displayBookings(bookings) {
     tbody.innerHTML = bookings.map(booking => `
         <tr>
             <td>${booking.booking_id}</td>
-            <td>${booking.user_name}</td>
-            <td>${booking.room_name}</td>
-            <td>${formatDate(booking.booking_date)}</td>
-            <td>${booking.start_time} - ${booking.end_time}</td>
+            <td>${booking.user_name || booking.user_id || '-'}</td>
+            <td>${booking.room_name || booking.room_id || '-'}</td>
+            <td>${booking.booking_date ? formatDate(booking.booking_date) : '-'}</td>
+            <td>${booking.start_time && booking.end_time ? `${booking.start_time} - ${booking.end_time}` : '-'}</td>
             <td>
                 <span class="status-badge ${booking.status}">
                     ${getBookingStatusText(booking.status)}
@@ -381,7 +383,8 @@ async function loadUsers() {
         });
         
         if (response.ok) {
-            const users = await response.json();
+            const result = await response.json();
+            const users = result.data?.users || result.users || [];
             displayUsers(users);
         } else {
             throw new Error('Failed to load users');
@@ -475,7 +478,66 @@ function deleteRoom(roomId) {
 }
 
 function viewBooking(bookingId) {
-    alert(`ดูการจอง ID: ${bookingId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+    // Try to fetch booking data, fallback to table row if not found
+    const token = localStorage.getItem('token');
+    fetch(`/api/admin/bookings/${bookingId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('not found');
+        return res.json();
+    })
+    .then(result => {
+        const b = result.data?.booking || result.booking || {};
+        if (!b || !b.booking_id) throw new Error('not found');
+        const booking = {
+            id: b.booking_id,
+            user: b.user_name || b.user_id,
+            room: b.room_name || b.room_id,
+            date: b.booking_date || b.start_time?.slice(0,10),
+            time: (b.start_time && b.end_time) ? `${b.start_time.slice(11,16)}-${b.end_time.slice(11,16)}` : '',
+            status: b.status,
+            price: b.price || '-',
+            pdfName: b.receipt_pdf_name || '-',
+            pdfUrl: b.receipt_pdf_url || ''
+        };
+        if (window.openBookingModal) {
+            window.openBookingModal(booking);
+        } else {
+            alert('ไม่สามารถเปิดรายละเอียดการจอง');
+        }
+    })
+    .catch(() => {
+        // fallback: try to get data from table row using valid selector
+        const rows = document.querySelectorAll('#bookingsTableBody tr');
+        let tr = null;
+        rows.forEach(row => {
+            const firstCell = row.querySelector('td');
+            if (firstCell && firstCell.textContent.trim() === String(bookingId)) {
+                tr = row;
+            }
+        });
+        if (tr) {
+            const booking = {
+                id: bookingId,
+                user: tr.children[1]?.textContent || '-',
+                room: tr.children[2]?.textContent || '-',
+                date: tr.children[3]?.textContent || '-',
+                time: tr.children[4]?.textContent || '-',
+                status: tr.children[5]?.textContent || '-',
+                price: '-',
+                pdfName: '-',
+                pdfUrl: ''
+            };
+            if (window.openBookingModal) {
+                window.openBookingModal(booking);
+            } else {
+                alert('ไม่สามารถเปิดรายละเอียดการจอง');
+            }
+        } else {
+            alert('ไม่พบข้อมูลการจองในระบบ');
+        }
+    });
 }
 
 function confirmBooking(bookingId) {
