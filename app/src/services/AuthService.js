@@ -1,3 +1,28 @@
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const User = require('../models/User');
+
+module.exports = {
+    async requestPasswordReset(email) {
+        const user = await User.findByEmail(email);
+        if (!user) throw new Error('ไม่พบผู้ใช้งานนี้');
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 15 * 60 * 1000);
+        await User.setResetToken(user.user_id, token, expires);
+        return { user, token };
+    },
+
+    async resetPassword(token, password) {
+        const user = await User.findByResetToken(token);
+        if (!user || !user.reset_expires || new Date(user.reset_expires) < new Date()) {
+            throw new Error('ลิงก์หมดอายุหรือไม่ถูกต้อง');
+        }
+        const hash = await bcrypt.hash(password, 10);
+        await User.updatePassword(user.user_id, hash);
+        await User.clearResetToken(user.user_id);
+        return user;
+    }
+};
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');

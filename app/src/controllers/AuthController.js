@@ -2,6 +2,36 @@ const AuthService = require('../services/AuthService');
 const { validationResult } = require('express-validator');
 
 class AuthController {
+    /**
+     * ลืมรหัสผ่าน - ส่งอีเมลรีเซ็ต
+     */
+    static async forgotPassword(req, res) {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
+        try {
+            const { user, token } = await require('../services/AuthService').requestPasswordReset(email);
+            await require('../services/MailService').sendResetPasswordEmail(email, token);
+            return res.json({ success: true, message: 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว' });
+        } catch (err) {
+            return res.status(400).json({ success: false, message: err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
+        }
+    }
+
+    /**
+     * รีเซ็ตรหัสผ่านด้วย token
+     */
+    static async resetPassword(req, res) {
+        const { token } = req.params;
+        const { password, confirmPassword } = req.body;
+        if (!password || !confirmPassword) return res.status(400).json({ success: false, message: 'กรุณากรอกรหัสผ่านใหม่' });
+        if (password !== confirmPassword) return res.status(400).json({ success: false, message: 'รหัสผ่านไม่ตรงกัน' });
+        try {
+            await require('../services/AuthService').resetPassword(token, password);
+            return res.json({ success: true, message: 'รีเซ็ตรหัสผ่านสำเร็จ' });
+        } catch (err) {
+            return res.status(400).json({ success: false, message: err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
+        }
+    }
     
     /**
      * ลงทะเบียนผู้ใช้ใหม่

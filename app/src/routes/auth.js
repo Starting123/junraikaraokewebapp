@@ -1,3 +1,15 @@
+// Render forgot password page
+router.get('/forgot-password', (req, res) => {
+	res.render('auth/forgot-password');
+});
+
+// Render reset password page
+router.get('/reset-password/:token', (req, res) => {
+	res.render('auth/reset-password');
+});
+// Forgot password & reset password
+router.post('/forgot-password', AuthController.forgotPassword);
+router.post('/reset-password/:token', AuthController.resetPassword);
 const express = require('express');
 const router = express.Router();
 

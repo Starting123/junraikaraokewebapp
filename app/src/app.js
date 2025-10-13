@@ -75,7 +75,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes (New modular structure)
-app.use('/api/v2/auth', authRoutes);
+// Frontend auth pages (forgot/reset password)
+const authPageRoutes = require('./routes/auth');
+app.use('/auth', authPageRoutes);
+
+// API Routes (New modular structure)
+const authApiRoutes = require('./routes/auth');
+app.use('/api/v2/auth', authApiRoutes);
 app.use('/api/v2/bookings', bookingRoutes);
 app.use('/api/v2/payments', paymentRoutes);
 app.use('/api/v2/rooms', roomRoutes);

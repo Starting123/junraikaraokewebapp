@@ -1,6 +1,31 @@
 const { promisePool } = require('../config/database');
 
 class User {
+    static async setResetToken(user_id, token, expires) {
+        await promisePool.query(
+            'UPDATE users SET reset_token = ?, reset_expires = ? WHERE user_id = ?',
+            [token, expires, user_id]
+        );
+    }
+
+    static async findByResetToken(token) {
+        const [rows] = await promisePool.query(
+            'SELECT * FROM users WHERE reset_token = ? LIMIT 1', [token]
+        );
+        return rows.length ? new User(rows[0]) : null;
+    }
+
+    static async updatePassword(user_id, hash) {
+        await promisePool.query(
+            'UPDATE users SET password = ? WHERE user_id = ?', [hash, user_id]
+        );
+    }
+
+    static async clearResetToken(user_id) {
+        await promisePool.query(
+            'UPDATE users SET reset_token = NULL, reset_expires = NULL WHERE user_id = ?', [user_id]
+        );
+    }
     constructor(data) {
         this.user_id = data.user_id;
         this.name = data.name;
