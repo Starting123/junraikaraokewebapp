@@ -1,6 +1,27 @@
 const { promisePool } = require('../config/database');
 
 class Booking {
+    toJSON() {
+        return {
+            booking_id: this.booking_id,
+            user_id: this.user_id,
+            room_id: this.room_id,
+            start_time: this.start_time,
+            end_time: this.end_time,
+            status: this.status,
+            total_price: this.total_price,
+            duration_hours: this.duration_hours,
+            payment_status: this.payment_status,
+            created_at: this.created_at,
+            updated_at: this.updated_at,
+            room_name: this.room_name,
+            user_name: this.user_name,
+            capacity: this.capacity,
+            type_name: this.type_name,
+            price_per_hour: this.price_per_hour,
+            room_status: this.room_status
+        };
+    }
     constructor(data) {
         this.booking_id = data.booking_id;
         this.user_id = data.user_id;
@@ -13,6 +34,13 @@ class Booking {
         this.payment_status = data.payment_status;
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
+        // joined fields
+        this.room_name = data.room_name;
+        this.user_name = data.user_name;
+        this.capacity = data.capacity;
+        this.type_name = data.type_name;
+        this.price_per_hour = data.price_per_hour;
+        this.room_status = data.room_status;
     }
 
     static async create({ user_id, room_id, start_time, end_time, duration_hours = 1 }) {

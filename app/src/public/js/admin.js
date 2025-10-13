@@ -464,16 +464,16 @@ function formatDate(dateString) {
 
 // Placeholder functions for admin actions
 function showAddRoomForm() {
-    alert('ฟีเจอร์เพิ่มห้องจะพร้อมใช้งานเร็วๆ นี้');
+    // ฟีเจอร์เพิ่มห้อง (modal/form) จะถูกเรียกที่อื่น
 }
 
 function editRoom(roomId) {
-    alert(`แก้ไขห้อง ID: ${roomId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+    // ฟีเจอร์แก้ไขห้อง (modal/form) จะถูกเรียกที่อื่น
 }
 
 function deleteRoom(roomId) {
     if (confirm('คุณต้องการลบห้องนี้หรือไม่?')) {
-        alert(`ลบห้อง ID: ${roomId} - ฟีเจอร์จะพร้อมใช้งานเร็วๆ นี้`);
+        // ฟีเจอร์ลบห้องจะถูกเรียกที่อื่น
     }
 }
 
@@ -563,5 +563,5 @@ function filterUsers() {
 }
 
 function loadReports() {
-    alert('ฟีเจอร์รายงานจะพร้อมใช้งานเร็วๆ นี้');
+    // รายงานจะถูกโหลดผ่าน Chart.js ใน admin.ejs
 }

@@ -11,6 +11,8 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -636,22 +638,11 @@
                 <div class="reports-grid">
                     <div class="report-card">
                         <h3>รายได้รายเดือน</h3>
-                        <div class="report-chart" id="monthlyRevenueChart">
-                            <div class="chart-placeholder">
-                                <i class="fas fa-chart-line"></i>
-                                <p>กราฟรายได้รายเดือน</p>
-                            </div>
-                        </div>
+                        <canvas id="monthlyRevenueChart" width="400" height="220"></canvas>
                     </div>
-                    
                     <div class="report-card">
-                        <h3>การจองยอดนิยม</h3>
-                        <div class="report-chart" id="popularRoomsChart">
-                            <div class="chart-placeholder">
-                                <i class="fas fa-chart-pie"></i>
-                                <p>กราฟห้องยอดนิยม</p>
-                            </div>
-                        </div>
+                        <h3>ห้องยอดนิยมรายวัน</h3>
+                        <canvas id="popularRoomsChart" width="400" height="220"></canvas>
                     </div>
                 </div>
             </div>
@@ -661,5 +652,94 @@
     <!-- JavaScript -->
     <script src="/js/admin.js"></script>
     <script src="/js/admin-crud.js"></script>
+    <script>
+    // Render charts from real bookings data
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Fetch bookings data from API
+        const token = localStorage.getItem('token');
+        let bookings = [];
+        try {
+            const res = await fetch('/api/admin/bookings', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            bookings = (result.data && result.data.bookings) ? result.data.bookings : [];
+        } catch (err) {
+            bookings = [];
+        }
+
+        // Monthly Revenue Calculation
+        const monthLabels = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const monthlyRevenue = Array(12).fill(0);
+        bookings.forEach(b => {
+            if (b.start_time && b.total_price) {
+                const date = new Date(b.start_time);
+                const month = date.getMonth();
+                monthlyRevenue[month] += Number(b.total_price);
+            }
+        });
+        // Render Monthly Revenue Chart
+        const ctxRevenue = document.getElementById('monthlyRevenueChart').getContext('2d');
+        window.monthlyRevenueChart = new Chart(ctxRevenue, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'รายได้ (บาท)',
+                    data: monthlyRevenue,
+                    backgroundColor: '#6bbf59',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Popular Rooms Calculation (today)
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const roomCounts = {};
+        bookings.forEach(b => {
+            if (b.start_time && b.room_name) {
+                const dateStr = b.start_time.slice(0, 10);
+                if (dateStr === todayStr) {
+                    roomCounts[b.room_name] = (roomCounts[b.room_name] || 0) + 1;
+                }
+            }
+        });
+        const roomLabels = Object.keys(roomCounts);
+        const roomData = Object.values(roomCounts);
+        // Render Popular Rooms Chart
+        const ctxRooms = document.getElementById('popularRoomsChart').getContext('2d');
+        window.popularRoomsChart = new Chart(ctxRooms, {
+            type: 'doughnut',
+            data: {
+                labels: roomLabels.length ? roomLabels : ['ไม่มีข้อมูล'],
+                datasets: [{
+                    label: 'จำนวนการจอง',
+                    data: roomData.length ? roomData : [0],
+                    backgroundColor: [
+                        '#6bbf59', '#f7b731', '#e6f7ff', '#ffd6d6', '#ffe5b2', '#a55a00', '#0077b6', '#c0392b'
+                    ].slice(0, roomLabels.length || 1),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: { display: false }
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>
