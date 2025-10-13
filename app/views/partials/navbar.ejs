@@ -19,32 +19,116 @@
                 <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
                 <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
             </ul>
+            <!-- Store Hours Info (always visible, styled) -->
+            <div class="store-hours-info" id="storeHoursInfo" style="margin-left: 32px; min-width: 180px;">
+                <div class="hours-display">
+                    <i class="fas fa-clock"></i>
+                    <div class="hours-text">
+                        <span class="hours-time">11.00 - 21.00</span>
+                        <span class="hours-duration">10 ชม</span>
+                    </div>
+                </div>
+                <div class="days-display">
+                    <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
+                    <span class="closed-day" style="color: #d9534f;">(หยุด) จันทร์</span>
+                </div>
+                <div class="store-status" id="storeStatus">
+                    <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
 
 <!-- Script สำหรับจัดการ Navbar Authentication -->
 <script>
+    // Store status updater
+    function updateStoreStatus() {
+        const now = new Date();
+        const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTime = currentHour + (currentMinute / 60);
+
+        const statusElement = document.getElementById('statusText');
+        const hoursInfo = document.getElementById('storeHoursInfo');
+
+        // Store hours: 11:00 - 21:00, Tuesday - Sunday (Closed Monday)
+        const openTime = 11; // 11:00
+        const closeTime = 21; // 21:00
+        const isMonday = currentDay === 1;
+        const isOpenDays = currentDay >= 2 || currentDay === 0; // Tuesday-Sunday
+        const isWithinHours = currentTime >= openTime && currentTime < closeTime;
+
+        if (isMonday) {
+            statusElement.textContent = '🔴 ปิด (วันหยุด)';
+            statusElement.className = 'status-text status-closed';
+            hoursInfo.classList.add('store-closed');
+        } else if (isOpenDays && isWithinHours) {
+            const hoursLeft = closeTime - currentTime;
+            const hoursText = hoursLeft > 1 ? `${Math.floor(hoursLeft)} ชม` : `${Math.floor(hoursLeft * 60)} นาที`;
+            statusElement.textContent = `🟢 เปิด (อีก ${hoursText})`;
+            statusElement.className = 'status-text status-open';
+            hoursInfo.classList.remove('store-closed');
+        } else {
+            // Check if tomorrow is open
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowDay = tomorrow.getDay();
+
+            if (tomorrowDay === 1) {
+                statusElement.textContent = '🔴 ปิด (เปิดวันอังคาร 11:00)';
+            } else if (currentTime < openTime) {
+                const hoursUntilOpen = openTime - currentTime;
+                const timeText = hoursUntilOpen > 1 ? `${Math.floor(hoursUntilOpen)} ชม` : `${Math.floor(hoursUntilOpen * 60)} นาที`;
+                statusElement.textContent = `🟡 ปิด (เปิดอีก ${timeText})`;
+            } else {
+                statusElement.textContent = '🔴 ปิด (เปิดพรุ่งนี้ 11:00)';
+            }
+            statusElement.className = 'status-text status-closed';
+            hoursInfo.classList.add('store-closed');
+        }
+    }
     // ฟังก์ชันอัพเดต navbar ตามสถานะการล็อกอิน
     function updateNavbarAuth() {
         const token = localStorage.getItem('token');
+        const userRaw = localStorage.getItem('user');
+        const user = userRaw ? JSON.parse(userRaw) : null;
         const authLink = document.getElementById('authLink');
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardLink = document.getElementById('dashboardLink');
         const receiptsLink = document.getElementById('receiptsLink');
-        
-        if (token) {
-            // ผู้ใช้ล็อกอินแล้ว
+
+        // Hide all role-based links by default
+        if (dashboardLink) dashboardLink.style.display = 'none';
+        if (receiptsLink) receiptsLink.style.display = 'none';
+
+        if (token && user) {
             if (authLink) authLink.style.display = 'none';
             if (logoutBtn) logoutBtn.style.display = 'block';
-            if (dashboardLink) dashboardLink.style.display = 'block';
-            if (receiptsLink) receiptsLink.style.display = 'block'; // แสดงปุ่มใบเสร็จ
+
+            // Admin role
+            if (user.role_id === 1) {
+                if (dashboardLink) {
+                    dashboardLink.textContent = 'ดูแลระบบ';
+                    dashboardLink.href = '/admin';
+                    dashboardLink.style.display = 'block';
+                }
+                if (receiptsLink) receiptsLink.style.display = 'block';
+            }
+            // User role
+            else {
+                if (dashboardLink) {
+                    dashboardLink.textContent = 'แดชบอร์ด';
+                    dashboardLink.href = '/dashboard';
+                    dashboardLink.style.display = 'block';
+                }
+                if (receiptsLink) receiptsLink.style.display = 'block';
+            }
         } else {
-            // ผู้ใช้ยังไม่ล็อกอิน
+            // Guest
             if (authLink) authLink.style.display = 'block';
             if (logoutBtn) logoutBtn.style.display = 'none';
-            if (dashboardLink) dashboardLink.style.display = 'none';
-            if (receiptsLink) receiptsLink.style.display = 'none'; // ซ่อนปุ่มใบเสร็จ
         }
     }
 
@@ -74,8 +158,10 @@
 
     // เรียกใช้เมื่อหน้าโหลด
     document.addEventListener('DOMContentLoaded', function() {
-        updateNavbarAuth();
-        setActiveNavLink();
+    updateNavbarAuth();
+    setActiveNavLink();
+    updateStoreStatus();
+    setInterval(updateStoreStatus, 60000);
     });
 
     // ฟังการเปลี่ยนแปลง localStorage (สำหรับ multi-tab)
