@@ -115,6 +115,16 @@ class TimeSlotBooking {
         this.selectedDate = this.dateInput.value;
         if (!this.selectedDate || !this.roomId) return;
 
+        // Block Monday selection
+        const selected = new Date(this.selectedDate);
+        if (selected.getDay() === 1) {
+            this.showError('ร้านหยุดทุกวันจันทร์ กรุณาเลือกวันอื่น');
+            this.dateInput.value = '';
+            this.selectedDate = null;
+            this.clearTimeSlots();
+            return;
+        }
+
         this.clearSelection();
         await this.loadTimeSlots();
     }

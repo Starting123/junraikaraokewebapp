@@ -1,0 +1,101 @@
+DB_HOST=127.0.0.1
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=junraikaraokedatabase
+DB_CONN_LIMIT=20
+
+# App
+PORT=3000
+
+# JWT / Auth
+# Secure random JWT secret generated for production
+JWT_SECRET=45e4580ae9ac04fcb2c42a30711501e0cbc80fcf005a0d47a5802aaab5d559ebd93680f9569771f68a3dcd3ac54c4b8fe0dd053463c047671f86088b9e0fc5e6
+# Token lifetime (e.g. 2h, 1d)
+JWT_EXPIRES=2h
+
+# Bcrypt rounds (optional)
+BCRYPT_ROUNDS=10
+
+# Email (optional) - used for password reset emails. If not set, the app will log tokens to the console.
+SMTP_HOST=smtp-gmail.com
+SMTP_PORT=587
+SMTP_USER=rmuttheavenhopeesports@gmail.com
+SMTP_PASS=tiwr arkz blce ayes
+SMTP_FROM="Junrai karaoke rmuttheavenhopeesports@gmail.com"
+
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_51SE5YOBYy645Ws5j1Z5fcQweV9pAz2K2l47VMlVL7pRIDTdewIDAY8iHLwZfxe2gyjet6jdM4sykE501uGLqcSai00PlZl3f0T
+STRIPE_PUBLISHABLE_KEY=pk_test_51SE5YOBYy645Ws5jpsj3avNPvbrNWfTJggt5U4fMj33nwfSDpzI2oKSfoocZ7CMmat2nuA5eAg6IemjQ72XCEWvG00KL57qfEp
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Application Settings
+NODE_ENV=development
+BASE_URL=http://localhost:3000
+
+# Security Settings (Added by security audit)
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# เมื่อได้ API keys จริงจาก Stripe แล้ว ให้แทนที่ค่าด้านบน
+# การขอ Stripe API Keys:
+# 1. สมัครสมาชิก Stripe ที่ https://stripe.com
+# 2. เข้าสู่ Dashboard
+# 3. ไปที่ Developers > API Keys
+# 4. คัดลอก Publishable key และ Secret key
+# 5. สำหรับ Webhook secret ไปที่ Developers > Webhooks
+
+# ===============================================
+# ADDITIONAL DEVELOPMENT SETTINGS
+# ===============================================
+
+# Security Keys (Enhanced for Development)
+SESSION_SECRET=your-super-secure-session-secret-key
+
+# File Upload Settings
+MAX_FILE_SIZE=5242880
+UPLOAD_PATH=./public/uploads
+ALLOWED_EXTENSIONS=jpg,jpeg,png,pdf,webp
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+LOGIN_RATE_LIMIT_MAX=5
+LOGIN_RATE_LIMIT_WINDOW_MS=900000
+
+# Security Settings
+HELMET_CSP_ENABLED=true
+CORS_ORIGIN=https://yourdomain.com
+COOKIE_SECURE=true
+SESSION_TIMEOUT=28800
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE_PATH=./logs
+ENABLE_ACCESS_LOG=true
+
+# Admin Settings
+ADMIN_EMAIL=admin@junraikaraoke.com
+ADMIN_NOTIFICATION_EMAIL=notifications@junraikaraoke.com
+
+# Monitoring & Analytics
+ENABLE_ANALYTICS=true
+GOOGLE_ANALYTICS_ID=GA_TRACKING_ID
+
+# Backup Settings
+AUTO_BACKUP_ENABLED=true
+BACKUP_INTERVAL_HOURS=24
+BACKUP_RETENTION_DAYS=30
+
+# Performance Settings
+ENABLE_REDIS_CACHE=false
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Thai Font Settings
+THAI_FONT_PATH=./fonts/NotoSansThai-Regular.ttf
+ENABLE_THAI_PDF=true
+
+# Development Settings (set to false in production)
+DEBUG_MODE=true
+ENABLE_SWAGGER_DOCS=true
+ENABLE_PLAYGROUND=true

@@ -179,6 +179,14 @@
     </section>
 
     <!-- JavaScript -->
-    <script src="/css/dashboard.js"></script>
+        <script>
+            // Ensure navbar reflects login state
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof updateNavbarAuth === 'function') {
+                    updateNavbarAuth();
+                }
+            });
+        </script>
+        <script src="/css/dashboard.js"></script>
 </body>
 </html>

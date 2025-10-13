@@ -42,6 +42,11 @@ class BookingService {
 
         } catch (error) {
             console.error('Booking creation error:', error);
+                        // Prevent booking on Monday
+                        const bookingDate = new Date(start_time);
+                        if (bookingDate.getDay() === 1) {
+                            throw new Error('ร้านหยุดทุกวันจันทร์ ไม่สามารถจองได้');
+                        }
             throw error;
         }
     }
