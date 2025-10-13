@@ -1,39 +1,36 @@
 <!-- Navbar Partial - ใช้ร่วมกันทุกหน้า -->
 <nav class="navbar">
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <a href="/" class="navbar-brand">
-                <i class="fas fa-microphone-alt"></i>
-                Junrai Karaoke
-            </a>
-            <ul class="navbar-nav">
-                <li><a href="/" class="nav-link" data-page="home">หน้าหลัก</a></li>
-                <li><a href="/rooms" class="nav-link" data-page="rooms">ห้องคาราโอเกะ</a></li>
-                <li><a href="/bookings" class="nav-link" data-page="bookings">การจอง</a></li>
-                <!-- ปุ่มใบเสร็จ - แสดงเฉพาะเมื่อล็อกอิน -->
-                <li><a href="/receipts" class="nav-link" id="receiptsLink" data-page="receipts" style="display: none;">ใบเสร็จ</a></li>
-                <li><a href="/contact" class="nav-link" data-page="contact">ติดต่อเรา</a></li>
-                <!-- Links สำหรับผู้ใช้ที่ล็อกอิน -->
-                <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
-                <!-- Authentication Links -->
-                <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-                <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
-            </ul>
-            <!-- Store Hours Info (always visible, styled) -->
-            <div class="store-hours-info" id="storeHoursInfo" style="margin-left: 32px; min-width: 180px;">
-                <div class="hours-display">
-                    <i class="fas fa-clock"></i>
-                    <div class="hours-text">
-                        <span class="hours-time">11.00 - 21.00</span>
-                        <span class="hours-duration">10 ชม</span>
-                    </div>
+    <div class="container" style="max-width: 100vw;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.5rem 0;">
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <a href="/" class="navbar-brand" style="font-size: 1.5rem; font-weight: bold; color: #d97706; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-microphone-alt"></i>
+                    <span>Junrai<br>Karaoke</span>
+                </a>
+                <ul class="navbar-nav" style="display: flex; gap: 1.5rem; align-items: center; margin: 0; padding: 0; list-style: none;">
+                    <li><a href="/" class="nav-link" data-page="home">หน้าหลัก</a></li>
+                    <li><a href="/rooms" class="nav-link" data-page="rooms">ห้องคาราโอเกะ</a></li>
+                    <li><a href="/bookings" class="nav-link" data-page="bookings">การจอง</a></li>
+                    <li><a href="/receipts" class="nav-link" id="receiptsLink" data-page="receipts" style="display: none;">ใบเสร็จ</a></li>
+                    <li><a href="/contact" class="nav-link" data-page="contact">ติดต่อเรา</a></li>
+                    <li><a href="/dashboard" class="nav-link" id="dashboardLink" style="display: none;">แดชบอร์ด</a></li>
+                    <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                    <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                </ul>
+            </div>
+            <!-- Store Hours Card -->
+            <div class="store-hours-info" id="storeHoursInfo" style="background: #f8f5f0; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 1rem 1.5rem; min-width: 200px; text-align: center;">
+                <div class="hours-display" style="font-size: 1.1rem; color: #444; margin-bottom: 0.25rem;">
+                    <i class="fas fa-clock" style="margin-right: 0.25rem;"></i>
+                    <span class="hours-time" style="font-weight: bold;">11.00 - 21.00</span>
+                    <span class="hours-duration" style="color: #888; font-size: 0.95rem; margin-left: 0.5rem;">10 ชม</span>
                 </div>
-                <div class="days-display">
-                    <span class="open-days">เปิด: อังคาร - อาทิตย์</span>
-                    <span class="closed-day" style="color: #d9534f;">(หยุด) จันทร์</span>
+                <div class="days-display" style="font-size: 0.95rem; margin-bottom: 0.25rem;">
+                    <span class="open-days" style="color: #27ae60;">เปิด: อังคาร - อาทิตย์</span>
+                    <span class="closed-day" style="color: #d9534f; margin-left: 0.5rem;">(หยุด) จันทร์</span>
                 </div>
-                <div class="store-status" id="storeStatus">
-                    <span class="status-text" id="statusText">กำลังตรวจสอบ...</span>
+                <div class="store-status" id="storeStatus" style="margin-top: 0.25rem;">
+                    <span class="status-text" id="statusText" style="font-weight: bold; font-size: 1.05rem;">กำลังตรวจสอบ...</span>
                 </div>
             </div>
         </div>
