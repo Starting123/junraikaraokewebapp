@@ -1,3 +1,21 @@
+// Delete booking (global for inline onclick)
+window.deleteBooking = async function(id) {
+    if (!confirm('ต้องการลบการจองนี้ใช่หรือไม่?')) return;
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/admin/bookings/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        // ถ้า 404 ไม่ต้อง alert
+        if (res.status !== 404 && !res.ok) {
+            alert('ลบการจองไม่สำเร็จ');
+        }
+        loadBookings();
+    } catch (err) {
+        alert('ลบการจองไม่สำเร็จ');
+    }
+}
 // Admin CRUD JS: fetch and display rooms, bookings, users; add/edit/delete actions
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -460,8 +478,35 @@ function attachBookingTableListeners() {
         const editBtn = row.querySelector('.btn-booking-edit');
         if (editBtn) {
             editBtn.addEventListener('click', function() {
-                // TODO: Open edit modal for booking
-                alert('ฟังก์ชันแก้ไขการจองยังไม่พร้อมใช้งาน');
+                const booking = {
+                    id: row.dataset.id,
+                    user: row.dataset.user,
+                    room: row.dataset.room,
+                    date: row.dataset.date,
+                    time: row.dataset.time,
+                    status: row.dataset.status,
+                    price: row.dataset.price,
+                    pdfName: row.dataset.pdfName,
+                    pdfUrl: row.dataset.pdfUrl
+                };
+                openBookingModal(booking);
+                editBookingModal();
+            });
+        }
+        const deleteBtn = row.querySelector('.action-btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async function() {
+                if (!confirm('ต้องการลบการจองนี้ใช่หรือไม่?')) return;
+                try {
+                    const token = localStorage.getItem('token');
+                    await fetch(`/api/admin/bookings/${row.dataset.id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    loadBookings();
+                } catch (err) {
+                    alert('ลบการจองไม่สำเร็จ');
+                }
             });
         }
     });

@@ -40,6 +40,7 @@ router.put('/bookings/:id/status', [
     body('status').optional().isIn(['active', 'confirmed', 'cancelled', 'completed']).withMessage('สถานะไม่ถูกต้อง'),
     body('payment_status').optional().isIn(['pending', 'paid', 'failed', 'cancelled', 'refunded']).withMessage('สถานะการชำระเงินไม่ถูกต้อง')
 ], AdminController.updateBookingStatus);
+router.delete('/bookings/:id', AdminController.apiDeleteBooking);
 
 // Reports
 router.get('/reports/revenue', [

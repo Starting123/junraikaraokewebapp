@@ -5,6 +5,21 @@
     const Order = require('../models/Order');
 
 class AdminController {
+    // API: Delete a booking
+    static async apiDeleteBooking(req, res) {
+        try {
+            const id = req.params.id;
+            const booking = await Booking.findById(id);
+            if (!booking) {
+                return res.status(404).json({ success: false, message: 'ไม่พบการจองนี้' });
+            }
+            await Booking.delete(id);
+            res.json({ success: true, message: 'ลบการจองสำเร็จ' });
+        } catch (error) {
+            console.error('API delete booking error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
     // API: Update user role
     static async updateUserRole(req, res) {
         try {
