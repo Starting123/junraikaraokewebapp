@@ -65,11 +65,11 @@ class Room {
         }
     }
 
-    static async create({ name, type_id, capacity, status = 'available', description = '', features = '' }) {
+    static async create({ name, type_id, capacity, status = 'available' }) {
         try {
             const [result] = await promisePool.query(
-                'INSERT INTO rooms (name, type_id, capacity, status, description, features) VALUES (?,?,?,?,?,?)', 
-                [name, type_id, capacity, status, description, features]
+                'INSERT INTO rooms (name, type_id, capacity, status) VALUES (?,?,?,?)', 
+                [name, type_id, capacity, status]
             );
             return await this.findById(result.insertId);
         } catch (error) {
@@ -80,7 +80,7 @@ class Room {
     static async update(room_id, updateData) {
         try {
             // Only allow valid columns to be updated
-            const validFields = ['name', 'type_id', 'capacity', 'status', 'description', 'features'];
+            const validFields = ['name', 'type_id', 'capacity', 'status'];
             const fields = Object.keys(updateData).filter(f => validFields.includes(f));
             const values = fields.map(f => updateData[f]);
             if (fields.length === 0) throw new Error('No valid fields to update');

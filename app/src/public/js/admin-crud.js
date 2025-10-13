@@ -238,8 +238,8 @@ function openRoomModal(mode, room = {}) {
         e.preventDefault();
         const roomData = {
             name: document.getElementById('roomName').value,
-            type_id: document.getElementById('roomType').value,
-            capacity: document.getElementById('roomCapacity').value,
+            type_id: Number(document.getElementById('roomType').value),
+            capacity: Number(document.getElementById('roomCapacity').value),
             status: document.getElementById('roomStatus').value
         };
         if (window.roomModalMode === 'add') {
