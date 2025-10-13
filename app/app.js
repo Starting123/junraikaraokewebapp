@@ -38,7 +38,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/rooms', roomsRouter);
 app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
-app.use('/api/admin', apiAdmin);
+app.use('/api/admin', require('./src/routes/admin'));
 app.use('/api/orders', apiOrders);
 app.use('/api/payments', require('./src/routes/legacy/api/payments'));
 app.use('/api/legacy/payments', require('./src/routes/legacy/api/payments'));
