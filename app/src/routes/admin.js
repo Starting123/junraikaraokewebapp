@@ -9,6 +9,14 @@ const { body, param, query } = require('express-validator');
 router.use(authenticateToken);
 router.use(requireAdmin);
 
+// API routes for admin data (for frontend compatibility)
+router.get('/bookings', AdminController.apiGetBookings);
+router.get('/users', AdminController.apiGetUsers);
+router.get('/rooms', AdminController.apiGetRooms);
+
+// Admin statistics API
+router.get('/stats', AdminController.getStats);
+
 // Dashboard
 router.get('/dashboard', AdminController.getDashboard);
 

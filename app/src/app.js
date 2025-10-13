@@ -81,6 +81,7 @@ app.use('/api/v2/payments', paymentRoutes);
 app.use('/api/v2/rooms', roomRoutes);
 app.use('/api/v2/users', userRoutes);
 app.use('/api/v2/admin', adminRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/v2/orders', orderRoutes);
 
 // Legacy routes (for backward compatibility)

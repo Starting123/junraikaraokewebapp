@@ -4,6 +4,110 @@ const Room = require('../models/Room');
 const Order = require('../models/Order');
 
 class AdminController {
+
+    // API: Get all bookings (array)
+    static async apiGetBookings(req, res) {
+        try {
+            const bookings = await require('../models/Booking').findAll({ isAdmin: true, limit: 100 });
+            res.json({ success: true, data: { bookings: bookings.map(b => b.toJSON ? b.toJSON() : b) } });
+        } catch (error) {
+            console.error('API get bookings error:', error);
+            res.json({ success: false, data: { bookings: [] }, error: error.message });
+        }
+    }
+
+    // API: Get all users (array)
+    static async apiGetUsers(req, res) {
+        try {
+            const users = await require('../models/User').findAll(100, 0);
+            res.json({ success: true, data: { users: users.map(u => u.toJSON ? u.toJSON() : u) } });
+        } catch (error) {
+            console.error('API get users error:', error);
+            res.json({ success: false, data: { users: [] }, error: error.message });
+        }
+    }
+
+    // API: Get all rooms (array)
+    static async apiGetRooms(req, res) {
+        try {
+            const rooms = await require('../models/Room').findAll({ limit: 100 });
+            res.json({ success: true, data: { rooms: rooms.map(r => r.toJSON ? r.toJSON() : r) } });
+        } catch (error) {
+            console.error('API get rooms error:', error);
+            res.json({ success: false, data: { rooms: [] }, error: error.message });
+        }
+    }
+
+    /**
+     * Admin Stats API - returns dashboard statistics
+     */
+    static async getStats(req, res) {
+        try {
+            // Total users
+            const [[{ totalUsers }]] = await require('../config/database').promisePool.query(
+                'SELECT COUNT(*) AS totalUsers FROM users'
+            );
+
+            // New users today
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const todayStr = today.toISOString().slice(0, 10);
+            const [[{ usersChange }]] = await require('../config/database').promisePool.query(
+                'SELECT COUNT(*) AS usersChange FROM users WHERE DATE(created_at) = ?', [todayStr]
+            );
+
+            // Total rooms
+            const [[{ totalRooms }]] = await require('../config/database').promisePool.query(
+                'SELECT COUNT(*) AS totalRooms FROM rooms'
+            );
+
+            // Available rooms
+            const [[{ roomsAvailable }]] = await require('../config/database').promisePool.query(
+                "SELECT COUNT(*) AS roomsAvailable FROM rooms WHERE status = 'available'"
+            );
+
+            // Total bookings today
+            const [[{ totalBookings }]] = await require('../config/database').promisePool.query(
+                'SELECT COUNT(*) AS totalBookings FROM bookings WHERE DATE(created_at) = ?', [todayStr]
+            );
+
+            // New bookings today
+            const [[{ bookingsChange }]] = await require('../config/database').promisePool.query(
+                'SELECT COUNT(*) AS bookingsChange FROM bookings WHERE DATE(created_at) = ?', [todayStr]
+            );
+
+            // Total revenue today
+            const [[{ totalRevenue }]] = await require('../config/database').promisePool.query(
+                'SELECT IFNULL(SUM(total_price),0) AS totalRevenue FROM bookings WHERE DATE(created_at) = ?', [todayStr]
+            );
+
+            // Revenue change (today vs yesterday)
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().slice(0, 10);
+            const [[{ yesterdayRevenue }]] = await require('../config/database').promisePool.query(
+                'SELECT IFNULL(SUM(total_price),0) AS yesterdayRevenue FROM bookings WHERE DATE(created_at) = ?', [yesterdayStr]
+            );
+            const revenueChange = totalRevenue - yesterdayRevenue;
+
+            res.json({
+                totalUsers,
+                usersChange,
+                totalRooms,
+                roomsAvailable,
+                totalBookings,
+                bookingsChange,
+                totalRevenue,
+                revenueChange
+            });
+        } catch (error) {
+            console.error('Admin getStats error:', error);
+            res.status(500).json({
+                message: 'เกิดข้อผิดพลาดในการดึงข้อมูลสถิติ',
+                error: error.message
+            });
+        }
+    }
     
     /**
      * Dashboard - สถิติภาพรวม
