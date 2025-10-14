@@ -5,41 +5,31 @@ const cookieParser = require('cookie-parser');
 // Load environment variables
 require('dotenv').config();
 
-// Import configuration and utilities
-const config = require('./config');
-const logger = require('./utils/Logger');
-const { testConnection } = require('./config/database');
+// Import configuration and utilities from core
+const config = require('./core/config');
+const logger = require('./core/utils/Logger');
+const { testConnection } = require('./core/config/database');
 
-// Import middleware
+// Import core middleware
 const { 
     cors, 
     helmet, 
     createRateLimiter, 
     errorHandler, 
     notFound 
-} = require('./middleware/security');
+} = require('./core/middleware/security');
 
 const { 
     requestLogger, 
     responseTime, 
     requestId 
-} = require('./middleware/logging');
+} = require('./core/middleware/logging');
 
-// Import new modular routes
-const authRoutes = require('./routes/auth');
-const bookingRoutes = require('./routes/bookings');
-const paymentRoutes = require('./routes/payments');
-const roomRoutes = require('./routes/rooms');
-const userRoutes = require('./routes/users');
-const adminRoutes = require('./routes/admin');
-const orderRoutes = require('./routes/orders');
+// Import modular routes (centralized)
+const moduleRoutes = require('./modules');
 
-// Import old routes (temporary for compatibility)
+// Import legacy index route (for homepage)
 const indexRouter = require('../routes/index');
-const legacyUsersRouter = require('../routes/api/users');
-const legacyRoomsRouter = require('../routes/api/rooms');
-const legacyApiAdmin = require('../routes/api/admin');
-const legacyApiOrders = require('../routes/api/orders');
 
 const app = express();
 
@@ -53,7 +43,11 @@ testConnection().then(isConnected => {
 });
 
 // View engine setup
-app.set('views', path.join(__dirname, 'views'));
+// Support both module views and global views
+app.set('views', [
+    path.join(__dirname, '../views'),           // Global views (partials, shared pages)
+    path.join(__dirname, 'modules')             // Module-specific views
+]);
 app.set('view engine', 'ejs');
 
 // Security middleware
@@ -74,28 +68,11 @@ app.use(cookieParser());
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API Routes (New modular structure)
-// Frontend auth pages (forgot/reset password)
-const authPageRoutes = require('./routes/auth');
-app.use('/auth', authPageRoutes);
+// Mount all modular routes
+app.use('/', moduleRoutes);
 
-// API Routes (New modular structure)
-const authApiRoutes = require('./routes/auth');
-app.use('/api/v2/auth', authApiRoutes);
-app.use('/api/v2/bookings', bookingRoutes);
-app.use('/api/v2/payments', paymentRoutes);
-app.use('/api/v2/rooms', roomRoutes);
-app.use('/api/v2/users', userRoutes);
-app.use('/api/v2/admin', adminRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/v2/orders', orderRoutes);
-
-// Legacy routes (for backward compatibility)
+// Legacy index route (for homepage)
 app.use('/', indexRouter);
-app.use('/api/users', legacyUsersRouter);
-app.use('/api/rooms', legacyRoomsRouter);
-app.use('/api/admin', legacyApiAdmin);
-app.use('/api/orders', legacyApiOrders);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -110,27 +87,20 @@ app.get('/health', (req, res) => {
 // API documentation endpoint
 app.get('/api', (req, res) => {
     res.json({
-        message: 'Junrai Karaoke API',
+        success: true,
+        message: 'Junrai Karaoke Web API - Modular Architecture',
         version: '2.0.0',
-        endpoints: {
-            v2: {
-                auth: '/api/v2/auth',
-                bookings: '/api/v2/bookings', 
-                payments: '/api/v2/payments',
-                rooms: '/api/v2/rooms',
-                users: '/api/v2/users',
-                admin: '/api/v2/admin',
-                orders: '/api/v2/orders'
-            },
-            legacy: {
-                users: '/api/users',
-                rooms: '/api/rooms',
-                admin: '/api/admin',
-                orders: '/api/orders'
-            }
+        modules: {
+            auth: '/auth',
+            bookings: '/bookings',
+            payments: '/payments',
+            rooms: '/rooms',
+            users: '/users',
+            admin: '/admin',
+            orders: '/orders'
         },
-        documentation: '/api-docs',
-        migration_guide: '/docs/MODULAR_ARCHITECTURE.md'
+        documentation: '/docs/REFACTOR_PLAN.md',
+        health: '/health'
     });
 });
 

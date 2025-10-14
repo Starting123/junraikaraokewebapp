@@ -6,8 +6,8 @@
 const app = require('../app');
 const debug = require('debug')('junraikaraokewebapp:server');
 const http = require('http');
-const config = require('../config');
-const logger = require('../utils/Logger');
+const config = require('../core/config');
+const logger = require('../core/utils/Logger');
 
 /**
  * Get port from environment and store in Express.

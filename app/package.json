@@ -5,10 +5,10 @@
   "description": "Junrai Karaoke Booking System - Modular Architecture",
   "main": "src/app.js",
   "scripts": {
-    "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www",
+    "start": "node ./src/bin/www",
+    "dev": "nodemon ./src/bin/www",
     "dev:modular": "nodemon ./dev-server.js",
-    "dev:src": "nodemon ./src/bin/www",
+    "dev:legacy": "nodemon ./bin/www",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.js",

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - Junrai Karaoke</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                
+                <div class="navbar-main">
+                    <ul class="navbar-nav">
+                        <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                        <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                        <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
+                        <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                        <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                    </ul>
+                    
+                    <!-- Store Hours Info -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-wrapper">
+            <!-- Login Form -->
+            <div class="auth-card" id="loginCard">
+                <div class="auth-header">
+                    <h2><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</h2>
+                    <p>ยินดีต้อนรับกลับสู่ Junrai Karaoke</p>
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-envelope"></i> อีเมล
+                        </label>
+                        <input type="email" class="form-control" id="loginEmail" placeholder="กรุณาใส่อีเมลของคุณ" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-lock"></i> รหัสผ่าน
+                        </label>
+                        <div class="password-input">
+                            <input type="password" class="form-control" id="loginPassword" placeholder="กรุณาใส่รหัสผ่าน" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="text-align:right;">
+                        <a href="/auth/forgot-password" class="forgot-link" style="color:#f7b731;font-weight:bold;text-decoration:none;padding:4px 12px;border-radius:6px;transition:background 0.2s;">ลืมรหัสผ่าน?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary auth-btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        เข้าสู่ระบบ
+                    </button>
+                    
+                    <div class="auth-divider">
+                        <span>หรือ</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline auth-btn" onclick="showRegister()">
+                        <i class="fas fa-user-plus"></i>
+                        สมัครสมาชิกใหม่
+                    </button>
+                </form>
+                
+                <div class="auth-result" id="loginResult"></div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-card" id="registerCard" style="display: none;">
+                <div class="auth-header">
+                    <h2><i class="fas fa-user-plus"></i> สมัครสมาชิก</h2>
+                    <p>เริ่มต้นการใช้งาน Junrai Karaoke</p>
+                </div>
+                
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-user"></i> ชื่อ-นามสกุล
+                        </label>
+                        <input type="text" class="form-control" id="registerName" placeholder="กรุณาใส่ชื่อ-นามสกุล" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-envelope"></i> อีเมล
+                        </label>
+                        <input type="email" class="form-control" id="registerEmail" placeholder="กรุณาใส่อีเมลของคุณ" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-lock"></i> รหัสผ่าน
+                        </label>
+                        <div class="password-input">
+                            <input type="password" class="form-control" id="registerPassword" placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-lock"></i> ยืนยันรหัสผ่าน
+                        </label>
+                        <div class="password-input">
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="กรุณายืนยันรหัสผ่าน" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary auth-btn">
+                        <i class="fas fa-user-plus"></i>
+                        สมัครสมาชิก
+                    </button>
+                    
+                    <div class="auth-divider">
+                        <span>หรือ</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline auth-btn" onclick="showLogin()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+                
+                <div class="auth-result" id="registerResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>กำลังดำเนินการ...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        const API_BASE = '/api';
+
+        // Toggle between login and register forms
+        function showLogin() {
+            document.getElementById('loginCard').style.display = 'block';
+            document.getElementById('registerCard').style.display = 'none';
+            clearResults();
+        }
+
+        function showRegister() {
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('registerCard').style.display = 'block';
+            clearResults();
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Show/Hide loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Clear results
+        function clearResults() {
+            document.getElementById('loginResult').innerHTML = '';
+            document.getElementById('registerResult').innerHTML = '';
+        }
+
+        // Show result message
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const iconClass = {
+                'success': 'fas fa-check-circle',
+                'error': 'fas fa-exclamation-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            }[type];
+
+            element.innerHTML = `
+                <div class="alert alert-${type}">
+                    <i class="${iconClass}"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showResult('loginResult', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                return;
+            }
+
+            showLoading();
+            clearResults();
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token and user data
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showResult('loginResult', 
+                        `เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${data.user.name}`, 'success');
+                    
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = data.user.role_id === 1 ? '/admin' : '/dashboard';
+                    }, 2000);
+                } else {
+                    showResult('loginResult', 
+                        data.error || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showResult('loginResult', 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Register form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validation
+            if (!name || !email || !password || !confirmPassword) {
+                showResult('registerResult', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                return;
+            }
+
+            if (password.length < 6) {
+                showResult('registerResult', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'warning');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showResult('registerResult', 'รหัสผ่านไม่ตรงกัน', 'warning');
+                return;
+            }
+
+            showLoading();
+            clearResults();
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('registerResult', 
+                        'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ', 'success');
+                    
+                    // Switch to login form after 2 seconds
+                    setTimeout(() => {
+                        showLogin();
+                        document.getElementById('loginEmail').value = email;
+                    }, 2000);
+                } else {
+                    if (data.errors && data.errors.length > 0) {
+                        const errorMessages = data.errors.map(err => err.msg).join(', ');
+                        showResult('registerResult', errorMessages, 'error');
+                    } else {
+                        showResult('registerResult', 
+                            data.error || 'เกิดข้อผิดพลาดในการสมัครสมาชิก', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                showResult('registerResult', 'เกิดข้อผิดพลาดในการสมัครสมาชิก', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Check if user is already logged in
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                // Redirect to appropriate dashboard
+                const userData = JSON.parse(user);
+                window.location.href = userData.role_id === 1 ? '/admin' : '/dashboard';
+            }
+        }
+
+        // Store Hours Management
+        function updateStoreStatus() {
+            const now = new Date();
+            const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour + (currentMinute / 60);
+            
+            const statusElement = document.getElementById('statusText');
+            const hoursInfo = document.getElementById('storeHoursInfo');
+            
+            // Store hours: 11:00 - 21:00, Tuesday - Sunday (Closed Monday)
+            const openTime = 11; // 11:00
+            const closeTime = 21; // 21:00
+            const isMonday = currentDay === 1;
+            const isOpenDays = currentDay >= 2 || currentDay === 0; // Tuesday-Sunday
+            const isWithinHours = currentTime >= openTime && currentTime < closeTime;
+            
+            if (isMonday) {
+                statusElement.textContent = '🔴 ปิด (วันหยุด)';
+                statusElement.className = 'status-text status-closed';
+                hoursInfo.classList.add('store-closed');
+            } else if (isOpenDays && isWithinHours) {
+                const hoursLeft = closeTime - currentTime;
+                const hoursText = hoursLeft > 1 ? `${Math.floor(hoursLeft)} ชม` : `${Math.floor(hoursLeft * 60)} นาที`;
+                statusElement.textContent = `🟢 เปิด (อีก ${hoursText})`;
+                statusElement.className = 'status-text status-open';
+                hoursInfo.classList.remove('store-closed');
+            } else {
+                // Check if tomorrow is open
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowDay = tomorrow.getDay();
+                
+                if (tomorrowDay === 1) {
+                    statusElement.textContent = '🔴 ปิด (เปิดวันอังคาร 11:00)';
+                } else if (currentTime < openTime) {
+                    const hoursUntilOpen = openTime - currentTime;
+                    const timeText = hoursUntilOpen > 1 ? `${Math.floor(hoursUntilOpen)} ชม` : `${Math.floor(hoursUntilOpen * 60)} นาที`;
+                    statusElement.textContent = `🟡 ปิด (เปิดอีก ${timeText})`;
+                } else {
+                    statusElement.textContent = '🔴 ปิด (เปิดพรุ่งนี้ 11:00)';
+                }
+                statusElement.className = 'status-text status-closed';
+                hoursInfo.classList.add('store-closed');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            updateStoreStatus();
+            
+            // Update store status every minute
+            setInterval(updateStoreStatus, 60000);
+        });
+    </script>
+</body>
+</html>
