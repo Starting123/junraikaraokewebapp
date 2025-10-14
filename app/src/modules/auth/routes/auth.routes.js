@@ -5,6 +5,11 @@ const AuthController = require('../controllers/AuthController');
 const { authenticateToken } = require('../../../core/middleware/auth');
 const authValidators = require('../validators/authValidators');
 
+// Root auth route - redirect to login
+router.get('/', (req, res) => {
+    res.redirect('/auth/login');
+});
+
 // Page routes
 router.get('/login', AuthController.showLoginForm);
 router.get('/register', AuthController.showRegisterForm);

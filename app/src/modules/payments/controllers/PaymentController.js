@@ -4,6 +4,75 @@ const { validationResult } = require('express-validator');
 class PaymentController {
     
     /**
+     * แสดงหน้าชำระเงิน (Render Page)
+     */
+    static async showPaymentPage(req, res) {
+        try {
+            const { booking_id } = req.query;
+
+            if (!booking_id) {
+                return res.status(400).render('error', {
+                    message: 'กรุณาระบุหมายเลขการจอง'
+                });
+            }
+
+            res.render('payments/views/payment', {
+                title: 'ชำระเงิน - Junrai Karaoke',
+                user: req.user || null,
+                booking_id: booking_id
+            });
+
+        } catch (error) {
+            console.error('Show payment page error:', error);
+            res.status(500).render('error', {
+                message: 'เกิดข้อผิดพลาดในการโหลดหน้าชำระเงิน',
+                error: error
+            });
+        }
+    }
+
+    /**
+     * แสดงหน้าชำระเงินสำเร็จ
+     */
+    static async showPaymentSuccessPage(req, res) {
+        try {
+            const { payment_intent } = req.query;
+
+            res.render('payments/views/payment-success', {
+                title: 'ชำระเงินสำเร็จ - Junrai Karaoke',
+                user: req.user || null,
+                payment_intent: payment_intent
+            });
+
+        } catch (error) {
+            console.error('Show payment success page error:', error);
+            res.status(500).render('error', {
+                message: 'เกิดข้อผิดพลาด',
+                error: error
+            });
+        }
+    }
+
+    /**
+     * แสดงหน้าชำระเงินยกเลิก
+     */
+    static async showPaymentCancelPage(req, res) {
+        try {
+            res.render('payments/views/payment-cancel', {
+                title: 'ยกเลิกการชำระเงิน - Junrai Karaoke',
+                user: req.user || null
+            });
+
+        } catch (error) {
+            console.error('Show payment cancel page error:', error);
+            res.status(500).render('error', {
+                message: 'เกิดข้อผิดพลาด',
+                error: error
+            });
+        }
+    }
+    
+    /**
      * สร้าง Payment Intent
      */
     static async createPaymentIntent(req, res) {

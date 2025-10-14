@@ -25,10 +25,19 @@ const requestLogger = (env = 'development') => {
 const responseTime = (req, res, next) => {
     const start = Date.now();
     
-    res.on('finish', () => {
+    // Store original end function
+    const originalEnd = res.end;
+    
+    // Override end function to set header before response ends
+    res.end = function(...args) {
         const duration = Date.now() - start;
-        res.setHeader('X-Response-Time', duration);
-    });
+        // Only set header if not already sent
+        if (!res.headersSent) {
+            res.setHeader('X-Response-Time', `${duration}ms`);
+        }
+        // Call original end function
+        originalEnd.apply(res, args);
+    };
     
     next();
 };

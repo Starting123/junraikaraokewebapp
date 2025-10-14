@@ -4,6 +4,32 @@ const { validationResult } = require('express-validator');
 class BookingController {
     
     /**
+     * แสดงหน้ารายการการจอง (Render Page)
+     */
+    static async showBookingsPage(req, res) {
+        try {
+            // ถ้ามี user ให้ดึงการจองของ user นั้น
+            let bookings = [];
+            if (req.user) {
+                bookings = await BookingService.getUserBookings(req.user.user_id);
+            }
+
+            res.render('bookings/views/bookings', {
+                title: 'รายการจอง - Junrai Karaoke',
+                user: req.user || null,
+                bookings: bookings
+            });
+
+        } catch (error) {
+            console.error('Show bookings page error:', error);
+            res.status(500).render('error', {
+                message: 'เกิดข้อผิดพลาดในการโหลดหน้ารายการจอง',
+                error: error
+            });
+        }
+    }
+    
+    /**
      * สร้างการจองใหม่
      */
     static async createBooking(req, res) {

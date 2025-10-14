@@ -4,7 +4,29 @@ const { validationResult } = require('express-validator');
 class RoomController {
     
     /**
-     * ดึงรายการห้อง
+     * แสดงหน้ารายการห้อง (Render Page)
+     */
+    static async showRoomsPage(req, res) {
+        try {
+            const rooms = await Room.findAll({});
+
+            res.render('rooms/views/rooms', {
+                title: 'รายการห้อง - Junrai Karaoke',
+                user: req.user || null,
+                rooms: rooms
+            });
+
+        } catch (error) {
+            console.error('Show rooms page error:', error);
+            res.status(500).render('error', {
+                message: 'เกิดข้อผิดพลาดในการโหลดหน้ารายการห้อง',
+                error: error
+            });
+        }
+    }
+
+    /**
+     * ดึงรายการห้อง (API)
      */
     static async getRooms(req, res) {
         try {

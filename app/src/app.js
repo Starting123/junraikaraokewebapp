@@ -62,8 +62,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Static files - public folder is at root level, not in src/
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Mount all modular routes
 app.use('/', moduleRoutes);

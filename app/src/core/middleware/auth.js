@@ -3,12 +3,24 @@ const config = require('../config');
 
 /**
  * Middleware ตรวจสอบ JWT token
+ * รองรับทั้ง API requests (JSON response) และ Page requests (redirect)
  */
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    // ตรวจสอบว่าเป็น API request หรือ Page request
+    const isApiRequest = req.path.startsWith('/api') || 
+                         req.headers['accept']?.includes('application/json') ||
+                         req.xhr; // XMLHttpRequest
+
     if (!token) {
+        // ถ้าเป็น Page request ให้ redirect ไป login
+        if (!isApiRequest && req.method === 'GET') {
+            return res.redirect(`/auth/login?redirect=${encodeURIComponent(req.originalUrl)}`);
+        }
+        
+        // ถ้าเป็น API request ให้ return JSON
         return res.status(401).json({ 
             success: false,
             message: 'Access token is required' 
@@ -18,6 +30,13 @@ function authenticateToken(req, res, next) {
     jwt.verify(token, config.jwt.secret, (err, user) => {
         if (err) {
             console.error('JWT verification failed:', err);
+            
+            // ถ้าเป็น Page request ให้ redirect ไป login
+            if (!isApiRequest && req.method === 'GET') {
+                return res.redirect(`/auth/login?redirect=${encodeURIComponent(req.originalUrl)}`);
+            }
+            
+            // ถ้าเป็น API request ให้ return JSON
             return res.status(403).json({ 
                 success: false,
                 message: 'Invalid or expired token' 

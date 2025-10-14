@@ -13,6 +13,11 @@ router.post('/webhook', PaymentController.handleWebhook);
 // Protected routes - ต้อง login
 router.use(authenticateToken);
 
+// Page routes - Render EJS views
+router.get('/page', PaymentController.showPaymentPage);
+router.get('/success', PaymentController.showPaymentSuccessPage);
+router.get('/cancel', PaymentController.showPaymentCancelPage);
+
 // Payment intent validation
 const paymentIntentValidator = [
     body('booking_id')

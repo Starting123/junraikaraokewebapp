@@ -4,6 +4,43 @@ const Room = require('../../rooms/models/Room');
 const Order = require('../../orders/models/Order');
 
 class AdminController {
+    
+    /**
+     * แสดงหน้า Admin Dashboard (Render Page)
+     */
+    static async showAdminPage(req, res) {
+        try {
+            // ดึงข้อมูลสำหรับ dashboard
+            const users = await User.findAll();
+            const bookings = await Booking.findAll();
+            const rooms = await Room.findAll({});
+
+            // คำนวณสถิติพื้นฐาน
+            const stats = {
+                totalUsers: users.length,
+                totalBookings: bookings.length,
+                totalRooms: rooms.length,
+                pendingBookings: bookings.filter(b => b.status === 'pending').length
+            };
+
+            res.render('admin/views/admin', {
+                title: 'Admin Dashboard - Junrai Karaoke',
+                user: req.user || null,
+                users: users,
+                bookings: bookings,
+                rooms: rooms,
+                stats: stats
+            });
+
+        } catch (error) {
+            console.error('Show admin page error:', error);
+            res.status(500).render('error', {
+                message: 'เกิดข้อผิดพลาดในการโหลดหน้า Admin',
+                error: error
+            });
+        }
+    }
+    
     // API: Delete a booking
     static async apiDeleteBooking(req, res) {
         try {

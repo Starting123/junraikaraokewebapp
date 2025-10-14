@@ -163,6 +163,17 @@
         // Global variables
         let currentUser = null;
         const API_BASE = '/api';
+        const redirectUrl = '<%= typeof redirectUrl !== "undefined" ? redirectUrl : "/dashboard" %>';
+        const message = '<%= typeof message !== "undefined" && message ? message : "" %>';
+
+        // Show message if redirected from protected page
+        window.addEventListener('DOMContentLoaded', () => {
+            if (message) {
+                showResult('loginResult', message, 'warning');
+            } else if (redirectUrl !== '/dashboard') {
+                showResult('loginResult', 'กรุณาเข้าสู่ระบบเพื่อเข้าถึงหน้านี้', 'info');
+            }
+        });
 
         // Toggle between login and register forms
         function showLogin() {
@@ -258,10 +269,15 @@
                     showResult('loginResult', 
                         `เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${data.user.name}`, 'success');
                     
-                    // Redirect after 2 seconds
+                    // Redirect after 1.5 seconds
                     setTimeout(() => {
-                        window.location.href = data.user.role_id === 1 ? '/admin' : '/dashboard';
-                    }, 2000);
+                        // Use redirectUrl from server, or default to admin/dashboard based on role
+                        if (redirectUrl && redirectUrl !== '/dashboard') {
+                            window.location.href = redirectUrl;
+                        } else {
+                            window.location.href = data.user.role_id === 1 ? '/admin' : '/dashboard';
+                        }
+                    }, 1500);
                 } else {
                     showResult('loginResult', 
                         data.error || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error');

@@ -240,7 +240,14 @@ class AuthController {
 
     // Page rendering methods
     static showLoginForm(req, res) {
-        res.render('auth/views/auth');
+        // รับ redirect parameter จาก query string
+        const redirectUrl = req.query.redirect || '/dashboard';
+        
+        res.render('auth/views/auth', {
+            title: 'เข้าสู่ระบบ - Junrai Karaoke',
+            redirectUrl: redirectUrl,
+            message: req.query.message || null // สำหรับแสดงข้อความแจ้งเตือน
+        });
     }
 
     static showRegisterForm(req, res) {

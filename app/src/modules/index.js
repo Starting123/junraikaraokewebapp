@@ -44,7 +44,10 @@ router.get('/contact', (req, res) => {
 });
 
 // Mount module routes
+// Auth module handles its own root routes (login, register, etc.)
 router.use('/auth', authRoutes);
+
+// For other modules, mount both page and API routes
 router.use('/bookings', bookingRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/rooms', roomRoutes);

@@ -8,15 +8,18 @@ const bookingValidators = require('../validators/bookingValidators');
 // Protected routes - ต้อง login
 router.use(authenticateToken);
 
-// User routes
-router.post('/', bookingValidators.createBooking, BookingController.createBooking);
-router.get('/', bookingValidators.getBookings, BookingController.getBookings);
-router.get('/:id', bookingValidators.getBookingById, BookingController.getBookingById);
-router.put('/:id', bookingValidators.updateBooking, BookingController.updateBooking);
-router.delete('/:id/cancel', BookingController.cancelBooking);
+// Page routes - Render EJS views (MUST come before API routes)
+router.get('/', BookingController.showBookingsPage);  // Main page at /bookings
 
-// Time slot checking
-router.get('/rooms/:room_id/available-slots', bookingValidators.getAvailableTimeSlots, BookingController.getAvailableTimeSlots);
+// API routes - Return JSON (specific routes before params)
+router.get('/api', bookingValidators.getBookings, BookingController.getBookings);
+router.get('/api/:id', bookingValidators.getBookingById, BookingController.getBookingById);
+router.post('/api', bookingValidators.createBooking, BookingController.createBooking);
+router.put('/api/:id', bookingValidators.updateBooking, BookingController.updateBooking);
+router.delete('/api/:id/cancel', BookingController.cancelBooking);
+
+// Time slot checking API
+router.get('/api/rooms/:room_id/available-slots', bookingValidators.getAvailableTimeSlots, BookingController.getAvailableTimeSlots);
 
 // Admin only routes
 router.post('/check-expired', requireAdmin, BookingController.checkExpiredBookings);

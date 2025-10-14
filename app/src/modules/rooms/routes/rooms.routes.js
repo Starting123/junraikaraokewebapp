@@ -52,16 +52,21 @@ const roomValidators = {
 };
 
 // Public routes (ดูข้อมูลห้องได้โดยไม่ต้อง login)
-router.get('/', RoomController.getRooms);
-router.get('/:id', roomValidators.getById, RoomController.getRoomById);
-router.get('/:id/available-slots', roomValidators.getById, RoomController.getAvailableSlots);
+
+// Page routes - Render EJS views (MUST come before API routes to avoid conflicts)
+router.get('/', RoomController.showRoomsPage);  // Main page at /rooms
+
+// API routes - Return JSON (specific routes must come before :id param)
+router.get('/api', RoomController.getRooms);  // List API at /rooms/api
+router.get('/api/:id', roomValidators.getById, RoomController.getRoomById);
+router.get('/api/:id/available-slots', roomValidators.getById, RoomController.getAvailableSlots);
 
 // Protected routes - ต้อง login
 router.use(authenticateToken);
 
-// Admin only routes
-router.post('/', requireAdmin, roomValidators.create, RoomController.createRoom);
-router.put('/:id', requireAdmin, roomValidators.update, RoomController.updateRoom);
-router.delete('/:id', requireAdmin, roomValidators.getById, RoomController.deleteRoom);
+// Admin only routes - API with /api prefix for consistency
+router.post('/api', requireAdmin, roomValidators.create, RoomController.createRoom);
+router.put('/api/:id', requireAdmin, roomValidators.update, RoomController.updateRoom);
+router.delete('/api/:id', requireAdmin, roomValidators.getById, RoomController.deleteRoom);
 
 module.exports = router;

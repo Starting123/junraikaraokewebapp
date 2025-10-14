@@ -10,49 +10,49 @@ const { body, param, query } = require('express-validator');
 router.use(authenticateToken);
 router.use(requireAdmin);
 
-// API routes for admin data (for frontend compatibility)
-router.get('/bookings', AdminController.apiGetBookings);
-router.get('/users', AdminController.apiGetUsers);
-router.get('/rooms', AdminController.apiGetRooms);
+// Page routes - Render EJS views (MUST come first)
+router.get('/', AdminController.showAdminPage);  // Main admin page at /admin
+router.get('/dashboard', AdminController.getDashboard);  // Keep dashboard route
 
-// Room CRUD
-router.post('/rooms', AdminController.apiCreateRoom);
-router.put('/rooms/:id', AdminController.apiUpdateRoom);
-router.delete('/rooms/:id', AdminController.apiDeleteRoom);
+// API routes for admin data (for frontend compatibility)
+router.get('/api/bookings', AdminController.apiGetBookings);
+router.get('/api/users', AdminController.apiGetUsers);
+router.get('/api/rooms', AdminController.apiGetRooms);
+
+// Room CRUD API
+router.post('/api/rooms', AdminController.apiCreateRoom);
+router.put('/api/rooms/:id', AdminController.apiUpdateRoom);
+router.delete('/api/rooms/:id', AdminController.apiDeleteRoom);
 
 // Admin statistics API
-router.get('/stats', AdminController.getStats);
+router.get('/api/stats', AdminController.getStats);
 
-// Dashboard
-router.get('/dashboard', AdminController.getDashboard);
+// User Management API
+router.get('/api/users/list', AdminController.getUsers);
+router.put('/api/users/:id/role', AdminController.updateUserRole);
 
-// User Management
-
-router.get('/users', AdminController.getUsers);
-router.put('/users/:id/role', AdminController.updateUserRole);
-
-// Booking Management  
-router.get('/bookings', AdminController.getBookings);
-router.put('/bookings/:id/status', [
+// Booking Management API
+router.get('/api/bookings/list', AdminController.getBookings);
+router.put('/api/bookings/:id/status', [
     param('id').isInt({ min: 1 }).withMessage('Booking ID ไม่ถูกต้อง'),
     body('status').optional().isIn(['active', 'confirmed', 'cancelled', 'completed']).withMessage('สถานะไม่ถูกต้อง'),
     body('payment_status').optional().isIn(['pending', 'paid', 'failed', 'cancelled', 'refunded']).withMessage('สถานะการชำระเงินไม่ถูกต้อง')
 ], AdminController.updateBookingStatus);
-router.delete('/bookings/:id', AdminController.apiDeleteBooking);
+router.delete('/api/bookings/:id', AdminController.apiDeleteBooking);
 
-// Reports
-router.get('/reports/revenue', [
+// Reports API
+router.get('/api/reports/revenue', [
     query('start_date').optional().isDate().withMessage('วันที่เริ่มต้นไม่ถูกต้อง'),
     query('end_date').optional().isDate().withMessage('วันที่สิ้นสุดไม่ถูกต้อง'),
     query('group_by').optional().isIn(['day', 'week', 'month']).withMessage('การจัดกลุ่มไม่ถูกต้อง')
 ], AdminController.getRevenueReport);
 
-router.get('/reports/room-usage', [
+router.get('/api/reports/room-usage', [
     query('start_date').optional().isDate().withMessage('วันที่เริ่มต้นไม่ถูกต้อง'),
     query('end_date').optional().isDate().withMessage('วันที่สิ้นสุดไม่ถูกต้อง')
 ], AdminController.getRoomUsageReport);
 
-// Settings
-router.get('/settings', AdminController.getSettings);
+// Settings API
+router.get('/api/settings', AdminController.getSettings);
 
 module.exports = router;
