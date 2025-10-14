@@ -1,0 +1,610 @@
+/* ==========================================
+   Global Earth Tone Orange Theme
+   ========================================== */
+
+:root {
+  /* Primary Orange Earth Tones */
+  --primary-orange: #E07B39;
+  --primary-orange-light: #F5B971;
+  --primary-orange-dark: #C85A17;
+  
+  /* Earth Tone Palette */
+  --earth-brown: #8B4513;
+  --earth-tan: #D2B48C;
+  --earth-cream: #F5F5DC;
+  --earth-sage: #9CAF88;
+  --earth-clay: #B87333;
+  
+  /* Neutral Colors */
+  --white: #FFFFFF;
+  --light-gray: #F8F6F0;
+  --gray: #D3C7B8;
+  --dark-gray: #8B8680;
+  --charcoal: #4A4238;
+  
+  /* Status Colors */
+  --success: #689F38;
+  --warning: #FF8F00;
+  --error: #D32F2F;
+  --info: #0288D1;
+  
+  /* Shadows */
+  --shadow-light: 0 2px 8px rgba(180, 115, 51, 0.1);
+  --shadow-medium: 0 4px 16px rgba(180, 115, 51, 0.15);
+  --shadow-heavy: 0 8px 32px rgba(180, 115, 51, 0.2);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+}
+
+/* ==========================================
+   Global Reset & Base Styles
+   ========================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, var(--light-gray) 0%, var(--earth-cream) 100%);
+  color: var(--charcoal);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ==========================================
+   Typography
+   ========================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--earth-brown);
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 1rem; }
+
+p {
+  margin-bottom: var(--space-md);
+  color: var(--dark-gray);
+}
+
+/* ==========================================
+   Layout Components
+   ========================================== */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--gray);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+  color: var(--white);
+  padding: var(--space-lg);
+  font-weight: 600;
+}
+
+.card-body {
+  padding: var(--space-lg);
+}
+
+.card-footer {
+  background: var(--light-gray);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--gray);
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+  gap: var(--space-sm);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+  color: var(--white);
+  box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+  background: var(--earth-tan);
+  color: var(--earth-brown);
+  border: 1px solid var(--earth-clay);
+}
+
+.btn-secondary:hover {
+  background: var(--earth-clay);
+  color: var(--white);
+}
+
+.btn-success {
+  background: var(--success);
+  color: var(--white);
+}
+
+.btn-warning {
+  background: var(--warning);
+  color: var(--white);
+}
+
+.btn-danger {
+  background: var(--error);
+  color: var(--white);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary-orange);
+  color: var(--primary-orange);
+}
+
+.btn-outline:hover {
+  background: var(--primary-orange);
+  color: var(--white);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ==========================================
+   Forms
+   ========================================== */
+
+.form-group {
+  margin-bottom: var(--space-lg);
+}
+
+.form-label {
+  display: block;
+  font-weight: 500;
+  color: var(--earth-brown);
+  margin-bottom: var(--space-sm);
+}
+
+.form-control {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--gray);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  background: var(--white);
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(224, 123, 57, 0.1);
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* ==========================================
+   Navigation
+   ========================================== */
+
+.navbar {
+  background: var(--white);
+  box-shadow: var(--shadow-light);
+  border-bottom: 3px solid var(--primary-orange);
+  padding: var(--space-md) 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-orange) !important;
+  text-decoration: none;
+}
+
+.navbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.navbar-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.navbar-nav {
+  display: flex;
+  list-style: none;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--dark-gray);
+  text-decoration: none;
+  font-weight: 500;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: var(--primary-orange-light);
+  color: var(--white);
+}
+
+/* Responsive Navbar */
+@media (max-width: 1024px) {
+  .navbar-main {
+    gap: var(--space-lg);
+  }
+  
+  .store-hours-info {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .navbar-main {
+    width: 100%;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .navbar-nav {
+    gap: var(--space-md);
+  }
+}
+
+/* ==========================================
+   Tables
+   ========================================== */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-light);
+}
+
+.table th {
+  background: var(--primary-orange);
+  color: var(--white);
+  padding: var(--space-md);
+  font-weight: 600;
+  text-align: left;
+}
+
+.table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--gray);
+}
+
+.table tbody tr:hover {
+  background: var(--light-gray);
+}
+
+/* ==========================================
+   Badges & Status
+   ========================================== */
+
+.badge {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-success { background: var(--success); color: var(--white); }
+.badge-warning { background: var(--warning); color: var(--white); }
+.badge-danger { background: var(--error); color: var(--white); }
+.badge-info { background: var(--info); color: var(--white); }
+.badge-secondary { background: var(--gray); color: var(--charcoal); }
+
+/* ==========================================
+   Loading & Utilities
+   ========================================== */
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-2xl);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--gray);
+  border-top: 4px solid var(--primary-orange);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: var(--dark-gray); }
+
+.mt-1 { margin-top: var(--space-xs); }
+.mt-2 { margin-top: var(--space-sm); }
+.mt-3 { margin-top: var(--space-md); }
+.mt-4 { margin-top: var(--space-lg); }
+
+.mb-1 { margin-bottom: var(--space-xs); }
+.mb-2 { margin-bottom: var(--space-sm); }
+.mb-3 { margin-bottom: var(--space-md); }
+.mb-4 { margin-bottom: var(--space-lg); }
+
+.p-1 { padding: var(--space-xs); }
+.p-2 { padding: var(--space-sm); }
+.p-3 { padding: var(--space-md); }
+.p-4 { padding: var(--space-lg); }
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--space-md);
+  }
+  
+  .navbar-nav {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .card-body {
+    padding: var(--space-md);
+  }
+  
+  .btn {
+    width: 100%;
+    margin-bottom: var(--space-sm);
+  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+}
+
+/* ==========================================
+   Store Hours Info
+   ========================================== */
+
+.store-hours-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, var(--earth-cream) 0%, var(--earth-tan) 100%);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--primary-orange-light);
+  box-shadow: var(--shadow-light);
+  margin-left: var(--space-lg);
+  min-width: 200px;
+}
+
+.hours-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.hours-display i {
+  color: var(--primary-orange);
+  font-size: 1.2rem;
+}
+
+.hours-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hours-time {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--earth-brown);
+  line-height: 1.2;
+}
+
+.hours-duration {
+  font-size: 0.85rem;
+  color: var(--dark-gray);
+  font-weight: 500;
+}
+
+.days-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+
+.open-days {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.closed-day {
+  font-size: 0.85rem;
+  color: var(--error);
+  font-weight: 500;
+}
+
+.store-status {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--gray);
+}
+
+.status-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  display: block;
+}
+
+.status-open {
+  background: rgba(104, 159, 56, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.status-closed {
+  background: rgba(211, 47, 47, 0.1);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.store-closed {
+  opacity: 0.7;
+  filter: grayscale(20%);
+}
+
+.store-closed .hours-time {
+  color: var(--dark-gray);
+}
+
+/* Responsive Store Hours */
+@media (max-width: 768px) {
+  .store-hours-info {
+    margin-left: 0;
+    margin-top: var(--space-md);
+    min-width: auto;
+    width: 100%;
+    flex-direction: column;
+    padding: var(--space-md);
+  }
+  
+  .hours-display {
+    margin-bottom: var(--space-sm);
+    justify-content: center;
+  }
+  
+  .hours-text {
+    align-items: center;
+  }
+  
+  .days-display {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .store-status {
+    margin-top: var(--space-sm);
+    width: 100%;
+  }
+}
+
+/* ==========================================
+   Animation Classes
+   ========================================== */
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
