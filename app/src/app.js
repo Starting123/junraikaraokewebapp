@@ -28,9 +28,6 @@ const {
 // Import modular routes (centralized)
 const moduleRoutes = require('./modules');
 
-// Import legacy index route (for homepage)
-const indexRouter = require('../routes/index');
-
 const app = express();
 
 // Test database connection on startup
@@ -70,9 +67,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Mount all modular routes
 app.use('/', moduleRoutes);
-
-// Legacy index route (for homepage)
-app.use('/', indexRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

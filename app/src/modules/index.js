@@ -19,6 +19,30 @@ const userRoutes = require('./users/routes/users.routes');
 const adminRoutes = require('./admin/routes/admin.routes');
 const orderRoutes = require('./orders/routes/orders.routes');
 
+// Homepage route
+router.get('/', (req, res) => {
+    res.render('index', { 
+        title: 'Junrai Karaoke',
+        user: req.user || null
+    });
+});
+
+// Dashboard route
+router.get('/dashboard', (req, res) => {
+    res.render('dashboard', {
+        title: 'Dashboard - Junrai Karaoke',
+        user: req.user || null
+    });
+});
+
+// Contact route
+router.get('/contact', (req, res) => {
+    res.render('contact', {
+        title: 'Contact Us - Junrai Karaoke',
+        user: req.user || null
+    });
+});
+
 // Mount module routes
 router.use('/auth', authRoutes);
 router.use('/bookings', bookingRoutes);
