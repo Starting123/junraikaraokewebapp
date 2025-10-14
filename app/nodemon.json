@@ -2,11 +2,7 @@
   "watch": [
     "src/",
     "views/",
-    "app.js",
-    "bin/",
-    "config/",
-    "middleware/",
-    "services/"
+    "public/"
   ],
   "ext": "js,json,ejs",
   "ignore": [
@@ -17,7 +13,7 @@
     "docs/",
     "*.md"
   ],
-  "exec": "node bin/www",
+  "exec": "node src/bin/www",
   "env": {
     "NODE_ENV": "development",
     "DEBUG": "junraikaraokewebapp:*"
