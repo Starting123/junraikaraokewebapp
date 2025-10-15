@@ -2,6 +2,20 @@ const Room = require('../models/Room');
 const { validationResult } = require('express-validator');
 
 class RoomController {
+
+    // Fix: Minimal handler for /api/rooms/roomForm
+    static async roomForm(req, res) {
+        // Return a minimal config for the room form (fields, etc.)
+        res.status(200).json({
+            success: true,
+            fields: [
+                { name: 'name', type: 'text', label: 'Room Name', required: true },
+                { name: 'capacity', type: 'number', label: 'Capacity', required: true },
+                { name: 'type_id', type: 'number', label: 'Type ID', required: true },
+                { name: 'status', type: 'text', label: 'Status', required: false }
+            ]
+        });
+    }
     
     /**
      * แสดงหน้ารายการห้อง (Render Page)

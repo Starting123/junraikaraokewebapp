@@ -61,6 +61,9 @@ router.get('/api', RoomController.getRooms);  // List API at /rooms/api
 router.get('/api/:id', roomValidators.getById, RoomController.getRoomById);
 router.get('/api/:id/available-slots', roomValidators.getById, RoomController.getAvailableSlots);
 
+// Fix: Add endpoint for /api/rooms/roomForm (used by frontend)
+router.get('/api/roomForm', RoomController.roomForm);
+
 // Protected routes - ต้อง login
 router.use(authenticateToken);
 
