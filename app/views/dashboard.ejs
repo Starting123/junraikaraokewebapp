@@ -13,31 +13,7 @@
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-content">
-                <a href="/" class="navbar-brand">
-                    <i class="fas fa-microphone-alt"></i>
-                    Junrai Karaoke
-                </a>
-                
-                <div class="navbar-main">
-                    <ul class="navbar-nav">
-                        <li><a href="/" class="nav-link">หน้าหลัก</a></li>
-                        <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
-                        <li><a href="/bookings" class="nav-link" id="bookingsLink">การจอง</a></li>
-                        <li><a href="/receipts" class="nav-link" id="receiptsLink">ใบเสร็จ</a></li>
-                        <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
-                        <li><a href="/auth" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
-                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
-                    </ul>
-                    
-                    <!-- Store Hours Info -->
-                </div>
-            </div>
-        </div>
-    </nav>
+    <%- include('partials/navbar') %>
 
     <!-- Header Section -->
     <section class="dashboard-header">

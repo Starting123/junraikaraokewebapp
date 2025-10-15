@@ -20,6 +20,35 @@ const adminRoutes = require('./admin/routes/admin.routes');
 const orderRoutes = require('./orders/routes/orders.routes');
 
 // Homepage route
+
+
+// Legacy frontend route support: redirect /auth/login to /api/auth/login
+router.get('/auth/login', (req, res) => {
+    res.redirect('/api/auth/login');
+});
+
+// Legacy frontend route support: redirect /admin to /api/admin
+// Legacy frontend route support: render admin page at /admin
+// Legacy frontend route support: render auth page at /auth
+router.get('/auth', require('./auth/controllers/AuthController').showLoginForm);
+router.get('/admin', require('./admin/controllers/AdminController').showAdminPage);
+
+// Legacy frontend route support: render main page for each module
+router.get('/bookings', require('./bookings/controllers/BookingController').showBookingsPage);
+router.get('/payments', require('./payments/controllers/PaymentController').showPaymentPage);
+
+// Legacy receipts page route
+router.get('/receipts', (req, res) => {
+    res.render('receipts', {
+        title: 'ใบเสร็จของฉัน - Junrai Karaoke',
+        user: req.user || null
+    });
+});
+router.get('/rooms', require('./rooms/controllers/RoomController').showRoomsPage);
+router.get('/users', require('./users/controllers/UserController').showUsersPage);
+router.get('/orders', require('./orders/controllers/OrderController').showOrdersPage);
+
+// Homepage route
 router.get('/', (req, res) => {
     res.render('index', { 
         title: 'Junrai Karaoke',
@@ -44,16 +73,17 @@ router.get('/contact', (req, res) => {
 });
 
 // Mount module routes
-// Auth module handles its own root routes (login, register, etc.)
-router.use('/auth', authRoutes);
+// Mount all modules at /api/<module> for API consistency
+router.use('/api/auth', authRoutes);
+router.use('/api/bookings', bookingRoutes);
+router.use('/api/payments', paymentRoutes);
 
-// For other modules, mount both page and API routes
-router.use('/bookings', bookingRoutes);
-router.use('/payments', paymentRoutes);
-router.use('/rooms', roomRoutes);
-router.use('/users', userRoutes);
-router.use('/admin', adminRoutes);
-router.use('/orders', orderRoutes);
+// Legacy API route for receipts (for frontend fetch)
+router.use('/api/legacy/payments/receipts', paymentRoutes);
+router.use('/api/rooms', roomRoutes);
+router.use('/api/users', userRoutes);
+router.use('/api/admin', adminRoutes);
+router.use('/api/orders', orderRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {

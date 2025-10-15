@@ -2,6 +2,25 @@ const PaymentService = require('../services/PaymentService');
 const { validationResult } = require('express-validator');
 
 class PaymentController {
+
+    /**
+     * ดึงข้อมูลใบเสร็จรับเงิน (Receipts)
+     * Returns { success: true, receipts: [...] }
+     */
+    static async getReceipts(req, res) {
+        try {
+            // Only return receipts for the current user
+            const userId = req.user?.user_id;
+            if (!userId) {
+                return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบก่อนดูใบเสร็จ' });
+            }
+            const receipts = await PaymentService.getReceipts(userId);
+            res.json({ success: true, receipts });
+        } catch (error) {
+            console.error('Get receipts error:', error);
+            res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูลใบเสร็จ', error: error.message });
+        }
+    }
     
     /**
      * แสดงหน้าชำระเงิน (Render Page)

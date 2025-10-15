@@ -3,6 +3,13 @@ const Booking = require('../../bookings/models/Booking');
 const { validationResult } = require('express-validator');
 
 class OrderController {
+    // Legacy page route for /orders
+    static async showOrdersPage(req, res) {
+        res.render('orders/orders', {
+            title: 'Orders - Junrai Karaoke',
+            user: req.user || null
+        });
+    }
     
     /**
      * ดึงรายการ orders

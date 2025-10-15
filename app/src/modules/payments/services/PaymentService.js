@@ -3,6 +3,22 @@ const Order = require('../../orders/models/Order');
 const Booking = require('../../bookings/models/Booking');
 
 class PaymentService {
+
+    /**
+     * ดึงข้อมูลใบเสร็จรับเงิน (Receipts)
+     * Returns array of orders for the current user
+     */
+    static async getReceipts(userId) {
+        try {
+            // Only fetch receipts for the current user
+            if (!userId) throw new Error('Missing user ID');
+            const orders = await Order.findAll({ user_id: userId, status: 'completed', limit: 100 });
+            return orders;
+        } catch (error) {
+            console.error('Error fetching receipts:', error);
+            throw error;
+        }
+    }
     
     /**
      * สร้าง Payment Intent สำหรับการชำระเงิน

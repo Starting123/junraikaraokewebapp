@@ -83,22 +83,34 @@ class AuthController {
             if (!errors.isEmpty()) {
                 return res.status(400).json({
                     success: false,
-                    message: 'ข้อมูลไม่ถูกต้อง',
+                    error: 'ข้อมูลไม่ถูกต้อง',
                     errors: errors.array()
                 });
             }
 
             const { email, password } = req.body;
-            
             const result = await AuthService.login({ email, password });
 
-            res.json(result);
-
+            if (result.success) {
+                // Always send redirect and user info for frontend
+                res.status(200).json({
+                    success: true,
+                    message: 'Login successful',
+                    token: result.token,
+                    user: result.user,
+                    redirect: '/dashboard'
+                });
+            } else {
+                res.status(401).json({
+                    success: false,
+                    error: result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
+                });
+            }
         } catch (error) {
             console.error('Login error:', error);
             res.status(401).json({
                 success: false,
-                message: error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
+                error: error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
             });
         }
     }

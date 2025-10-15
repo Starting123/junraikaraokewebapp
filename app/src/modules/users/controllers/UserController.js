@@ -3,6 +3,13 @@ const AuthService = require('../../auth/services/AuthService');
 const { validationResult } = require('express-validator');
 
 class UserController {
+    // Legacy page route for /users
+    static async showUsersPage(req, res) {
+        res.render('users/users', {
+            title: 'Users - Junrai Karaoke',
+            user: req.user || null
+        });
+    }
     
     /**
      * ดึงรายการผู้ใช้ (Admin only)

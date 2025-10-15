@@ -36,6 +36,9 @@ router.post('/create-intent', paymentIntentValidator, PaymentController.createPa
 router.post('/confirm', paymentActionValidator, PaymentController.confirmPayment);
 router.post('/cancel', paymentActionValidator, PaymentController.cancelPayment);
 
+// Receipts route for frontend
+router.get('/receipts', PaymentController.getReceipts);
+
 // Admin only routes
 router.post('/refund', requireAdmin, [
     ...paymentActionValidator,
