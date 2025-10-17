@@ -3,6 +3,7 @@ const Room = require('../../rooms/models/Room');
 const User = require('../../auth/models/User');
 
 class BookingService {
+    constructor() {}
     
     /**
      * สร้างการจองใหม่
@@ -42,12 +43,36 @@ class BookingService {
 
         } catch (error) {
             console.error('Booking creation error:', error);
-                        // Prevent booking on Monday
-                        const bookingDate = new Date(start_time);
-                        if (bookingDate.getDay() === 1) {
-                            throw new Error('ร้านหยุดทุกวันจันทร์ ไม่สามารถจองได้');
-                        }
             throw error;
+        }
+    }
+
+    /**
+     * ตรวจสอบความถูกต้องของการจอง
+     */
+    static async validateBooking(start_time, end_time) {
+        // Prevent booking on Monday
+        const bookingDate = new Date(start_time);
+        if (bookingDate.getDay() === 1) {
+            throw new Error('ร้านหยุดทุกวันจันทร์ ไม่สามารถจองได้');
+        }
+
+        // Check if dates are valid
+        if (isNaN(bookingDate.getTime())) {
+            throw new Error('วันที่ไม่ถูกต้อง');
+        }
+
+        // Check if booking is in the future
+        if (bookingDate < new Date()) {
+            throw new Error('ไม่สามารถจองย้อนหลังได้');
+        }
+
+        // Check if end time is after start time
+        if (new Date(end_time) <= new Date(start_time)) {
+            throw new Error('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น');
+        }
+
+        return true;
         }
     }
 

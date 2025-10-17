@@ -14,8 +14,7 @@ const { testConnection } = require('./core/config/database');
 const { 
     cors, 
     helmet, 
-    createRateLimiter, 
-    errorHandler, 
+    createRateLimiter,
     notFound 
 } = require('./core/middleware/security');
 
@@ -25,10 +24,32 @@ const {
     requestId 
 } = require('./core/middleware/logging');
 
+const { errorHandler } = require('./core/middleware/errorHandler');
+const SessionHandler = require('./core/middleware/sessionHandler');
+
 // Import modular routes (centralized)
 const moduleRoutes = require('./modules');
 
 const app = express();
+
+// Basic middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Security middleware
+app.use(helmet());
+app.use(cors());
+app.use(createRateLimiter());
+
+// Session handling
+app.use(SessionHandler.initSession);
+
+// Logging middleware
+app.use(requestId);
+app.use(requestLogger);
+app.use(responseTime);
 
 // Test database connection on startup
 testConnection().then(isConnected => {
@@ -47,20 +68,9 @@ app.set('views', [
 ]);
 app.set('view engine', 'ejs');
 
-// Security middleware
-app.use(helmet);
-app.use(cors);
-app.use(createRateLimiter());
-
-// Logging middleware
-app.use(requestId);
-app.use(responseTime);
-app.use(requestLogger(config.server.env));
-
-// Body parsing middleware
+// Update JSON body limit
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
-app.use(cookieParser());
 
 // Static files - public folder is at root level, not in src/
 app.use(express.static(path.join(__dirname, '../public')));

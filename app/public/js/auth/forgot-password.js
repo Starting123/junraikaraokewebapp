@@ -4,7 +4,7 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', async f
     const alertBox = document.getElementById('forgotPasswordAlert');
     alertBox.style.display = 'none';
     try {
-        const res = await fetch('/auth/forgot-password', {
+        const res = await fetch('/api/auth/forgot-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })

@@ -31,8 +31,8 @@ const responseTime = (req, res, next) => {
     // Override end function to set header before response ends
     res.end = function(...args) {
         const duration = Date.now() - start;
-        // Only set header if not already sent
-        if (!res.headersSent) {
+        // Skip setting header if it's already sent or if res is already finished
+        if (!res.headersSent && !res.finished) {
             res.setHeader('X-Response-Time', `${duration}ms`);
         }
         // Call original end function

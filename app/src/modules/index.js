@@ -73,13 +73,19 @@ router.get('/contact', (req, res) => {
 });
 
 // Mount module routes
-// Mount all modules at /api/<module> for API consistency
+// First mount static/page routes (without /api prefix)
+router.use('/auth', authRoutes);
+router.use('/rooms', roomRoutes);
+router.use('/bookings', bookingRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/users', userRoutes);
+router.use('/admin', adminRoutes);
+router.use('/orders', orderRoutes);
+
+// Then mount API routes with /api prefix
 router.use('/api/auth', authRoutes);
 router.use('/api/bookings', bookingRoutes);
 router.use('/api/payments', paymentRoutes);
-
-// Legacy API route for receipts (for frontend fetch)
-router.use('/api/legacy/payments/receipts', paymentRoutes);
 router.use('/api/rooms', roomRoutes);
 router.use('/api/users', userRoutes);
 router.use('/api/admin', adminRoutes);

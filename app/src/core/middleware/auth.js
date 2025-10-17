@@ -12,7 +12,8 @@ function authenticateToken(req, res, next) {
     // ตรวจสอบว่าเป็น API request หรือ Page request
     const isApiRequest = req.path.startsWith('/api') || 
                          req.headers['accept']?.includes('application/json') ||
-                         req.xhr; // XMLHttpRequest
+                         req.xhr || // XMLHttpRequest
+                         req.headers['x-requested-with'] === 'XMLHttpRequest';
 
     if (!token) {
         // ถ้าเป็น Page request ให้ redirect ไป login
