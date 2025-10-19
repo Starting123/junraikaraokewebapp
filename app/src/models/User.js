@@ -33,6 +33,8 @@ class User {
         this.password = data.password;
         this.role_id = data.role_id;
         this.status = data.status;
+        this.reset_token = data.reset_token;
+        this.reset_expires = data.reset_expires;
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
     }
@@ -41,7 +43,7 @@ class User {
     static async findById(user_id) {
         try {
             const [rows] = await promisePool.query(
-                'SELECT user_id, name, email, role_id, status, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1', 
+                'SELECT user_id, name, email, password, role_id, status, reset_token, reset_expires, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1',
                 [user_id]
             );
             return rows.length ? new User(rows[0]) : null;
@@ -53,7 +55,7 @@ class User {
     static async findByEmail(email) {
         try {
             const [rows] = await promisePool.query(
-                'SELECT user_id, name, email, password, role_id, status FROM users WHERE email = ? LIMIT 1', 
+                'SELECT user_id, name, email, password, role_id, status, reset_token, reset_expires, created_at, updated_at FROM users WHERE email = ? LIMIT 1',
                 [email]
             );
             return rows.length ? new User(rows[0]) : null;
@@ -134,14 +136,16 @@ class User {
             password: this.password,
             role_id: this.role_id,
             status: this.status,
+            reset_token: this.reset_token,
+            reset_expires: this.reset_expires,
             created_at: this.created_at,
             updated_at: this.updated_at
         };
     }
 
     toJSON() {
-        const { password, ...userWithoutPassword } = this.toObject();
-        return userWithoutPassword;
+        const { password, reset_token, reset_expires, ...userWithoutSensitive } = this.toObject();
+        return userWithoutSensitive;
     }
 }
 

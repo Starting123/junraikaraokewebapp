@@ -7,9 +7,13 @@ require('dotenv').config();
 
 // Legacy routes (migrated to src/routes/legacy)
 const indexRouter = require('./src/routes/legacy/index');
+const {
+  pageRouter: authPageRoutes,
+  apiRouter: authApiRouter
+} = require('./src/routes/auth');
 const usersRouter = require('./src/routes/legacy/api/users');
 const roomsRouter = require('./src/routes/legacy/api/rooms');
-var apiAuth = require('./src/routes/legacy/api/auth');
+var legacyApiAuth = require('./src/routes/legacy/api/auth');
 var apiBookings = require('./src/routes/legacy/api/bookings');
 var apiAdmin = require('./src/routes/legacy/api/admin');
 var apiOrders = require('./src/routes/legacy/api/orders');
@@ -34,9 +38,12 @@ app.use('/receipts', express.static(path.join(__dirname, 'public/receipts')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/auth', authPageRoutes);
 app.use('/api/users', usersRouter);
 app.use('/api/rooms', roomsRouter);
-app.use('/api/auth', apiAuth);
+app.use('/api/auth', authApiRouter);
+app.use('/api/v2/auth', authApiRouter);
+app.use('/api/legacy/auth', legacyApiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', require('./src/routes/admin'));
 app.use('/api/orders', apiOrders);

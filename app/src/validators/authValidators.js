@@ -18,10 +18,8 @@ const authValidators = {
             .withMessage('อีเมลต้องมีความยาวไม่เกิน 255 ตัวอักษร'),
         
         body('password')
-            .isLength({ min: 8 })
-            .withMessage('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร')
-            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-            .withMessage('รหัสผ่านต้องมีตัวอักษรเล็ก ตัวอักษรใหญ่ และตัวเลข'),
+            .isLength({ min: 6 })
+            .withMessage('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร'),
         
         body('role_id')
             .optional()

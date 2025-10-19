@@ -1,31 +1,48 @@
-// Render forgot password page
-router.get('/forgot-password', (req, res) => {
-	res.render('auth/forgot-password');
-});
-
-// Render reset password page
-router.get('/reset-password/:token', (req, res) => {
-	res.render('auth/reset-password');
-});
-// Forgot password & reset password
-router.post('/forgot-password', AuthController.forgotPassword);
-router.post('/reset-password/:token', AuthController.resetPassword);
 const express = require('express');
-const router = express.Router();
 
 const AuthController = require('../controllers/AuthController');
 const { authenticateToken } = require('../middleware/auth');
 const authValidators = require('../validators/authValidators');
 
-// Public routes
-router.post('/register', authValidators.register, AuthController.register);
-router.post('/login', authValidators.login, AuthController.login);
-router.post('/refresh-token', AuthController.refreshToken);
-router.post('/verify-token', AuthController.verifyToken);
+const pageRouter = express.Router();
+const apiRouter = express.Router();
 
-// Protected routes
-router.post('/logout', authenticateToken, AuthController.logout);
-router.get('/profile', authenticateToken, AuthController.getProfile);
-router.post('/change-password', authenticateToken, authValidators.changePassword, AuthController.changePassword);
+/**
+ * Authentication feature pages
+ */
+pageRouter.get('/', (req, res) => {
+  res.render('auth');
+});
 
-module.exports = router;
+pageRouter.get('/forgot-password', (req, res) => {
+  res.render('auth/forgot-password');
+});
+
+pageRouter.get('/reset-password/:token', (req, res) => {
+  res.render('auth/reset-password');
+});
+
+/**
+ * Authentication API routes
+ */
+apiRouter.post('/register', authValidators.register, AuthController.register);
+apiRouter.post('/login', authValidators.login, AuthController.login);
+apiRouter.post('/refresh-token', AuthController.refreshToken);
+apiRouter.post('/verify-token', AuthController.verifyToken);
+
+apiRouter.post('/forgot-password', AuthController.forgotPassword);
+apiRouter.post('/reset-password/:token', AuthController.resetPassword);
+
+apiRouter.post('/logout', authenticateToken, AuthController.logout);
+apiRouter.get('/profile', authenticateToken, AuthController.getProfile);
+apiRouter.post(
+  '/change-password',
+  authenticateToken,
+  authValidators.changePassword,
+  AuthController.changePassword
+);
+
+module.exports = {
+  pageRouter,
+  apiRouter,
+};

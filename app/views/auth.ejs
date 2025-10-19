@@ -362,6 +362,10 @@
             const statusElement = document.getElementById('statusText');
             const hoursInfo = document.getElementById('storeHoursInfo');
             
+            if (!statusElement || !hoursInfo) {
+                return;
+            }
+            
             // Store hours: 11:00 - 21:00, Tuesday - Sunday (Closed Monday)
             const openTime = 11; // 11:00
             const closeTime = 21; // 21:00
