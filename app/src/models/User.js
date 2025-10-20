@@ -60,6 +60,8 @@ class User {
         this.status = data.status;
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
+        this.reset_otp = data.reset_otp;
+        this.reset_otp_expires = data.reset_otp_expires;
     }
 
     // Static methods for database operations
