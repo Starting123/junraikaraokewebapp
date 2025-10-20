@@ -1,16 +1,17 @@
 const { promisePool } = require('../config/database');
 
 class User {
-    static async setResetToken(user_id, token, expires) {
+    // OTP-based password reset methods
+    static async setResetOTP(user_id, otp, expires) {
         await promisePool.query(
-            'UPDATE users SET reset_token = ?, reset_expires = ? WHERE user_id = ?',
-            [token, expires, user_id]
+            'UPDATE users SET reset_otp = ?, reset_otp_expires = ? WHERE user_id = ?',
+            [otp, expires, user_id]
         );
     }
 
-    static async findByResetToken(token) {
+    static async findByResetOTP(otp) {
         const [rows] = await promisePool.query(
-            'SELECT * FROM users WHERE reset_token = ? LIMIT 1', [token]
+            'SELECT * FROM users WHERE reset_otp = ? LIMIT 1', [otp]
         );
         return rows.length ? new User(rows[0]) : null;
     }
@@ -21,9 +22,30 @@ class User {
         );
     }
 
+    static async clearResetOTP(user_id) {
+        await promisePool.query(
+            'UPDATE users SET reset_otp = NULL, reset_otp_expires = NULL WHERE user_id = ?', [user_id]
+        );
+    }
+    
+    // Legacy token methods (can be removed if not needed)
+    static async setResetToken(user_id, token, expires) {
+        await promisePool.query(
+            'UPDATE users SET reset_otp = ?, reset_otp_expires = ? WHERE user_id = ?',
+            [token, expires, user_id]
+        );
+    }
+
+    static async findByResetToken(token) {
+        const [rows] = await promisePool.query(
+            'SELECT * FROM users WHERE reset_otp = ? LIMIT 1', [token]
+        );
+        return rows.length ? new User(rows[0]) : null;
+    }
+
     static async clearResetToken(user_id) {
         await promisePool.query(
-            'UPDATE users SET reset_token = NULL, reset_expires = NULL WHERE user_id = ?', [user_id]
+            'UPDATE users SET reset_otp = NULL, reset_otp_expires = NULL WHERE user_id = ?', [user_id]
         );
     }
     constructor(data) {

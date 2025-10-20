@@ -1,34 +1,87 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
-module.exports = {
-    async requestPasswordReset(email) {
+class AuthService {
+    
+    /**
+     * ขอรีเซ็ตรหัสผ่าน - สร้างและส่ง OTP 6 หลัก
+     */
+    static async requestPasswordReset(email) {
         const user = await User.findByEmail(email);
         if (!user) throw new Error('ไม่พบผู้ใช้งานนี้');
-        const token = crypto.randomBytes(32).toString('hex');
+        
+        // สร้าง OTP 6 หลัก
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // กำหนดเวลาหมดอายุ 15 นาที
         const expires = new Date(Date.now() + 15 * 60 * 1000);
-        await User.setResetToken(user.user_id, token, expires);
-        return { user, token };
-    },
+        
+        // บันทึก OTP ลงฐานข้อมูล
+        await User.setResetOTP(user.user_id, otp, expires);
+        
+        return { user, otp };
+    }
 
-    async resetPassword(token, password) {
+    /**
+     * ยืนยัน OTP
+     */
+    static async verifyResetOTP(otp) {
+        const user = await User.findByResetOTP(otp);
+        
+        if (!user) {
+            throw new Error('รหัส OTP ไม่ถูกต้อง');
+        }
+        
+        if (!user.reset_otp_expires) {
+            throw new Error('รหัส OTP ไม่มีเวลาหมดอายุ กรุณาขอรหัสใหม่');
+        }
+        
+        // แปลงเป็น timestamp เพื่อเปรียบเทียบที่แม่นยำ
+        const expiresTimestamp = new Date(user.reset_otp_expires).getTime();
+        const nowTimestamp = Date.now();
+        
+        if (expiresTimestamp < nowTimestamp) {
+            throw new Error('รหัส OTP หมดอายุแล้ว กรุณาขอรหัสใหม่');
+        }
+        
+        return { valid: true, user };
+    }
+
+    /**
+     * รีเซ็ตรหัสผ่านด้วย OTP
+     */
+    static async resetPasswordWithOTP(otp, newPassword) {
+        // ยืนยัน OTP ก่อน
+        const { user } = await this.verifyResetOTP(otp);
+        
+        // Hash รหัสผ่านใหม่
+        const hash = await bcrypt.hash(newPassword, 12);
+        
+        // อัพเดทรหัสผ่าน
+        await User.updatePassword(user.user_id, hash);
+        
+        // ล้าง OTP
+        await User.clearResetOTP(user.user_id);
+        
+        return user;
+    }
+    
+    /**
+     * รีเซ็ตรหัสผ่านด้วย token (legacy - for backward compatibility)
+     */
+    static async resetPassword(token, password) {
         const user = await User.findByResetToken(token);
-        if (!user || !user.reset_expires || new Date(user.reset_expires) < new Date()) {
+        if (!user || !user.reset_otp_expires || new Date(user.reset_otp_expires) < new Date()) {
             throw new Error('ลิงก์หมดอายุหรือไม่ถูกต้อง');
         }
-        const hash = await bcrypt.hash(password, 10);
+        const hash = await bcrypt.hash(password, 12);
         await User.updatePassword(user.user_id, hash);
         await User.clearResetToken(user.user_id);
         return user;
     }
-};
-
-const jwt = require('jsonwebtoken');
-
-const config = require('../config');
-
-class AuthService {
     
     /**
      * ลงทะเบียนผู้ใช้ใหม่

@@ -7,12 +7,15 @@ const authValidators = require('../validators/authValidators');
 router.get('/login', (req, res) => res.render('auth/login'));
 router.get('/register', (req, res) => res.render('auth/register'));
 router.get('/forgot', (req, res) => res.render('auth/forgot-password'));
+router.get('/reset-password', (req, res) => res.render('auth/reset-password'));
 router.get('/reset/:token', (req, res) => res.render('auth/reset-password', { token: req.params.token }));
 
 // API endpoints
 router.post('/login', authValidators.login, AuthController.login);
 router.post('/register', authValidators.register, AuthController.register);
 router.post('/forgot', AuthController.forgotPassword);
+router.post('/verify-otp', AuthController.verifyOTP);
+router.post('/reset-password', AuthController.resetPasswordWithOTP);
 router.post('/reset/:token', AuthController.resetPassword);
 
 // Other public/protected routes

@@ -4,22 +4,55 @@ const sendResponse = require('../utils/sendResponse');
 
 class AuthController {
     /**
-     * ลืมรหัสผ่าน - ส่งอีเมลรีเซ็ต
+     * ลืมรหัสผ่าน - ส่ง OTP 6 หลักทางอีเมล
      */
     static async forgotPassword(req, res) {
         const { email } = req.body;
         if (!email) return sendResponse(res, false, 'กรุณากรอกอีเมล');
         try {
-            const { user, token } = await require('../services/AuthService').requestPasswordReset(email);
-            await require('../services/MailService').sendResetPasswordEmail(email, token);
-            return sendResponse(res, true, 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว');
+            const { user, otp } = await AuthService.requestPasswordReset(email);
+            const MailService = require('../services/MailService');
+            await MailService.sendResetPasswordOTP(email, otp);
+            return sendResponse(res, true, 'ส่งรหัส OTP ไปยังอีเมลแล้ว กรุณาตรวจสอบอีเมลของคุณ');
         } catch (err) {
             return sendResponse(res, false, err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
         }
     }
 
     /**
-     * รีเซ็ตรหัสผ่านด้วย token
+     * ยืนยัน OTP
+     */
+    static async verifyOTP(req, res) {
+        const { otp } = req.body;
+        if (!otp) return sendResponse(res, false, 'กรุณากรอกรหัส OTP');
+        try {
+            await AuthService.verifyResetOTP(otp);
+            return sendResponse(res, true, 'รหัส OTP ถูกต้อง');
+        } catch (err) {
+            return sendResponse(res, false, err.message || 'รหัส OTP ไม่ถูกต้อง');
+        }
+    }
+
+    /**
+     * รีเซ็ตรหัสผ่านด้วย OTP
+     */
+    static async resetPasswordWithOTP(req, res) {
+        const { otp, password, confirmPassword } = req.body;
+        
+        if (!otp) return sendResponse(res, false, 'กรุณากรอกรหัส OTP');
+        if (!password || !confirmPassword) return sendResponse(res, false, 'กรุณากรอกรหัสผ่านใหม่');
+        if (password !== confirmPassword) return sendResponse(res, false, 'รหัสผ่านไม่ตรงกัน');
+        
+        try {
+            await AuthService.resetPasswordWithOTP(otp, password);
+            return sendResponse(res, true, 'รีเซ็ตรหัสผ่านสำเร็จ');
+        } catch (err) {
+            return sendResponse(res, false, err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
+        }
+    }
+
+    /**
+     * รีเซ็ตรหัสผ่านด้วย token (legacy)
      */
     static async resetPassword(req, res) {
         const { token } = req.params;
@@ -27,7 +60,7 @@ class AuthController {
         if (!password || !confirmPassword) return sendResponse(res, false, 'กรุณากรอกรหัสผ่านใหม่');
         if (password !== confirmPassword) return sendResponse(res, false, 'รหัสผ่านไม่ตรงกัน');
         try {
-            await require('../services/AuthService').resetPassword(token, password);
+            await AuthService.resetPassword(token, password);
             return sendResponse(res, true, 'รีเซ็ตรหัสผ่านสำเร็จ');
         } catch (err) {
             return sendResponse(res, false, err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
