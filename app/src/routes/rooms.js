@@ -53,6 +53,8 @@ const roomValidators = {
 
 // Public routes (ดูข้อมูลห้องได้โดยไม่ต้อง login)
 router.get('/', RoomController.getRooms);
+// Route for roomForm (for frontend popular rooms)
+router.get('/roomForm', RoomController.roomForm);
 router.get('/:id', roomValidators.getById, RoomController.getRoomById);
 router.get('/:id/available-slots', roomValidators.getById, RoomController.getAvailableSlots);
 

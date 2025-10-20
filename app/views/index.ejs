@@ -334,17 +334,21 @@
       setInterval(updateStoreStatus, 60000);
     });
 
-    // Check authentication
+
+    // Check authentication (with null checks)
     function checkAuth() {
       const token = localStorage.getItem('token');
       const user = localStorage.getItem('user');
-      
       if (token && user) {
         currentUser = JSON.parse(user);
-        document.getElementById('authLink').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'block';
-        document.getElementById('bookingsLink').style.display = 'block';
-        document.getElementById('heroBookingBtn').style.display = 'inline-flex';
+        const authLink = document.getElementById('authLink');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const bookingsLink = document.getElementById('bookingsLink');
+        const heroBookingBtn = document.getElementById('heroBookingBtn');
+        if (authLink) authLink.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+        if (bookingsLink) bookingsLink.style.display = 'block';
+        if (heroBookingBtn) heroBookingBtn.style.display = 'inline-flex';
       }
     }
 
@@ -355,10 +359,10 @@
       window.location.reload();
     }
 
-    // Load popular rooms
+    // Load popular rooms (use new modular API)
     async function loadPopularRooms() {
       try {
-        const response = await fetch(`${API_BASE}/rooms/roomForm`);
+        const response = await fetch('/api/v2/rooms/roomForm');
         if (response.ok) {
           const rooms = await response.json();
           const availableRooms = rooms.filter(room => room.status === 'available').slice(0, 3);

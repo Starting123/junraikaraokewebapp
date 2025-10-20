@@ -2,6 +2,19 @@ const Room = require('../models/Room');
 const { validationResult } = require('express-validator');
 
 class RoomController {
+    /**
+     * ดึงข้อมูลห้องทั้งหมดสำหรับ roomForm (เหมือน legacy route)
+     */
+    static async roomForm(req, res) {
+        try {
+            const rooms = await Room.findAll({});
+            // Return as array, not wrapped in {success, data}
+            res.json(rooms);
+        } catch (error) {
+            console.error('RoomForm error:', error);
+            res.status(500).json({ error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลห้อง' });
+        }
+    }
     
     /**
      * ดึงรายการห้อง

@@ -9,6 +9,7 @@ require('dotenv').config();
 const indexRouter = require('./src/routes/legacy/index');
 const usersRouter = require('./src/routes/legacy/api/users');
 const roomsRouter = require('./src/routes/legacy/api/rooms');
+const roomRoutes = require('./src/routes/rooms');
 var apiAuth = require('./src/routes/legacy/api/auth');
 var apiBookings = require('./src/routes/legacy/api/bookings');
 var apiAdmin = require('./src/routes/legacy/api/admin');
@@ -34,6 +35,7 @@ app.use('/receipts', express.static(path.join(__dirname, 'public/receipts')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/api/v2/rooms', roomRoutes);
 app.use('/api/users', usersRouter);
 app.use('/api/rooms', roomsRouter);
 app.use('/api/auth', apiAuth);
