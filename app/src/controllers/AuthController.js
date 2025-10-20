@@ -1,5 +1,6 @@
 const AuthService = require('../services/AuthService');
 const { validationResult } = require('express-validator');
+const sendResponse = require('../utils/sendResponse');
 
 class AuthController {
     /**
@@ -7,13 +8,13 @@ class AuthController {
      */
     static async forgotPassword(req, res) {
         const { email } = req.body;
-        if (!email) return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
+        if (!email) return sendResponse(res, false, 'กรุณากรอกอีเมล');
         try {
             const { user, token } = await require('../services/AuthService').requestPasswordReset(email);
             await require('../services/MailService').sendResetPasswordEmail(email, token);
-            return res.json({ success: true, message: 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว' });
+            return sendResponse(res, true, 'ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลแล้ว');
         } catch (err) {
-            return res.status(400).json({ success: false, message: err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
+            return sendResponse(res, false, err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
         }
     }
 
@@ -23,13 +24,13 @@ class AuthController {
     static async resetPassword(req, res) {
         const { token } = req.params;
         const { password, confirmPassword } = req.body;
-        if (!password || !confirmPassword) return res.status(400).json({ success: false, message: 'กรุณากรอกรหัสผ่านใหม่' });
-        if (password !== confirmPassword) return res.status(400).json({ success: false, message: 'รหัสผ่านไม่ตรงกัน' });
+        if (!password || !confirmPassword) return sendResponse(res, false, 'กรุณากรอกรหัสผ่านใหม่');
+        if (password !== confirmPassword) return sendResponse(res, false, 'รหัสผ่านไม่ตรงกัน');
         try {
             await require('../services/AuthService').resetPassword(token, password);
-            return res.json({ success: true, message: 'รีเซ็ตรหัสผ่านสำเร็จ' });
+            return sendResponse(res, true, 'รีเซ็ตรหัสผ่านสำเร็จ');
         } catch (err) {
-            return res.status(400).json({ success: false, message: err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
+            return sendResponse(res, false, err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
         }
     }
     
@@ -41,13 +42,8 @@ class AuthController {
             // ตรวจสอบ validation errors
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'ข้อมูลไม่ถูกต้อง',
-                    errors: errors.array()
-                });
+                return sendResponse(res, false, 'ข้อมูลไม่ถูกต้อง', { errors: errors.array() });
             }
-
             const { name, email, password, role_id } = req.body;
             
             const result = await AuthService.register({
@@ -75,25 +71,14 @@ class AuthController {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'ข้อมูลไม่ถูกต้อง',
-                    errors: errors.array()
-                });
+                return sendResponse(res, false, 'ข้อมูลไม่ถูกต้อง', { errors: errors.array() });
             }
-
             const { email, password } = req.body;
-            
             const result = await AuthService.login({ email, password });
-
-            res.json(result);
-
+            return sendResponse(res, true, 'เข้าสู่ระบบสำเร็จ', result);
         } catch (error) {
             console.error('Login error:', error);
-            res.status(401).json({
-                success: false,
-                message: error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
-            });
+            return sendResponse(res, false, error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
         }
     }
 
@@ -104,23 +89,14 @@ class AuthController {
         try {
             const authHeader = req.headers.authorization;
             const token = authHeader && authHeader.split(' ')[1];
-
             if (!token) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'ไม่พบ token'
-                });
+                return sendResponse(res, false, 'ไม่พบ token');
             }
-
             const result = await AuthService.refreshToken(token);
-            res.json(result);
-
+            return sendResponse(res, true, 'รีเฟรช token สำเร็จ', result);
         } catch (error) {
             console.error('Refresh token error:', error);
-            res.status(401).json({
-                success: false,
-                message: error.message || 'ไม่สามารถรีเฟรช token ได้'
-            });
+            return sendResponse(res, false, error.message || 'ไม่สามารถรีเฟรช token ได้');
         }
     }
 
@@ -131,17 +107,10 @@ class AuthController {
         try {
             // สำหรับ JWT เราไม่จำเป็นต้องทำอะไรเพิ่มเติม
             // เพียงแค่ client ลบ token ออกจาก storage
-            res.json({
-                success: true,
-                message: 'ออกจากระบบสำเร็จ'
-            });
-
+            return sendResponse(res, true, 'ออกจากระบบสำเร็จ');
         } catch (error) {
             console.error('Logout error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'เกิดข้อผิดพลาดในการออกจากระบบ'
-            });
+            return sendResponse(res, false, 'เกิดข้อผิดพลาดในการออกจากระบบ');
         }
     }
 
@@ -151,18 +120,10 @@ class AuthController {
     static async getProfile(req, res) {
         try {
             const user = req.user;
-            
-            res.json({
-                success: true,
-                user
-            });
-
+            return sendResponse(res, true, 'ดึงข้อมูลผู้ใช้สำเร็จ', user);
         } catch (error) {
             console.error('Get profile error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้'
-            });
+            return sendResponse(res, false, 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
         }
     }
 
@@ -173,30 +134,15 @@ class AuthController {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'ข้อมูลไม่ถูกต้อง',
-                    errors: errors.array()
-                });
+                return sendResponse(res, false, 'ข้อมูลไม่ถูกต้อง', { errors: errors.array() });
             }
-
             const { oldPassword, newPassword } = req.body;
             const user_id = req.user.user_id;
-
-            const result = await AuthService.changePassword({
-                user_id,
-                oldPassword,
-                newPassword
-            });
-
-            res.json(result);
-
+            const result = await AuthService.changePassword({ user_id, oldPassword, newPassword });
+            return sendResponse(res, true, 'เปลี่ยนรหัสผ่านสำเร็จ', result);
         } catch (error) {
             console.error('Change password error:', error);
-            res.status(400).json({
-                success: false,
-                message: error.message || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน'
-            });
+            return sendResponse(res, false, error.message || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
         }
     }
 
@@ -207,23 +153,14 @@ class AuthController {
         try {
             const authHeader = req.headers.authorization;
             const token = authHeader && authHeader.split(' ')[1];
-
             if (!token) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'ไม่พบ token'
-                });
+                return sendResponse(res, false, 'ไม่พบ token');
             }
-
             const result = await AuthService.verifyToken(token);
-            res.json(result);
-
+            return sendResponse(res, true, 'ตรวจสอบ token สำเร็จ', result);
         } catch (error) {
             console.error('Verify token error:', error);
-            res.status(401).json({
-                success: false,
-                message: error.message || 'Token ไม่ถูกต้อง'
-            });
+            return sendResponse(res, false, error.message || 'Token ไม่ถูกต้อง');
         }
     }
 }
