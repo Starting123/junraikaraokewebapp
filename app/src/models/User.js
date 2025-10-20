@@ -3,9 +3,12 @@ const { promisePool } = require('../config/database');
 class User {
     // OTP-based password reset methods
     static async setResetOTP(user_id, otp, expires) {
+        // Convert Date to MySQL DATETIME format in UTC
+        const expiresUTC = expires.toISOString().slice(0, 19).replace('T', ' ');
+        
         await promisePool.query(
             'UPDATE users SET reset_otp = ?, reset_otp_expires = ? WHERE user_id = ?',
-            [otp, expires, user_id]
+            [otp, expiresUTC, user_id]
         );
     }
 
