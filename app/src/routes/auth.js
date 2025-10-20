@@ -8,7 +8,6 @@ router.get('/login', (req, res) => res.render('auth/login'));
 router.get('/register', (req, res) => res.render('auth/register'));
 router.get('/forgot', (req, res) => res.render('auth/forgot-password'));
 router.get('/reset/:token', (req, res) => res.render('auth/reset-password', { token: req.params.token }));
-router.get('/reset-invalid', (req, res) => res.render('auth/reset_invalid'));
 
 // API endpoints
 router.post('/login', authValidators.login, AuthController.login);

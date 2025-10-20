@@ -61,21 +61,7 @@ var logger = require('morgan');
 require('dotenv').config();
 
 
-var app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-// Static file serving - new modular structure
-app.use('/css', express.static(path.join(__dirname, 'src/public/css')));
-app.use('/js', express.static(path.join(__dirname, 'src/public/js')));
-app.use('/receipts', express.static(path.join(__dirname, 'public/receipts')));
 
 // Keep original structure for backward compatibility
 app.use(express.static(path.join(__dirname, 'public')));

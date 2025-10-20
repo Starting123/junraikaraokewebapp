@@ -84,6 +84,50 @@
         function hideLoading() {
             document.getElementById('loadingOverlay').style.display = 'none';
         }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading();
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                const formData = new FormData(e.target);
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: formData.get('email'),
+                        password: formData.get('password')
+                    })
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    // Store token
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    
+                    // Show success message
+                    resultDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> ' + data.message + '</div>';
+                    
+                    // Redirect to dashboard after 1 second
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ' + data.message + '</div>';
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Login error:', error);
+                resultDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> เกิดข้อผิดพลาดในการเข้าสู่ระบบ</div>';
+            }
+        });
     </script>
 </body>
 </html>

@@ -43,6 +43,12 @@ const legacyApiOrders = require('../routes/api/orders');
 
 const app = express();
 
+// Global logging middleware to debug all incoming requests
+app.use((req, res, next) => {
+    console.log(`[GLOBAL DEBUG] ${req.method} ${req.originalUrl}`);
+    next();
+});
+
 // Test database connection on startup
 testConnection().then(isConnected => {
     if (isConnected) {
@@ -75,7 +81,17 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes (New modular structure)
+// Log incoming requests to /auth before route
+app.use('/auth', (req, res, next) => {
+    console.log(`[DEBUG] Incoming /auth request:`, req.method, req.originalUrl);
+    next();
+});
 app.use('/auth', authRoutes);
+// Log after /auth route (will only run if no route matched)
+app.use('/auth', (req, res, next) => {
+    console.log(`[DEBUG] Unmatched /auth request:`, req.method, req.originalUrl);
+    next();
+});
 app.use('/api/v2/auth', authRoutes);
 app.use('/api/v2/bookings', bookingRoutes);
 app.use('/api/v2/payments', paymentRoutes);

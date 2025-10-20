@@ -21,9 +21,7 @@ router.get('/contact', function(req, res, next) {
   res.render('contact',);
 });
 
-router.get('/loginform', function(req, res, next) {
-  res.render('loginForm');
-});
+// Remove legacy loginForm route (no views/loginForm.ejs)
 
 router.get('/api-tester', function(req, res, next) {
     res.render('apiTester');
