@@ -1,3 +1,8 @@
+
+
+const express = require('express');
+const router = express.Router();
+const AuthController = require('../controllers/AuthController');
 // Render forgot password page
 router.get('/forgot-password', (req, res) => {
 	res.render('auth/forgot-password');
@@ -10,10 +15,9 @@ router.get('/reset-password/:token', (req, res) => {
 // Forgot password & reset password
 router.post('/forgot-password', AuthController.forgotPassword);
 router.post('/reset-password/:token', AuthController.resetPassword);
-const express = require('express');
-const router = express.Router();
 
-const AuthController = require('../controllers/AuthController');
+
+
 const { authenticateToken } = require('../middleware/auth');
 const authValidators = require('../validators/authValidators');
 

@@ -5,11 +5,14 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
 
+// Modular routes (new structure)
+const authRoutes = require('./src/routes/auth');
+const roomRoutes = require('./src/routes/rooms');
+
 // Legacy routes (migrated to src/routes/legacy)
 const indexRouter = require('./src/routes/legacy/index');
 const usersRouter = require('./src/routes/legacy/api/users');
-const roomsRouter = require('./src/routes/legacy/api/rooms');
-const roomRoutes = require('./src/routes/rooms');
+const legacyRoomsRouter = require('./src/routes/legacy/api/rooms');
 var apiAuth = require('./src/routes/legacy/api/auth');
 var apiBookings = require('./src/routes/legacy/api/bookings');
 var apiAdmin = require('./src/routes/legacy/api/admin');
@@ -34,10 +37,53 @@ app.use('/receipts', express.static(path.join(__dirname, 'public/receipts')));
 // Keep original structure for backward compatibility
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Modular routes
+app.use('/auth', authRoutes); // For page rendering (forgot/reset password)
+app.use('/api/auth', authRoutes); // For API endpoints (login, register, forgot/reset password)
+app.use('/api/v2/rooms', roomRoutes); // For new modular room endpoints
+
+// Legacy routes
+app.use('/', indexRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/rooms', legacyRoomsRouter);
+app.use('/api/auth', apiAuth);
+app.use('/api/bookings', apiBookings);
+app.use('/api/admin', require('./src/routes/admin'));
+app.use('/api/orders', apiOrders);
+app.use('/api/payments', require('./src/routes/legacy/api/payments'));
+app.use('/api/legacy/payments', require('./src/routes/legacy/api/payments'));
+app.use('/api/receipts', require('./src/routes/legacy/api/receipts'));
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+require('dotenv').config();
+
+
+var app = express();
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+// Static file serving - new modular structure
+app.use('/css', express.static(path.join(__dirname, 'src/public/css')));
+app.use('/js', express.static(path.join(__dirname, 'src/public/js')));
+app.use('/receipts', express.static(path.join(__dirname, 'public/receipts')));
+
+// Keep original structure for backward compatibility
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/', indexRouter);
 app.use('/api/v2/rooms', roomRoutes);
 app.use('/api/users', usersRouter);
-app.use('/api/rooms', roomsRouter);
+app.use('/api/rooms', legacyRoomsRouter);
 app.use('/api/auth', apiAuth);
 app.use('/api/bookings', apiBookings);
 app.use('/api/admin', require('./src/routes/admin'));

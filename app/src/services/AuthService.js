@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
 
@@ -23,9 +23,9 @@ module.exports = {
         return user;
     }
 };
-const bcrypt = require('bcryptjs');
+
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+
 const config = require('../config');
 
 class AuthService {
