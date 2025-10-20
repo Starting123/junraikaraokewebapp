@@ -356,6 +356,74 @@
 }
 
 /* ==========================================
+   Password Requirements Indicator
+   ========================================== */
+
+.password-requirements {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: rgba(224, 123, 57, 0.05);
+  border: 1px solid rgba(224, 123, 57, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  color: var(--dark-gray);
+  transition: all 0.3s ease;
+}
+
+.requirement-item i {
+  font-size: 0.9rem;
+  width: 16px;
+  transition: all 0.3s ease;
+}
+
+.requirement-item.valid {
+  color: var(--success);
+}
+
+.requirement-item.valid i {
+  color: var(--success);
+}
+
+.requirement-item.valid i.fa-circle-xmark {
+  display: none;
+}
+
+.requirement-item.valid::before {
+  content: '\f058';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: var(--success);
+  font-size: 0.9rem;
+  width: 16px;
+  animation: checkmark 0.3s ease-out;
+}
+
+@keyframes checkmark {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.requirement-item:not(.valid) i.fa-circle-xmark {
+  color: var(--error);
+}
+
+/* ==========================================
    Dark Mode Support (Optional)
    ========================================== */
 
@@ -381,5 +449,10 @@
   
   .loading-content {
     background: #2a2520;
+  }
+  
+  .password-requirements {
+    background: rgba(224, 123, 57, 0.1);
+    border-color: rgba(224, 123, 57, 0.3);
   }
 }
