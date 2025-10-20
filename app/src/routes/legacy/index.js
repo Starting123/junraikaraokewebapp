@@ -1,3 +1,4 @@
+
 var express = require('express');
 var router = express.Router();
 const db = require('../../../db');
@@ -30,7 +31,7 @@ router.get('/api-tester', function(req, res, next) {
 
 
 // Unified auth routes for legacy direct navigation
-router.get('/auth', function(req, res, next) {
+router.get('/auth/login', function(req, res, next) {
     res.render('auth/login');
 });
 router.get('/auth/register', function(req, res, next) {

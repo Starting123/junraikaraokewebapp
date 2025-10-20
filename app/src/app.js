@@ -53,7 +53,7 @@ testConnection().then(isConnected => {
 });
 
 // View engine setup
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'ejs');
 
 // Security middleware
@@ -75,13 +75,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes (New modular structure)
-// Frontend auth pages (forgot/reset password)
-const authPageRoutes = require('./routes/auth');
-app.use('/auth', authPageRoutes);
-
-// API Routes (New modular structure)
-const authApiRoutes = require('./routes/auth');
-app.use('/api/v2/auth', authApiRoutes);
+app.use('/auth', authRoutes);
+app.use('/api/v2/auth', authRoutes);
 app.use('/api/v2/bookings', bookingRoutes);
 app.use('/api/v2/payments', paymentRoutes);
 app.use('/api/v2/rooms', roomRoutes);
@@ -113,6 +108,12 @@ app.get('/api', (req, res) => {
         message: 'Junrai Karaoke API',
         version: '2.0.0',
         endpoints: {
+            frontend: {
+                login: '/auth/login',
+                register: '/auth/register',
+                forgot: '/auth/forgot',
+                reset: '/auth/reset/:token'
+            },
             v2: {
                 auth: '/api/v2/auth',
                 bookings: '/api/v2/bookings', 
