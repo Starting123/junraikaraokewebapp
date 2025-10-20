@@ -28,8 +28,19 @@ router.get('/api-tester', function(req, res, next) {
     res.render('apiTester');
 });
 
+
+// Unified auth routes for legacy direct navigation
 router.get('/auth', function(req, res, next) {
-    res.render('auth');
+    res.render('auth/login');
+});
+router.get('/auth/register', function(req, res, next) {
+    res.render('auth/register');
+});
+router.get('/auth/forgot', function(req, res, next) {
+    res.render('auth/forgot-password');
+});
+router.get('/auth/reset/:token', function(req, res, next) {
+    res.render('auth/reset-password', { token: req.params.token });
 });
 
 router.get('/rooms', function(req, res, next) {

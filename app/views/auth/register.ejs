@@ -1,32 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>สมัครสมาชิก - Junrai Karaoke</title>
+    <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/auth.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <a href="/" class="navbar-brand">
+                    <i class="fas fa-microphone-alt"></i>
+                    Junrai Karaoke
+                </a>
+                <div class="navbar-main">
+                    <ul class="navbar-nav">
+                        <li><a href="/" class="nav-link">หน้าหลัก</a></li>
+                        <li><a href="/rooms" class="nav-link">ห้องคาราโอเกะ</a></li>
+                        <li><a href="/bookings" class="nav-link" id="bookingsLink" style="display: none;">การจอง</a></li>
+                        <li><a href="/contact" class="nav-link">ติดต่อเรา</a></li>
+                        <li><a href="/auth/login" class="nav-link" id="authLink">เข้าสู่ระบบ</a></li>
+                        <li><button class="btn btn-outline" onclick="logout()" id="logoutBtn" style="display: none;">ออกจากระบบ</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
     <div class="auth-container">
-        <h2>Register</h2>
-        <% if (typeof message !== 'undefined') { %>
-            <div class="alert"><%= message %></div>
-        <% } %>
-        <form action="/api/auth/register" method="POST">
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required>
+        <div class="auth-wrapper">
+            <div class="auth-card" id="registerCard">
+                <div class="auth-header">
+                    <h2><i class="fas fa-user-plus"></i> สมัครสมาชิก</h2>
+                    <p>เริ่มต้นการใช้งาน Junrai Karaoke</p>
+                </div>
+                <form id="registerForm" class="auth-form" action="/auth/register" method="POST">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-user"></i> ชื่อ-นามสกุล</label>
+                        <input type="text" class="form-control" name="name" placeholder="กรุณาใส่ชื่อ-นามสกุล" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-envelope"></i> อีเมล</label>
+                        <input type="email" class="form-control" name="email" placeholder="กรุณาใส่อีเมลของคุณ" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-lock"></i> รหัสผ่าน</label>
+                        <div class="password-input">
+                            <input type="password" class="form-control" name="password" placeholder="กรุณาใส่รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-lock"></i> ยืนยันรหัสผ่าน</label>
+                        <div class="password-input">
+                            <input type="password" class="form-control" name="confirmPassword" placeholder="กรุณายืนยันรหัสผ่าน" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary auth-btn"><i class="fas fa-user-plus"></i> สมัครสมาชิก</button>
+                    <div class="auth-divider"><span>หรือ</span></div>
+                    <a href="/auth/login" class="btn btn-outline auth-btn"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</a>
+                </form>
+                <div class="auth-result" id="registerResult"></div>
             </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn">Register</button>
-        </form>
-        <a href="/auth/login">Login</a>
+        </div>
     </div>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>กำลังดำเนินการ...</p>
+        </div>
+    </div>
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
