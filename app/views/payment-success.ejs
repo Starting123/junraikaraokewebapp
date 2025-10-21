@@ -244,21 +244,33 @@
         </div>
     </div>
 
-    <!-- Server-side data injection -->
+    <!-- Server-side data injection via data attributes -->
+    <div id="serverData" 
+         data-booking='<% if (typeof booking !== "undefined" && booking) { %><%- JSON.stringify(booking) %><% } else { %>null<% } %>'
+         data-receipt-info='<% if (typeof receiptInfo !== "undefined" && receiptInfo) { %><%- JSON.stringify(receiptInfo) %><% } else { %>null<% } %>'
+         style="display: none;"></div>
+    
     <script>
-        <% if (typeof booking !== 'undefined' && booking) { %>
-        window.serverBooking = <%- JSON.stringify(booking) %>;
-        console.log('🔍 Server Booking Data:', window.serverBooking);
-        <% } else { %>
-        window.serverBooking = null;
-        <% } %>
+        // Read server data from data attributes
+        const serverDataEl = document.getElementById('serverData');
         
-        <% if (typeof receiptInfo !== 'undefined' && receiptInfo) { %>
-        window.serverReceiptInfo = <%- JSON.stringify(receiptInfo) %>;
-        console.log('🔍 Server Receipt Info:', window.serverReceiptInfo);
-        <% } else { %>
-        window.serverReceiptInfo = null;
-        <% } %>
+        try {
+            const bookingData = serverDataEl.getAttribute('data-booking');
+            window.serverBooking = bookingData && bookingData !== 'null' ? JSON.parse(bookingData) : null;
+            console.log('🔍 Server Booking Data:', window.serverBooking);
+        } catch (e) {
+            console.error('Error parsing booking data:', e);
+            window.serverBooking = null;
+        }
+        
+        try {
+            const receiptData = serverDataEl.getAttribute('data-receipt-info');
+            window.serverReceiptInfo = receiptData && receiptData !== 'null' ? JSON.parse(receiptData) : null;
+            console.log('🔍 Server Receipt Info:', window.serverReceiptInfo);
+        } catch (e) {
+            console.error('Error parsing receipt data:', e);
+            window.serverReceiptInfo = null;
+        }
     </script>
     
     <script>

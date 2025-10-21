@@ -108,11 +108,11 @@ class SimpleReceiptService {
             
             // ใช้ฟอนต์ไทยสำหรับข้อความไทย
             doc.font(thaiFont);
-            doc.fontSize(14);
+            doc.fontSize(16);
             doc.text('ห้องคาราโอเกะจันไร', { align: 'center' });
             
-            doc.fontSize(10);
-            doc.text('123 ถนนราชดำเนิน เขตพระนคร กรุงเทพฯ 10200', { align: 'center' });
+            doc.fontSize(12);
+            doc.text('39 หมู่ที่ 1 ถนนรังสิต - นครนายก ตำบล คลองหก อำเภอคลองหลวง ปทุมธานี 12110', { align: 'center' });
             doc.text('โทรศัพท์: 02-123-4567 | LINE: @junraikaraoke', { align: 'center' });
             doc.text('เลขประจำตัวผู้เสียภาษี: 0123456789012', { align: 'center' });
             
@@ -128,7 +128,7 @@ class SimpleReceiptService {
 
             // ข้อมูลลูกค้า
             doc.font(thaiFont);
-            doc.fontSize(12);
+            doc.fontSize(14);
             doc.text(`ชื่อลูกค้า: ${user.name || 'ไม่ระบุ'}`);
             doc.text(`อีเมล: ${user.email || 'ไม่ระบุ'}`);
             doc.text(`วันที่ออกใบเสร็จ: ${moment().format('DD/MM/YYYY เวลา HH:mm:ss น.')}`);
@@ -143,8 +143,8 @@ class SimpleReceiptService {
             doc.fontSize(16).text('รายการบริการ', { underline: true });
             
             // หัวตาราง
-            const tableTop = 250;
-            doc.fontSize(14);
+            const tableTop = 270;
+            doc.fontSize(16);
             doc.text('รายการ', 100, tableTop, { width: 200, align: 'left' });
             doc.text('ห้อง', 200, tableTop, { width: 100, align: 'center' });
             doc.text('เวลา', 300, tableTop, { width: 100, align: 'center' });
@@ -152,6 +152,7 @@ class SimpleReceiptService {
 
             // ข้อมูลบริการ
             const itemY = tableTop + 30;
+            doc.fontSize(14);
             doc.text('การจองห้องคาราโอเกะ', 100, itemY, { width: 200, align: 'left' });
             doc.text(booking.room_name || 'ห้อง VIP', 200, itemY, { width: 100, align: 'center' });
             doc.text(`${booking.duration_hours || 1} ชั่วโมง`, 300, itemY, { width: 100, align: 'center' });
@@ -159,7 +160,7 @@ class SimpleReceiptService {
 
             // ยอดรวม
             doc.moveDown(3);
-            doc.fontSize(16);
+            doc.fontSize(18);
             doc.text(`ยอดรวม: ${booking.total_price || 0} บาท`, 400, doc.y, { 
                 width: 100, 
                 align: 'right' 
@@ -167,7 +168,7 @@ class SimpleReceiptService {
 
             // Footer
             doc.moveDown(2);
-            doc.fontSize(12);
+            doc.fontSize(14);
             doc.text('*** ขอบคุณที่ใช้บริการ ***', { align: 'center' });
             doc.text('JUNRAI KARAOKE', { align: 'center' });
 
