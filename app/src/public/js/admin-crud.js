@@ -227,6 +227,7 @@ async function loadBookings() {
                 data-date="${b.start_time?.slice(0,10)}"
                 data-time="${b.start_time?.slice(11,16)}-${b.end_time?.slice(11,16)}"
                 data-status="${b.status}"
+                data-payment_status="${b.payment_status || ''}"
                 data-price="${b.price || '-'}"
                 data-pdfName="${b.receipt_pdf_name || '-'}"
                 data-pdfUrl="${b.receipt_pdf_url || ''}"
@@ -237,13 +238,14 @@ async function loadBookings() {
                 <td>${b.start_time?.slice(0,10)}</td>
                 <td>${b.start_time?.slice(11,16)}-${b.end_time?.slice(11,16)}</td>
                 <td>${b.status}</td>
+                <td>${b.payment_status || '-'}</td>
                 <td>
                     <button class="action-btn action-btn-detail btn-booking-details">ดูรายละเอียด</button>
                     <button class="action-btn action-btn-edit btn-booking-edit">แก้ไข</button>
                     <button class="action-btn action-btn-delete" onclick="deleteBooking(${b.booking_id})">ลบ</button>
                 </td>
             </tr>
-        `).join('') : '<tr><td colspan="7">ไม่มีข้อมูลการจอง</td></tr>';
+        `).join('') : '<tr><td colspan="8">ไม่มีข้อมูลการจอง</td></tr>';
         attachBookingTableListeners();
     } catch (err) {
         document.getElementById('bookingsTableBody').innerHTML = '<tr><td colspan="7">โหลดข้อมูลการจองไม่สำเร็จ</td></tr>';
@@ -300,6 +302,7 @@ window.editRoom = function(id) {
 async function updateRoom(id, room) {
     try {
         const token = localStorage.getItem('token');
+
         await fetch(`/api/admin/rooms/${id}`, {
             method: 'PUT',
             headers: {
@@ -310,6 +313,22 @@ async function updateRoom(id, room) {
         });
         loadRooms();
     } catch (err) { alert('แก้ไขห้องไม่สำเร็จ'); }
+}
+
+// Filter bookings by status, date, user, room
+window.filterBookings = function() {
+    const statusValue = document.getElementById('bookingStatusFilter').value;
+    const dateValue = document.getElementById('bookingDateFilter').value;
+    const paymentStatusValue = document.getElementById('bookingPaymentStatusFilter')?.value;
+    const rows = document.querySelectorAll('#bookingsTableBody tr');
+    rows.forEach(row => {
+        let show = true;
+        if (statusValue && row.getAttribute('data-status') !== statusValue) show = false;
+        if (dateValue && row.getAttribute('data-date') !== dateValue) show = false;
+        if (paymentStatusValue && row.getAttribute('data-payment_status') !== paymentStatusValue) show = false;
+        // สามารถเพิ่ม filter เพิ่มเติม เช่น ชื่อผู้ใช้/ห้อง ได้ถ้าต้องการ
+        row.style.display = show ? '' : 'none';
+    });
 }
 
 // Delete room
