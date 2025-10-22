@@ -13,7 +13,38 @@ class SimpleReceiptService {
     static async generateSimpleReceipt(receiptData) {
         try {
             const { booking, user, payment, receiptNumber } = receiptData;
+
+            // Debug: ดูข้อมูล payment ที่ส่งเข้ามา
+            console.log('🔍 Payment data for receipt:', payment);
+
+            // กำหนดชื่อช่องทางการชำระเงิน
+            let paymentMethodText = 'ไม่ระบุ';
+            if (payment && payment.payment_method) {
+                switch (payment.payment_method) {
+                    case 'cash':
+                        paymentMethodText = 'เงินสด';
+                        break;
+                    case 'transfer':
+                        paymentMethodText = 'โอนเงิน';
+                        break;
+                    case 'credit':
+                    case 'card':
+                        paymentMethodText = 'บัตรเครดิต/เดบิต';
+                        break;
+                    case 'qr':
+                    case 'promptpay':
+                        paymentMethodText = 'QR PromptPay';
+                        break;
+                    case 'stripe':
+                        paymentMethodText = 'Stripe';
+                        break;
+                    default:
+                        paymentMethodText = payment.payment_method;
+                }
+            }
             
+            console.log('💳 Payment method text:', paymentMethodText);
+
             // สร้างชื่อไฟล์แบบมาตรฐาน พร้อม user_id เพื่อให้หาง่าย
             const userId = user.user_id || user.id || 'UNKNOWN';
             const fileName = `receipt_${receiptNumber}_U${userId}_${moment().format('YYYYMMDD_HHmmss')}.pdf`;
@@ -137,37 +168,57 @@ class SimpleReceiptService {
                 doc.text(`วันที่จอง: ${moment(booking.booking_date).format('DD/MM/YYYY')}`);
             }
 
-            doc.moveDown();
+            // ช่องทางการชำระเงิน - ให้แน่ใจว่าแสดงผล
+            doc.font(thaiFont);
+            doc.fontSize(14);
+            doc.text(`ช่องทางการชำระเงิน: ${paymentMethodText}`, {
+                align: 'left'
+            });
+
+            doc.moveDown(2);
 
             // รายการบริการ
             doc.fontSize(16).text('รายการบริการ', { underline: true });
             
-            // หัวตาราง
-            const tableTop = 270;
+            doc.moveDown(1);
+            
+            // หัวตาราง - ปรับตำแหน่งให้เหมาะสม
+            const tableTop = doc.y;
+            doc.fontSize(12);
+            doc.text('รายการ', 50, tableTop, { width: 200, align: 'left' });
+            doc.text('ห้อง', 250, tableTop, { width: 80, align: 'center' });
+            doc.text('เวลา', 330, tableTop, { width: 80, align: 'center' });
+            doc.text('ราคา', 410, tableTop, { width: 100, align: 'right' });
+
+            // เส้นใต้หัวตาราง
+            doc.moveTo(50, tableTop + 15)
+               .lineTo(510, tableTop + 15)
+               .stroke();
+
+            // ข้อมูลบริการ - เว้นระยะให้เหมาะสม
+            const itemY = tableTop + 25;
+            doc.fontSize(11);
+            doc.text('การจองห้องคาราโอเกะ', 50, itemY, { width: 200, align: 'left' });
+            doc.text(booking.room_name || 'ห้อง VIP', 250, itemY, { width: 80, align: 'center' });
+            doc.text(`${booking.duration_hours || 1} ชั่วโมง`, 330, itemY, { width: 80, align: 'center' });
+            doc.text(`${booking.total_price || 0} บาท`, 410, itemY, { width: 100, align: 'right' });
+
+            // เส้นใต้รายการ
+            doc.moveTo(50, itemY + 15)
+               .lineTo(510, itemY + 15)
+               .stroke();
+
+            // ยอดรวม - ปรับตำแหน่งให้ไม่ทับกัน
+            doc.moveDown(2);
             doc.fontSize(16);
-            doc.text('รายการ', 100, tableTop, { width: 200, align: 'left' });
-            doc.text('ห้อง', 200, tableTop, { width: 100, align: 'center' });
-            doc.text('เวลา', 300, tableTop, { width: 100, align: 'center' });
-            doc.text('ราคา', 400, tableTop, { width: 100, align: 'right' });
-
-            // ข้อมูลบริการ
-            const itemY = tableTop + 30;
-            doc.fontSize(14);
-            doc.text('การจองห้องคาราโอเกะ', 100, itemY, { width: 200, align: 'left' });
-            doc.text(booking.room_name || 'ห้อง VIP', 200, itemY, { width: 100, align: 'center' });
-            doc.text(`${booking.duration_hours || 1} ชั่วโมง`, 300, itemY, { width: 100, align: 'center' });
-            doc.text(`${booking.total_price || 0} บาท`, 400, itemY, { width: 100, align: 'right' });
-
-            // ยอดรวม
-            doc.moveDown(3);
-            doc.fontSize(18);
-            doc.text(`ยอดรวม: ${booking.total_price || 0} บาท`, 400, doc.y, { 
+            doc.text(`ยอดรวม: ${booking.total_price || 0} บาท`, 410, doc.y, { 
                 width: 100, 
-                align: 'right' 
+                align: 'right',
+                fontWeight: 'bold'
             });
 
-            // Footer
-            doc.moveDown(2);
+            // Footer - เว้นระยะให้เหมาะสม
+            doc.moveDown(3);
             doc.fontSize(14);
             doc.text('*** ขอบคุณที่ใช้บริการ ***', { align: 'center' });
             doc.text('JUNRAI KARAOKE', { align: 'center' });

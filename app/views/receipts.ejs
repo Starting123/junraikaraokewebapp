@@ -267,9 +267,9 @@
                         <select id="paymentMethod">
                             <option value="">ทั้งหมด</option>
                             <option value="cash">เงินสด</option>
-                            <option value="bank_transfer">โอนเงิน</option>
-                            <option value="qr_code">QR Code</option>
-                            <option value="credit_card">บัตรเครดิต</option>
+                            <option value="stripe">บัตรเครดิต (Stripe)</option>
+                            <option value="transfer">โอนเงิน</option>
+                            <option value="promptpay">พร้อมเพย์</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -335,7 +335,14 @@
                 return;
             }
 
-            const receiptsHtml = receipts.map(receipt => `
+            // Debug: ดูข้อมูลที่ได้รับ
+            console.log('📋 Receipt data received:', receipts);
+
+            const receiptsHtml = receipts.map(receipt => {
+                // Debug: ดู payment_method ของแต่ละ receipt
+                console.log(`💳 Receipt ${receipt.booking_id} payment method:`, receipt.payment_method);
+                
+                return `
                 <div class="receipt-card">
                     <div class="receipt-header">
                         <div class="receipt-number">#${receipt.receiptNumber || receipt.booking_id}</div>
@@ -349,7 +356,7 @@
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">วิธีชำระ:</span>
-                            <span class="detail-value">${getPaymentMethodText(receipt.payment_method || 'cash')}</span>
+                            <span class="detail-value">${getPaymentMethodText(receipt.payment_method)}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">ยอดชำระ:</span>
@@ -368,7 +375,8 @@
                         </a>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             container.innerHTML = `<div class="receipts-grid">${receiptsHtml}</div>`;
         }
@@ -403,14 +411,22 @@
 
         // แปลงรูปแบบการชำระเงิน
         function getPaymentMethodText(method) {
+            // ตรวจสอบและ normalize ค่า method
+            if (!method || method === 'undefined' || method === 'null') {
+                method = 'cash';
+            }
+            
             const methods = {
                 'cash': 'เงินสด',
+                'stripe': 'บัตรเครดิต (Stripe)',
+                'transfer': 'โอนเงิน',
                 'bank_transfer': 'โอนเงิน',
                 'qr_code': 'QR Code',
                 'credit_card': 'บัตรเครดิต',
-                'stripe': 'บัตรเครดิต (Stripe)'
+                'promptpay': 'พร้อมเพย์'
             };
-            return methods[method] || method;
+            
+            return methods[method] || method || 'เงินสด';
         }
 
         // กรองใบเสร็จ

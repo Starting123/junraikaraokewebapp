@@ -101,15 +101,48 @@ class LegacyPaymentService {
                 throw new Error(`การชำระเงินยังไม่สำเร็จ (สถานะ: ${paymentIntent.status})`);
             }
 
-            // อัปเดตสถานะการจองในฐานข้อมูล
-            const [updateResult] = await pool.query(`
-                UPDATE bookings 
-                SET payment_status = 'paid'
-                WHERE booking_id = ? AND user_id = ?
-            `, [bookingId, userId]);
+            console.log('💰 Starting payment confirmation for booking:', bookingId);
+            console.log('💳 Payment Intent Amount:', paymentIntent.amount, 'cents');
 
-            if (updateResult.affectedRows === 0) {
-                throw new Error('ไม่พบการจองหรือไม่สามารถอัปเดตได้');
+            // เริ่ม transaction
+            await pool.query('START TRANSACTION');
+
+            try {
+                // บันทึกข้อมูลใน booking_payments ก่อน
+                const [paymentResult] = await pool.query(`
+                    INSERT INTO booking_payments 
+                    (booking_id, amount, method, status, transaction_id, payment_date, stripe_payment_intent_id) 
+                    VALUES (?, ?, 'stripe', 'paid', ?, NOW(), ?)
+                `, [
+                    bookingId, 
+                    paymentIntent.amount / 100, // Convert from cents to baht
+                    paymentIntent.id,
+                    paymentIntentId
+                ]);
+
+                console.log('✅ Inserted booking_payments record ID:', paymentResult.insertId);
+
+                // อัปเดตสถานะการจองในฐานข้อมูล
+                const [updateResult] = await pool.query(`
+                    UPDATE bookings 
+                    SET payment_status = 'paid'
+                    WHERE booking_id = ? AND user_id = ?
+                `, [bookingId, userId]);
+
+                if (updateResult.affectedRows === 0) {
+                    throw new Error('ไม่พบการจองหรือไม่สามารถอัปเดตได้');
+                }
+
+                console.log('✅ Updated booking status to paid');
+
+                // Commit transaction
+                await pool.query('COMMIT');
+
+            } catch (transactionError) {
+                // Rollback transaction on error
+                await pool.query('ROLLBACK');
+                console.error('❌ Transaction failed, rolled back:', transactionError);
+                throw transactionError;
             }
 
             // ดึงข้อมูลการจองที่อัปเดตแล้ว

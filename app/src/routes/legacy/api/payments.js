@@ -222,11 +222,14 @@ router.get('/receipts', authenticateToken, async (req, res) => {
                 b.receipt_created_at,
                 r.name as room_name,
                 rt.type_name,
-                bp.method as payment_method
+                COALESCE(bp.method, 'cash') as payment_method,
+                bp.status as payment_status_detail,
+                bp.payment_date,
+                bp.transaction_id
             FROM bookings b 
             JOIN rooms r ON b.room_id = r.room_id 
             JOIN room_types rt ON r.type_id = rt.type_id 
-            LEFT JOIN booking_payments bp ON b.booking_id = bp.booking_id
+            LEFT JOIN booking_payments bp ON b.booking_id = bp.booking_id AND bp.status = 'paid'
             WHERE b.user_id = ? AND b.payment_status IN ('paid', 'confirmed')
             ORDER BY b.created_at DESC
             LIMIT ?

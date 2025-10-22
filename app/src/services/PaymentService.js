@@ -94,24 +94,50 @@ class PaymentService {
             
             if (paymentIntent.status === 'succeeded') {
                 const bookingId = paymentIntent.metadata.booking_id;
+                const { promisePool } = require('../config/database');
                 
-                // อัพเดทสถานะการจองและการชำระเงิน
-                await Booking.update(bookingId, {
-                    payment_status: 'paid',
-                    status: 'confirmed'
-                });
+                // เริ่ม transaction
+                const connection = await promisePool.getConnection();
+                await connection.beginTransaction();
+                
+                try {
+                    // อัพเดทสถานะการจองและการชำระเงิน
+                    await Booking.update(bookingId, {
+                        payment_status: 'paid',
+                        status: 'confirmed'
+                    });
 
-                // อัพเดทสถานะ Order
-                await Order.updateByStripePaymentIntent(paymentIntentId, {
-                    status: 'completed',
-                    stripe_payment_intent_id: paymentIntentId
-                });
+                    // อัพเดทสถานะ Order
+                    await Order.updateByStripePaymentIntent(paymentIntentId, {
+                        status: 'completed',
+                        stripe_payment_intent_id: paymentIntentId
+                    });
 
-                return {
-                    success: true,
-                    message: 'การชำระเงินสำเร็จ',
-                    booking_id: bookingId
-                };
+                    // บันทึกข้อมูลใน booking_payments
+                    await connection.execute(`
+                        INSERT INTO booking_payments 
+                        (booking_id, amount, method, status, transaction_id, payment_date, stripe_payment_intent_id) 
+                        VALUES (?, ?, 'stripe', 'paid', ?, NOW(), ?)
+                    `, [
+                        bookingId, 
+                        paymentIntent.amount / 100, // Convert from cents
+                        paymentIntent.id,
+                        paymentIntentId
+                    ]);
+
+                    await connection.commit();
+                    connection.release();
+
+                    return {
+                        success: true,
+                        message: 'การชำระเงินสำเร็จ',
+                        booking_id: bookingId
+                    };
+                } catch (error) {
+                    await connection.rollback();
+                    connection.release();
+                    throw error;
+                }
             } else {
                 return {
                     success: false,
