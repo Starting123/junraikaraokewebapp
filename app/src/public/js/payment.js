@@ -312,18 +312,21 @@ async function processPayment() {
         
         if (response.ok) {
             const data = await response.json();
-            
             // ตรวจสอบว่าเป็น Stripe payment หรือไม่
             if (data.payment_intent && method === 'credit_card') {
                 // สำหรับบัตรเครดิต - redirect ไปหน้า Stripe Checkout
                 showToast('กำลังเตรียมหน้าชำระเงิน...', 'info');
-                
-                // ส่ง client_secret ไปหน้า Stripe checkout
                 window.location.href = `/payment/stripe-checkout?payment_intent=${encodeURIComponent(data.payment_intent.client_secret)}&booking_id=${currentBookingId}`;
-                
             } else {
-                // สำหรับวิธีอื่นๆ - แสดง success modal
-                showSuccessModal();
+                // สำหรับวิธีอื่นๆ - แจ้งเตือนและ redirect ไปหน้าใบเสร็จทันที
+                showToast('ชำระเงินสำเร็จ! กำลังไปยังหน้าใบเสร็จ...', 'success');
+                const params = new URLSearchParams({
+                    booking_id: currentBookingId,
+                    payment_intent: data?.payment_intent?.id || 'unknown'
+                });
+                setTimeout(() => {
+                    window.location.href = `/payment/success?${params.toString()}`;
+                }, 1200);
             }
         } else {
             const data = await response.json();
@@ -339,19 +342,15 @@ async function processPayment() {
 
 // Show success modal and redirect to payment success page
 function showSuccessModal() {
-    // แสดง success modal ชั่วครู่
-    const modal = document.getElementById('successModal');
-    modal.style.display = 'block';
-    
-    // รอ 1.5 วินาที แล้ว redirect ไปหน้า payment success พร้อมข้อมูลใบเสร็จ
+    // แจ้งเตือนและเด้งไปหน้าใบเสร็จทันที
+    showToast('ชำระเงินสำเร็จ! กำลังไปยังหน้าใบเสร็จ...', 'success');
+    const params = new URLSearchParams({
+        booking_id: currentBookingId,
+        payment_intent: bookingData?.payment_intent_id || 'unknown'
+    });
     setTimeout(() => {
-        const params = new URLSearchParams({
-            booking_id: currentBookingId,
-            payment_intent: bookingData?.payment_intent_id || 'unknown'
-        });
-        
         window.location.href = `/payment/success?${params.toString()}`;
-    }, 1500);
+    }, 1200);
 }
 
 // Navigation functions

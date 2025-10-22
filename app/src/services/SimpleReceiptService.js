@@ -17,10 +17,11 @@ class SimpleReceiptService {
             // Debug: ดูข้อมูล payment ที่ส่งเข้ามา
             console.log('🔍 Payment data for receipt:', payment);
 
-            // กำหนดชื่อช่องทางการชำระเงิน
+            // กำหนดชื่อช่องทางการชำระเงิน (รองรับทั้ง payment_method และ method)
             let paymentMethodText = 'ไม่ระบุ';
-            if (payment && payment.payment_method) {
-                switch (payment.payment_method) {
+            const method = payment?.payment_method || payment?.method;
+            if (method) {
+                switch (method) {
                     case 'cash':
                         paymentMethodText = 'เงินสด';
                         break;
@@ -39,7 +40,7 @@ class SimpleReceiptService {
                         paymentMethodText = 'Stripe';
                         break;
                     default:
-                        paymentMethodText = payment.payment_method;
+                        paymentMethodText = method;
                 }
             }
             
