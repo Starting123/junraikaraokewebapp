@@ -377,8 +377,15 @@
                             <option value="cancelled">ยกเลิกแล้ว</option>
                             <option value="completed">เสร็จสิ้น</option>
                         </select>
-                        <input type="date" id="bookingDateFilter">
-                        <button class="btn btn-outline" onclick="filterBookings()">
+                        <select id="bookingPaymentStatusFilter" style="margin-left:0.5em;">
+                            <option value="">ทุกสถานะชำระเงิน</option>
+                            <option value="pending">รอชำระเงิน</option>
+                            <option value="paid">ชำระแล้ว</option>
+                            <option value="failed">ชำระไม่สำเร็จ</option>
+                            <option value="refunded">คืนเงินแล้ว</option>
+                        </select>
+                        <input type="date" id="bookingDateFilter" style="margin-left:0.5em;">
+                        <button class="btn btn-outline" onclick="filterBookings()" style="margin-left:0.5em;">
                             <i class="fas fa-filter"></i>
                             กรอง
                         </button>
@@ -395,6 +402,7 @@
                                 <th>วันที่</th>
                                 <th>เวลา</th>
                                 <th>สถานะ</th>
+                                <th>สถานะชำระเงิน</th>
                                 <th>การจัดการ</th>
                             </tr>
                         </thead>
