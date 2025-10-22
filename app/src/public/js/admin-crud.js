@@ -27,7 +27,23 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addRoomBtn')?.addEventListener('click', function() { window.showAddRoomModal(); });
     document.getElementById('addUserBtn')?.addEventListener('click', showAddUserModal);
     document.getElementById('addBookingBtn')?.addEventListener('click', showAddBookingModal);
+        document.getElementById('roomSearchInput')?.addEventListener('input', filterRooms);
 });
+    // Filter rooms by name
+    window.filterRooms = function() {
+        const searchValue = document.getElementById('roomSearchInput').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('#roomsTableBody tr');
+        rows.forEach(row => {
+            const nameCell = row.querySelector('.room-name');
+            if (!nameCell) return;
+            const roomName = nameCell.textContent.trim().toLowerCase();
+            if (roomName.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
 
 // Fetch and display rooms
 async function loadRooms() {
@@ -80,6 +96,23 @@ async function loadUsers() {
                 </td>
             </tr>
         `).join('') : '<tr><td colspan="6">ไม่มีข้อมูลผู้ใช้</td></tr>';
+        // Filter users by name or email
+        window.filterUsers = function() {
+            const searchValue = document.getElementById('userSearchInput').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            rows.forEach(row => {
+                const nameCell = row.cells[1];
+                const emailCell = row.cells[2];
+                if (!nameCell || !emailCell) return;
+                const name = nameCell.textContent.trim().toLowerCase();
+                const email = emailCell.textContent.trim().toLowerCase();
+                if (name.includes(searchValue) || email.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
 // User details popup modal
 window.showUserDetails = async function(userId) {
     const token = localStorage.getItem('token');

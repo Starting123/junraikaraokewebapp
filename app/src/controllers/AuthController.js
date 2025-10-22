@@ -1,6 +1,7 @@
 const AuthService = require('../services/AuthService');
 const { validationResult } = require('express-validator');
 const sendResponse = require('../utils/sendResponse');
+const { promisePool } = require('../config/database');
 
 class AuthController {
     /**
@@ -108,9 +109,43 @@ class AuthController {
             }
             const { email, password } = req.body;
             const result = await AuthService.login({ email, password });
+                // Logging login event
+                let userId = null;
+                let success = false;
+                if (result && result.user) {
+                    userId = result.user.user_id || result.user.id || null;
+                    success = true;
+                }
+                try {
+                    await promisePool.query(
+                        'INSERT INTO login_logs (user_id, ip_address, login_time, user_agent, success) VALUES (?, ?, NOW(), ?, ?)',
+                        [
+                            userId,
+                            req.ip || req.connection.remoteAddress || '',
+                            req.headers['user-agent'] || '',
+                            success ? 1 : 0
+                        ]
+                    );
+                } catch (logErr) {
+                    console.error('Login log error:', logErr);
+                }
             return sendResponse(res, true, 'เข้าสู่ระบบสำเร็จ', result);
         } catch (error) {
             console.error('Login error:', error);
+                // Logging failed login event
+                try {
+                    await promisePool.query(
+                        'INSERT INTO login_logs (user_id, ip_address, login_time, user_agent, success) VALUES (?, ?, NOW(), ?, ?)',
+                        [
+                            null,
+                            req.ip || req.connection.remoteAddress || '',
+                            req.headers['user-agent'] || '',
+                            0
+                        ]
+                    );
+                } catch (logErr) {
+                    console.error('Login log error:', logErr);
+                }
             return sendResponse(res, false, error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
         }
     }
