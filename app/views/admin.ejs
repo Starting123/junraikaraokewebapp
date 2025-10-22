@@ -136,6 +136,12 @@
                         <i class="fas fa-plus"></i>
                         เพิ่มห้องใหม่
                     </button>
+                        <div class="filter-controls" style="margin-top:1em;">
+                            <input type="text" id="roomSearchInput" placeholder="ค้นหาชื่อห้อง" style="padding:0.5em 0.7em;border-radius:6px;border:1px solid #d6cfc2;font-size:1em;width:220px;">
+                            <button class="btn btn-outline" onclick="filterRooms()" style="margin-left:0.5em;">
+                                <i class="fas fa-search"></i> ค้นหา
+                            </button>
+                        </div>
                 </div>
                 <div class="table-container">
                     <table class="admin-table" id="roomsTable">
@@ -521,19 +527,18 @@
             <div class="management-section" id="manageUsers" style="display: none;">
                 <div class="section-header">
                     <h2>จัดการผู้ใช้</h2>
-                    <div class="filter-controls">
-                        <select id="userRoleFilter">
-                            <option value="">ทุกประเภท</option>
-                            <option value="1">ผู้ดูแลระบบ</option>
-                            <option value="2">พนักงาน</option>
-                            <option value="3">ลูกค้า</option>
-                        </select>
-                        <input type="text" id="userSearchInput" placeholder="ค้นหาชื่อหรืออีเมล">
-                        <button class="btn btn-outline" onclick="filterUsers()">
-                            <i class="fas fa-search"></i>
-                            ค้นหา
-                        </button>
-                    </div>
+                        <div class="filter-controls">
+                            <select id="userRoleFilter">
+                                <option value="">ทุกประเภท</option>
+                                <option value="1">ผู้ดูแลระบบ</option>
+                                <option value="2">พนักงาน</option>
+                                <option value="3">ลูกค้า</option>
+                            </select>
+                            <input type="text" id="userSearchInput" placeholder="ค้นหาชื่อหรืออีเมล" style="padding:0.5em 0.7em;border-radius:6px;border:1px solid #d6cfc2;font-size:1em;width:220px;">
+                            <button class="btn btn-outline" onclick="filterUsers()" style="margin-left:0.5em;">
+                                <i class="fas fa-search"></i> ค้นหา
+                            </button>
+                        </div>
                 </div>
                 <div class="table-container">
                     <table class="admin-table" id="usersTable">
