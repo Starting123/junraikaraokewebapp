@@ -1,17 +1,27 @@
+/* ปรับสีข้อความ welcomeMessage ให้เด่นและอ่านง่าย */
+#welcomeMessage {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  margin-top: 0.5em;
+}
 /* ==========================================
    Admin Page Styles - Earth-tone Orange Theme
    ========================================== */
 
 /* Header Section */
 .admin-header {
-  background: linear-gradient(135deg, 
-    #8B4513 0%, 
-    var(--earth-brown) 50%, 
-    var(--primary-orange-dark) 100%);
-  color: var(--white);
+  background: linear-gradient(135deg, #ff9800 0%, #c97a4b 50%, #8a5834 100%);
+  color: #fff;
   padding: var(--space-2xl) 0;
   text-align: center;
   position: relative;
+  font-family: 'Prompt', 'Segoe UI', Arial, sans-serif;
+  font-size: 2.2rem;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
 .header-content h1 {
@@ -188,7 +198,7 @@
 .action-icon {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, var(--earth-brown), #A0522D);
+  background: linear-gradient(135deg, var(--earth-brown), #eebba3);
   border-radius: 50%;
   display: flex;
   align-items: center;
