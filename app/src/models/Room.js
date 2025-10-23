@@ -116,7 +116,7 @@ class Room {
                 FROM bookings 
                 WHERE room_id = ? 
                 AND DATE(start_time) = ? 
-                AND status IN ('active', 'confirmed')
+                AND status IN ('active', 'confirmed', 'pending')
                 ORDER BY start_time
             `, [room_id, date]);
 

@@ -170,13 +170,30 @@ class Booking {
 
     static async delete(booking_id) {
         try {
+            // Get booking info
+            const [rows] = await promisePool.query('SELECT room_id, start_time, end_time FROM bookings WHERE booking_id = ?', [booking_id]);
+            if (!rows.length) throw new Error('Booking not found');
+            const { room_id, start_time, end_time } = rows[0];
+
+            // Cancel booking
             const [result] = await promisePool.query(
-                'DELETE FROM bookings WHERE booking_id = ?',
-                [booking_id]
+                'UPDATE bookings SET status = ?, payment_status = ? WHERE booking_id = ?',
+                ['cancelled', 'cancelled', booking_id]
             );
+
+            // Check if there are any other active bookings for this room and time
+            const [activeRows] = await promisePool.query(
+                `SELECT COUNT(*) as count FROM bookings WHERE room_id = ? AND status IN ('active', 'confirmed') AND ((start_time < ? AND end_time > ?) OR (start_time < ? AND end_time > ?))`,
+                [room_id, end_time, start_time, start_time, end_time]
+            );
+            if (activeRows[0].count === 0) {
+                // No active bookings, set room status to available
+                await promisePool.query('UPDATE rooms SET status = ? WHERE room_id = ?', ['available', room_id]);
+            }
+
             return result.affectedRows > 0;
         } catch (error) {
-            throw new Error(`Error deleting booking: ${error.message}`);
+            throw new Error(`Error cancelling booking: ${error.message}`);
         }
     }
 
